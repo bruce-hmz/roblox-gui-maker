@@ -24,6 +24,7 @@ export function ScenePreview({
 
   return (
     <div
+      data-scene-preview={device}
       className={`relative w-full ${ASPECT[device]} rounded-xl overflow-hidden bg-base ring-1 ring-line-soft`}
     >
       {childrenOf(null).map((n) => (

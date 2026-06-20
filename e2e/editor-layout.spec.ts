@@ -185,8 +185,8 @@ test("@full renders the same legacy inventory grid defaults publicly and in the 
   };
   await page.goto("/templates/inventory");
   const publicGrid = page
-    .getByRole("link", { name: "Open in Editor" })
-    .locator("xpath=../preceding-sibling::div[1]")
+    .locator('[data-scene-preview="desktop"]')
+    .filter({ hasText: "INVENTORY" })
     .locator('[data-layout="grid"]');
   await expect(publicGrid).toHaveCount(1);
   const publicEvidence = await readGridEvidence(publicGrid);
