@@ -293,6 +293,7 @@ describe("responsive Luau geometry", () => {
         transparency: 1,
         gradient: { from: "#112233", to: "#445566" },
         layout: "list",
+        padding: 20,
         listDirection: "horizontal",
         listGap: { scale: 0.2, offset: 16 },
         layoutHorizontalAlignment: "center",
@@ -311,6 +312,12 @@ describe("responsive Luau geometry", () => {
     expect(code).toContain("gui_content_list.HorizontalAlignment = Enum.HorizontalAlignment.Center");
     expect(code).toContain("gui_content_list.VerticalAlignment = Enum.VerticalAlignment.Bottom");
     expect(code).toContain("gui_content_list.Parent = gui_content");
+    expect(code).toContain('local gui_content_pad = Instance.new("UIPadding")');
+    expect(code).toContain("gui_content_pad.PaddingTop = UDim.new(0, 20)");
+    expect(code).toContain("gui_content_pad.PaddingBottom = UDim.new(0, 20)");
+    expect(code).toContain("gui_content_pad.PaddingLeft = UDim.new(0, 20)");
+    expect(code).toContain("gui_content_pad.PaddingRight = UDim.new(0, 20)");
+    expect(code).toContain("gui_content_pad.Parent = gui_content");
     expect(code).toContain("gui_bg.Parent = gui");
     expect(code).toContain("el0.Parent = gui_content");
   });
@@ -349,6 +356,53 @@ describe("responsive Luau geometry", () => {
     expect(code).toContain("gui_bg.Parent = gui");
     expect(code).toContain("el0.Parent = gui_content");
   });
+
+  it("exports root padding through a content container without a layout", () => {
+    const code = generateLuau([
+      node({
+        id: "root",
+        cls: "ScreenGui",
+        name: "Gui",
+        transparency: 1,
+        padding: 12,
+      }),
+      node({ id: "child", parentId: "root", name: "Child" }),
+    ]);
+
+    expect(code).toContain('local gui_content = Instance.new("Frame")');
+    expect(code).toContain("gui_content.Size = UDim2.fromScale(1, 1)");
+    expect(code).toContain("gui_content.BackgroundTransparency = 1");
+    expect(code).toContain("gui_content.Parent = gui");
+    expect(code).toContain('local gui_content_pad = Instance.new("UIPadding")');
+    expect(code).toContain("gui_content_pad.PaddingTop = UDim.new(0, 12)");
+    expect(code).toContain("gui_content_pad.PaddingBottom = UDim.new(0, 12)");
+    expect(code).toContain("gui_content_pad.PaddingLeft = UDim.new(0, 12)");
+    expect(code).toContain("gui_content_pad.PaddingRight = UDim.new(0, 12)");
+    expect(code).toContain("gui_content_pad.Parent = gui_content");
+    expect(code).toContain("el0.Parent = gui_content");
+    expect(code).not.toContain("UIListLayout");
+    expect(code).not.toContain("UIGridLayout");
+  });
+
+  it.each([undefined, 0])(
+    "keeps legacy root parenting without a layout or effective padding (%s)",
+    (padding) => {
+      const code = generateLuau([
+        node({
+          id: "root",
+          cls: "ScreenGui",
+          name: "Gui",
+          transparency: 1,
+          padding,
+        }),
+        node({ id: "child", parentId: "root", name: "Child" }),
+      ]);
+
+      expect(code).not.toContain("gui_content");
+      expect(code).not.toContain("UIPadding");
+      expect(code).toContain("el0.Parent = gui");
+    }
+  );
 
   it("preserves exact finite scale values in layout dimensions", () => {
     const listCode = generateLuau([

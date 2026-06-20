@@ -428,22 +428,40 @@ export function generateLuau(scene: SceneNode[]): string {
     }
   };
 
+  const emitPadding = (node: SceneNode, parentVar: string) => {
+    if (!node.padding) return;
+    out.push("");
+    out.push(`local ${parentVar}_pad = Instance.new("UIPadding")`);
+    out.push(`${parentVar}_pad.PaddingTop = UDim.new(0, ${node.padding})`);
+    out.push(`${parentVar}_pad.PaddingBottom = UDim.new(0, ${node.padding})`);
+    out.push(`${parentVar}_pad.PaddingLeft = UDim.new(0, ${node.padding})`);
+    out.push(`${parentVar}_pad.PaddingRight = UDim.new(0, ${node.padding})`);
+    out.push(`${parentVar}_pad.Parent = ${parentVar}`);
+  };
+
+  const rootHasEffectivePadding =
+    typeof rootGui?.padding === "number" &&
+    Number.isFinite(rootGui.padding) &&
+    rootGui.padding > 0;
+  const rootUsesContent = Boolean(rootGui?.layout) || rootHasEffectivePadding;
+
   // Always emit a ScreenGui wrapper parented to PlayerGui.
   out.push('local gui = Instance.new("ScreenGui")');
   if (rootGui) {
     out.push(`gui.Name = ${luauString(rootGui.name)}`);
     out.push("gui.ResetOnSpawn = false");
     out.push("gui.IgnoreGuiInset = true");
-    varNames.set(rootGui.id, rootGui.layout ? "gui_content" : "gui");
+    varNames.set(rootGui.id, rootUsesContent ? "gui_content" : "gui");
   }
   out.push('gui.Parent = player:WaitForChild("PlayerGui")');
-  if (rootGui?.layout) {
+  if (rootGui && rootUsesContent) {
     out.push("");
     out.push('local gui_content = Instance.new("Frame")');
     out.push("gui_content.Size = UDim2.fromScale(1, 1)");
     out.push("gui_content.BackgroundTransparency = 1");
     out.push("gui_content.Parent = gui");
     emitLayout(rootGui, "gui_content");
+    if (rootHasEffectivePadding) emitPadding(rootGui, "gui_content");
   }
 
   // ScreenGui has no background in Roblox; if the root carried visual styling
@@ -532,15 +550,7 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push(`${v}_stroke.Parent = ${v}`);
     }
     emitLayout(node, v);
-    if (node.padding) {
-      out.push("");
-      out.push(`local ${v}_pad = Instance.new("UIPadding")`);
-      out.push(`${v}_pad.PaddingTop = UDim.new(0, ${node.padding})`);
-      out.push(`${v}_pad.PaddingBottom = UDim.new(0, ${node.padding})`);
-      out.push(`${v}_pad.PaddingLeft = UDim.new(0, ${node.padding})`);
-      out.push(`${v}_pad.PaddingRight = UDim.new(0, ${node.padding})`);
-      out.push(`${v}_pad.Parent = ${v}`);
-    }
+    emitPadding(node, v);
     if (node.text != null) {
       out.push(`${v}.Text = ${luauString(node.text)}`);
       out.push(`${v}.Font = ${fontEnum(node.font)}`);
