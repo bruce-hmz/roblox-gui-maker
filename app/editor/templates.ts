@@ -34,8 +34,39 @@ function mk(cls: RobloxClass, overrides: Partial<SceneNode> = {}): SceneNode {
     ...(overrides.textSize ? { textSize: overrides.textSize } : {}),
     ...(overrides.textColor ? { textColor: overrides.textColor } : {}),
     ...(overrides.gradient ? { gradient: overrides.gradient } : {}),
-    ...(overrides.layout ? { layout: overrides.layout } : {}),
-    ...(overrides.padding ? { padding: overrides.padding } : {}),
+    ...(overrides.layout !== undefined ? { layout: overrides.layout } : {}),
+    ...(overrides.padding !== undefined ? { padding: overrides.padding } : {}),
+    ...(overrides.listDirection !== undefined
+      ? { listDirection: overrides.listDirection }
+      : {}),
+    ...(overrides.listGap !== undefined
+      ? { listGap: { ...overrides.listGap } }
+      : {}),
+    ...(overrides.layoutHorizontalAlignment !== undefined
+      ? { layoutHorizontalAlignment: overrides.layoutHorizontalAlignment }
+      : {}),
+    ...(overrides.layoutVerticalAlignment !== undefined
+      ? { layoutVerticalAlignment: overrides.layoutVerticalAlignment }
+      : {}),
+    ...(overrides.gridCellSize !== undefined
+      ? {
+          gridCellSize: {
+            scale: { ...overrides.gridCellSize.scale },
+            offset: { ...overrides.gridCellSize.offset },
+          },
+        }
+      : {}),
+    ...(overrides.gridCellPadding !== undefined
+      ? {
+          gridCellPadding: {
+            scale: { ...overrides.gridCellPadding.scale },
+            offset: { ...overrides.gridCellPadding.offset },
+          },
+        }
+      : {}),
+    ...(overrides.automaticCanvasSize !== undefined
+      ? { automaticCanvasSize: overrides.automaticCanvasSize }
+      : {}),
     ...(overrides.initialVisible !== undefined ? { initialVisible: overrides.initialVisible } : {}),
     ...(overrides.action ? { action: overrides.action } : {}),
   };
@@ -61,7 +92,25 @@ const shop = (() => {
   const panel = mk("Frame", { name: "ShopPanel", parentId: root.id, pos: { x: 0.18, y: 0.12 }, size: { x: 0.64, y: 0.76 }, color: "#15171f", cornerRadius: 16, layout: "list", padding: 16 });
   const header = mk("Frame", { name: "Header", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.12 }, color: "#000000", transparency: 1, layout: "list" });
   const title = mk("TextLabel", { name: "Title", parentId: header.id, pos: FLOW, size: { x: 1, y: 1 }, color: "#000000", transparency: 1, text: "🛒  SHOP", font: "GothamBold", textSize: 26, textColor: "#e1e1ef" });
-  const grid = mk("ScrollingFrame", { name: "ItemGrid", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.7 }, color: "#0e0f16", cornerRadius: 10, layout: "grid", padding: 8 });
+  const grid = mk("ScrollingFrame", {
+    name: "ItemGrid",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.7 },
+    color: "#0e0f16",
+    cornerRadius: 10,
+    layout: "grid",
+    padding: 8,
+    gridCellSize: {
+      scale: { x: 0.3, y: 0 },
+      offset: { x: 0, y: 120 },
+    },
+    gridCellPadding: {
+      scale: { x: 0.02, y: 0 },
+      offset: { x: 4, y: 8 },
+    },
+    automaticCanvasSize: "y",
+  });
   const colors = ["#00a2ff", "#4cddb1", "#c50005", "#99cbff", "#ffb4a9", "#b083ff"];
   const items = colors.map((c, i) =>
     mk("Frame", { name: `Item${i}`, parentId: grid.id, pos: FLOW, size: { x: 0.3, y: 0.3 }, color: c, cornerRadius: 8, transparency: 0.15 })
@@ -86,7 +135,24 @@ const inventory = (() => {
   const root = mk("ScreenGui", { name: "Inventory", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 1, cornerRadius: 0 });
   const panel = mk("Frame", { name: "InvPanel", parentId: root.id, pos: { x: 0.22, y: 0.14 }, size: { x: 0.56, y: 0.72 }, color: "#15171f", cornerRadius: 16, layout: "list", padding: 16 });
   const title = mk("TextLabel", { name: "Title", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.12 }, color: "#000000", transparency: 1, text: "INVENTORY", font: "GothamBold", textSize: 22, textColor: "#99cbff" });
-  const grid = mk("Frame", { name: "Slots", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.82 }, color: "#000000", transparency: 1, layout: "grid", padding: 6 });
+  const grid = mk("Frame", {
+    name: "Slots",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.82 },
+    color: "#000000",
+    transparency: 1,
+    layout: "grid",
+    padding: 6,
+    gridCellSize: {
+      scale: { x: 0.22, y: 0 },
+      offset: { x: 0, y: 92 },
+    },
+    gridCellPadding: {
+      scale: { x: 0, y: 0 },
+      offset: { x: 8, y: 8 },
+    },
+  });
   const slots = Array.from({ length: 8 }, (_, i) =>
     mk("Frame", { name: `Slot${i}`, parentId: grid.id, pos: FLOW, size: { x: 0.3, y: 0.22 }, color: i % 3 === 0 ? "#243042" : "#1d1f29", cornerRadius: 8 })
   );

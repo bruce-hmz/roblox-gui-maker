@@ -9,7 +9,7 @@ const expectedSlugs = [
   "quest-tracker",
 ] as const;
 
-function requiredTemplate(slug: (typeof expectedSlugs)[number]) {
+function requiredTemplate(slug: string) {
   const template = TEMPLATES.find((candidate) => candidate.slug === slug);
   if (!template) throw new Error(`Missing template: ${slug}`);
   return template;
@@ -121,5 +121,43 @@ describe("high-intent templates", () => {
     expect(details).toBeDefined();
     expect(toggle?.parentId).not.toBe(details?.id);
     expect(toggle?.action).toEqual({ type: "toggle", targetId: details?.id });
+  });
+
+  it("defines the shop item grid layout explicitly", () => {
+    const itemGrid = requiredTemplate("shop").scene.find(
+      (node) => node.name === "ItemGrid"
+    );
+
+    expect(itemGrid).toMatchObject({
+      cls: "ScrollingFrame",
+      layout: "grid",
+      automaticCanvasSize: "y",
+      gridCellSize: {
+        scale: { x: 0.3, y: 0 },
+        offset: { x: 0, y: 120 },
+      },
+      gridCellPadding: {
+        scale: { x: 0.02, y: 0 },
+        offset: { x: 4, y: 8 },
+      },
+    });
+  });
+
+  it("defines the inventory slots grid layout explicitly", () => {
+    const slots = requiredTemplate("inventory").scene.find(
+      (node) => node.name === "Slots"
+    );
+
+    expect(slots).toMatchObject({
+      layout: "grid",
+      gridCellSize: {
+        scale: { x: 0.22, y: 0 },
+        offset: { x: 0, y: 92 },
+      },
+      gridCellPadding: {
+        scale: { x: 0, y: 0 },
+        offset: { x: 8, y: 8 },
+      },
+    });
   });
 });
