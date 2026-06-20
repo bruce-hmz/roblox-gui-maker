@@ -94,15 +94,25 @@ export function BoundedNumberField({
           const direction = event.key === "ArrowUp" ? 1 : -1;
           const precision = Math.max(decimalPlaces(current), decimalPlaces(step));
           const scale = 10 ** precision;
-          const scaledCurrent = Math.round(current * scale);
-          const scaledStep = Math.round(step * scale);
-          const scaledMin = Math.round(min * scale);
-          const scaledMax = Math.round(max * scale);
-          const scaledNext = Math.max(
-            scaledMin,
-            Math.min(scaledMax, scaledCurrent + direction * scaledStep)
-          );
-          const next = scaledNext / scale;
+          let next: number;
+          if (Number.isFinite(scale)) {
+            const scaledValues = [current, step, min, max].map((number) =>
+              Math.round(number * scale)
+            );
+            if (scaledValues.every(Number.isSafeInteger)) {
+              const [scaledCurrent, scaledStep, scaledMin, scaledMax] = scaledValues;
+              const scaledNext = Math.max(
+                scaledMin,
+                Math.min(scaledMax, scaledCurrent + direction * scaledStep)
+              );
+              next = scaledNext / scale;
+            } else {
+              next = Math.max(min, Math.min(max, current + direction * step));
+            }
+          } else {
+            next = Math.max(min, Math.min(max, current + direction * step));
+          }
+          if (!Number.isFinite(next) || next < min || next > max) return;
           setDraft(String(next));
           onCommit(next);
         }}

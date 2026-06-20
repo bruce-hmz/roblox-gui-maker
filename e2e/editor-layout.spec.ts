@@ -73,6 +73,25 @@ test("@full edits container layout properties without losing inactive values", a
   await expect(clientCode).toContainText(
     ".CellSize = UDim2.new(0.11, 100, 0, 100)"
   );
+
+  await cellSizeXScale.fill("5e-324");
+  await expect(cellSizeXScale).toHaveValue("5e-324");
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(5e-324, 100, 0, 100)"
+  );
+  await cellSizeXScale.press("ArrowUp");
+  await expect(cellSizeXScale).toHaveValue("0.01");
+  await expect(cellSizeXScale).toHaveAttribute("aria-valuenow", "0.01");
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(0.01, 100, 0, 100)"
+  );
+  await expect(clientCode).not.toContainText(/NaN|Infinity/);
+  await cellSizeXScale.press("ArrowDown");
+  await expect(cellSizeXScale).toHaveValue("0");
+  await expect(cellSizeXScale).toHaveAttribute("aria-valuenow", "0");
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(0, 100, 0, 100)"
+  );
   await cellSizeXScale.fill("0.3");
   await page.getByRole("spinbutton", { name: "Cell size Y offset" }).fill("120");
   await page.getByRole("spinbutton", { name: "Cell padding X scale" }).fill("0.02");
