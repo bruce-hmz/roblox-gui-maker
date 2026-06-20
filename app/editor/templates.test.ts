@@ -9,7 +9,9 @@ const expectedSlugs = [
   "quest-tracker",
 ] as const;
 
-function requiredTemplate(slug: string) {
+type TestedTemplateSlug = (typeof expectedSlugs)[number] | "shop" | "inventory";
+
+function requiredTemplate(slug: TestedTemplateSlug) {
   const template = TEMPLATES.find((candidate) => candidate.slug === slug);
   if (!template) throw new Error(`Missing template: ${slug}`);
   return template;
