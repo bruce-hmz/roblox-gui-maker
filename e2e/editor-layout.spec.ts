@@ -1,8 +1,10 @@
+import { readFile } from "node:fs/promises";
 import { expect, test, type Locator } from "@playwright/test";
+import { strFromU8, unzipSync } from "fflate";
 
 test("@full edits container layout properties without losing inactive values", async ({
   page,
-}) => {
+}, testInfo) => {
   const consoleErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
@@ -93,8 +95,13 @@ test("@full edits container layout properties without losing inactive values", a
     ".CellSize = UDim2.new(0, 0, 0, 120)"
   );
   await cellSizeXScale.fill("0.3");
+  await page.getByRole("spinbutton", { name: "Cell size X offset" }).fill("5");
+  await page.getByRole("spinbutton", { name: "Cell size Y scale" }).fill("0.1");
   await page.getByRole("spinbutton", { name: "Cell size Y offset" }).fill("120");
   await page.getByRole("spinbutton", { name: "Cell padding X scale" }).fill("0.02");
+  await page.getByRole("spinbutton", { name: "Cell padding X offset" }).fill("4");
+  await page.getByRole("spinbutton", { name: "Cell padding Y scale" }).fill("0.03");
+  await page.getByRole("spinbutton", { name: "Cell padding Y offset" }).fill("8");
   await page
     .getByRole("combobox", { name: "Horizontal alignment" })
     .selectOption("center");
@@ -105,6 +112,23 @@ test("@full edits container layout properties without losing inactive values", a
     .getByRole("combobox", { name: "Automatic canvas size" })
     .selectOption("y");
 
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(0.3, 5, 0.1, 120)"
+  );
+  await expect(clientCode).toContainText(
+    ".CellPadding = UDim2.new(0.02, 4, 0.03, 8)"
+  );
+  await expect(clientCode).toContainText(
+    ".HorizontalAlignment = Enum.HorizontalAlignment.Center"
+  );
+  await expect(clientCode).toContainText(
+    ".VerticalAlignment = Enum.VerticalAlignment.Bottom"
+  );
+  await expect(clientCode).toContainText(
+    ".AutomaticCanvasSize = Enum.AutomaticSize.Y"
+  );
+  await expect(clientCode).toContainText(".CanvasSize = UDim2.fromScale(0, 0)");
+
   const itemGridLayout = page
     .locator('[data-node-id]')
     .filter({ has: page.locator(':scope > [data-layout="grid"]') })
@@ -113,12 +137,12 @@ test("@full edits container layout properties without losing inactive values", a
   await expect(itemGridLayout).toHaveAttribute("data-automatic-canvas-size", "y");
   const itemGridEvidence = await readGridEvidence(itemGridLayout);
   expect(itemGridEvidence.inline).toEqual({
-    gridTemplateColumns: "repeat(auto-fill, 30%)",
-    gridAutoRows: "120px",
+    gridTemplateColumns: "repeat(auto-fill, calc(30% + 5px))",
+    gridAutoRows: "calc(10% + 120px)",
     columnGap: "calc(2% + 4px)",
-    rowGap: "8px",
+    rowGap: "calc(3% + 8px)",
   });
-  const expectedTrackWidth = itemGridEvidence.contentWidth * 0.3;
+  const expectedTrackWidth = itemGridEvidence.contentWidth * 0.3 + 5;
   const expectedColumnGap = itemGridEvidence.contentWidth * 0.02 + 4;
   const computedTracks = itemGridEvidence.computed.gridTemplateColumns
     .split(" ")
@@ -134,9 +158,9 @@ test("@full edits container layout properties without losing inactive values", a
   for (const trackWidth of computedTracks) {
     expect(Math.abs(trackWidth - expectedTrackWidth)).toBeLessThanOrEqual(0.02);
   }
-  expect(itemGridEvidence.computed.gridAutoRows).toBe("120px");
+  expect(itemGridEvidence.computed.gridAutoRows).toBe("calc(10% + 120px)");
   expect(itemGridEvidence.computed.columnGap).toBe("calc(2% + 4px)");
-  expect(itemGridEvidence.computed.rowGap).toBe("8px");
+  expect(itemGridEvidence.computed.rowGap).toBe("calc(3% + 8px)");
 
   await layout.selectOption("list");
   await expect(page.getByRole("combobox", { name: "Direction" })).toBeVisible();
@@ -165,6 +189,144 @@ test("@full edits container layout properties without losing inactive values", a
   await expect(
     page.getByRole("combobox", { name: "Automatic canvas size" })
   ).toHaveValue("y");
+
+  await cellSizeXScale.fill("0.31");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        JSON.parse(window.localStorage.getItem("rgm:scene:v1") ?? "{}")
+          .scene?.find((node: { name?: string }) => node.name === "ItemGrid")
+          ?.gridCellSize?.scale?.x
+      )
+    )
+    .toBe(0.31);
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(cellSizeXScale).toHaveValue("0.3");
+  await page.getByRole("button", { name: "Redo" }).click();
+  await expect(cellSizeXScale).toHaveValue("0.31");
+  await cellSizeXScale.fill("0.3");
+
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        JSON.parse(window.localStorage.getItem("rgm:scene:v1") ?? "{}")
+          .scene?.find((node: { name?: string }) => node.name === "ItemGrid")
+          ?.gridCellSize?.scale?.x
+      )
+    )
+    .toBe(0.3);
+  await page.reload();
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.getByRole("treeitem", { name: /ItemGrid/ }).click();
+  await expectGridControls(page, {
+    size: ["0.3", "5", "0.1", "120"],
+    padding: ["0.02", "4", "0.03", "8"],
+    horizontal: "center",
+    vertical: "bottom",
+    automaticCanvas: "y",
+  });
+
+  const jsonPath = testInfo.outputPath("shop-layout.json");
+  const jsonDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export JSON" }).click();
+  const jsonDownload = await jsonDownloadPromise;
+  await jsonDownload.saveAs(jsonPath);
+  const exportedProject = JSON.parse(await readFile(jsonPath, "utf8"));
+  const exportedGrid = exportedProject.scene.find(
+    (node: { name?: string }) => node.name === "ItemGrid"
+  );
+  expect(exportedGrid).toMatchObject({
+    cls: "ScrollingFrame",
+    layout: "grid",
+    gridCellSize: {
+      scale: { x: 0.3, y: 0.1 },
+      offset: { x: 5, y: 120 },
+    },
+    gridCellPadding: {
+      scale: { x: 0.02, y: 0.03 },
+      offset: { x: 4, y: 8 },
+    },
+    layoutHorizontalAlignment: "center",
+    layoutVerticalAlignment: "bottom",
+    automaticCanvasSize: "y",
+  });
+
+  await page.getByRole("combobox", { name: "Layout" }).selectOption("list");
+  await page
+    .getByRole("combobox", { name: "Automatic canvas size" })
+    .selectOption("none");
+  await expect(clientCode).not.toContainText(".CellSize = UDim2.new(0.3, 5, 0.1, 120)");
+  await page
+    .locator('input[type="file"][aria-label="Import JSON"]')
+    .setInputFiles(jsonPath);
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.getByRole("treeitem", { name: /ItemGrid/ }).click();
+  await expectGridControls(page, {
+    size: ["0.3", "5", "0.1", "120"],
+    padding: ["0.02", "4", "0.03", "8"],
+    horizontal: "center",
+    vertical: "bottom",
+    automaticCanvas: "y",
+  });
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(0.3, 5, 0.1, 120)"
+  );
+  await expect(clientCode).toContainText(
+    ".CellPadding = UDim2.new(0.02, 4, 0.03, 8)"
+  );
+  await expect(clientCode).toContainText(
+    ".AutomaticCanvasSize = Enum.AutomaticSize.Y"
+  );
+  await expect(clientCode).toContainText(".CanvasSize = UDim2.fromScale(0, 0)");
+
+  const zipPath = testInfo.outputPath("shop-layout.zip");
+  const zipDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download ZIP" }).click();
+  const zipDownload = await zipDownloadPromise;
+  await zipDownload.saveAs(zipPath);
+  const archive = unzipSync(await readFile(zipPath));
+  const packagedProject = JSON.parse(strFromU8(archive["project.json"]));
+  const packagedGrid = packagedProject.scene.find(
+    (node: { name?: string }) => node.name === "ItemGrid"
+  );
+  expect(packagedGrid).toMatchObject(exportedGrid);
+  const packagedClient = strFromU8(archive["roblox-gui.client.lua"]);
+  expect(packagedClient).toContain(".CellSize = UDim2.new(0.3, 5, 0.1, 120)");
+  expect(packagedClient).toContain(".CellPadding = UDim2.new(0.02, 4, 0.03, 8)");
+  expect(packagedClient).toContain(
+    ".HorizontalAlignment = Enum.HorizontalAlignment.Center"
+  );
+  expect(packagedClient).toContain(
+    ".VerticalAlignment = Enum.VerticalAlignment.Bottom"
+  );
+  expect(packagedClient).toContain(".AutomaticCanvasSize = Enum.AutomaticSize.Y");
+  expect(packagedClient).toContain(".CanvasSize = UDim2.fromScale(0, 0)");
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("@full keeps Shop and Inventory template pages within desktop and mobile viewports", async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
+  for (const viewport of [
+    { width: 1280, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const slug of ["shop", "inventory"]) {
+      await page.goto(`/templates/${slug}`);
+      await expect(page.locator('[data-scene-preview="desktop"]').first()).toBeVisible();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(1);
+    }
+  }
 
   expect(consoleErrors).toEqual([]);
 });
@@ -253,4 +415,38 @@ function expectInventoryComputedGrid(evidence: GridEvidence) {
   expect(evidence.computed.gridAutoRows).toBe("92px");
   expect(evidence.computed.columnGap).toBe("8px");
   expect(evidence.computed.rowGap).toBe("8px");
+}
+
+async function expectGridControls(
+  page: import("@playwright/test").Page,
+  expected: {
+    size: [string, string, string, string];
+    padding: [string, string, string, string];
+    horizontal: string;
+    vertical: string;
+    automaticCanvas: string;
+  }
+) {
+  await expect(page.getByRole("combobox", { name: "Layout" })).toHaveValue("grid");
+  for (const [name, value] of [
+    ["Cell size X scale", expected.size[0]],
+    ["Cell size X offset", expected.size[1]],
+    ["Cell size Y scale", expected.size[2]],
+    ["Cell size Y offset", expected.size[3]],
+    ["Cell padding X scale", expected.padding[0]],
+    ["Cell padding X offset", expected.padding[1]],
+    ["Cell padding Y scale", expected.padding[2]],
+    ["Cell padding Y offset", expected.padding[3]],
+  ] as const) {
+    await expect(page.getByRole("spinbutton", { name })).toHaveValue(value);
+  }
+  await expect(
+    page.getByRole("combobox", { name: "Horizontal alignment" })
+  ).toHaveValue(expected.horizontal);
+  await expect(
+    page.getByRole("combobox", { name: "Vertical alignment" })
+  ).toHaveValue(expected.vertical);
+  await expect(
+    page.getByRole("combobox", { name: "Automatic canvas size" })
+  ).toHaveValue(expected.automaticCanvas);
 }
