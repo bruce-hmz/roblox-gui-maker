@@ -2,6 +2,14 @@
 // No React, no side effects.
 
 import type { RobloxClass, SceneNode } from "./catalog";
+import {
+  resolveGridLayout,
+  resolveListLayout,
+  robloxAutomaticCanvasSize,
+  robloxHorizontalAlignment,
+  robloxListDirection,
+  robloxVerticalAlignment,
+} from "./layout";
 import { collectRemoteEventBindings, luauString } from "./remote-events";
 import {
   collectTeleportPlaceIds,
@@ -325,6 +333,8 @@ export function reorderSibling(
 const fmt = (n: number) => Number(n.toFixed(3)).toString();
 const vector2 = (vector: { x: number; y: number }) =>
   `Vector2.new(${fmt(vector.x)}, ${fmt(vector.y)})`;
+const udim = (value: { scale: number; offset: number }) =>
+  `UDim.new(${fmt(value.scale)}, ${fmt(value.offset)})`;
 const udim2 = (
   scale: { x: number; y: number },
   offset: { x: number; y: number } = { x: 0, y: 0 }
@@ -428,6 +438,14 @@ export function generateLuau(scene: SceneNode[]): string {
     const siblingOrder = childrenOf(node.parentId ?? null).findIndex((sibling) => sibling.id === node.id);
     out.push(`${v}.LayoutOrder = ${siblingOrder}`);
 
+    const automaticCanvasSize = node.automaticCanvasSize ?? "none";
+    if (node.cls === "ScrollingFrame" && automaticCanvasSize !== "none") {
+      out.push(
+        `${v}.AutomaticCanvasSize = Enum.AutomaticSize.${robloxAutomaticCanvasSize(automaticCanvasSize)}`
+      );
+      out.push(`${v}.CanvasSize = UDim2.fromScale(0, 0)`);
+    }
+
     if (node.cls === "ImageLabel") {
       if (node.image) out.push(`${v}.Image = ${luauString(node.image)}`);
       if (node.imageColor) {
@@ -461,18 +479,36 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push(`${v}_stroke.Parent = ${v}`);
     }
     if (node.layout === "list") {
+      const layout = resolveListLayout(node);
       out.push("");
       out.push(`local ${v}_list = Instance.new("UIListLayout")`);
-      out.push(`${v}_list.FillDirection = Enum.FillDirection.Vertical`);
-      out.push(`${v}_list.Padding = UDim.new(0, 8)`);
+      out.push(
+        `${v}_list.FillDirection = Enum.FillDirection.${robloxListDirection(layout.direction)}`
+      );
+      out.push(`${v}_list.Padding = ${udim(layout.gap)}`);
+      out.push(
+        `${v}_list.HorizontalAlignment = Enum.HorizontalAlignment.${robloxHorizontalAlignment(layout.horizontalAlignment)}`
+      );
+      out.push(
+        `${v}_list.VerticalAlignment = Enum.VerticalAlignment.${robloxVerticalAlignment(layout.verticalAlignment)}`
+      );
       out.push(`${v}_list.SortOrder = Enum.SortOrder.LayoutOrder`);
       out.push(`${v}_list.Parent = ${v}`);
     }
     if (node.layout === "grid") {
+      const layout = resolveGridLayout(node);
       out.push("");
       out.push(`local ${v}_grid = Instance.new("UIGridLayout")`);
-      out.push(`${v}_grid.CellSize = UDim2.fromOffset(100, 100)`);
-      out.push(`${v}_grid.CellPadding = UDim2.fromOffset(8, 8)`);
+      out.push(`${v}_grid.CellSize = ${udim2(layout.cellSize.scale, layout.cellSize.offset)}`);
+      out.push(
+        `${v}_grid.CellPadding = ${udim2(layout.cellPadding.scale, layout.cellPadding.offset)}`
+      );
+      out.push(
+        `${v}_grid.HorizontalAlignment = Enum.HorizontalAlignment.${robloxHorizontalAlignment(layout.horizontalAlignment)}`
+      );
+      out.push(
+        `${v}_grid.VerticalAlignment = Enum.VerticalAlignment.${robloxVerticalAlignment(layout.verticalAlignment)}`
+      );
       out.push(`${v}_grid.SortOrder = Enum.SortOrder.LayoutOrder`);
       out.push(`${v}_grid.Parent = ${v}`);
     }

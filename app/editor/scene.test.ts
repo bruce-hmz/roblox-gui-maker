@@ -237,6 +237,109 @@ describe("responsive Luau geometry", () => {
     expect(code).not.toContain("UISizeConstraint");
     expect(code).not.toContain("AnchorPoint");
   });
+
+  it("exports responsive horizontal list layout properties", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "list",
+        parentId: "root",
+        layout: "list",
+        listDirection: "horizontal",
+        listGap: { scale: 0.1, offset: 12 },
+        layoutHorizontalAlignment: "center",
+        layoutVerticalAlignment: "bottom",
+      }),
+    ]);
+
+    expect(code).toContain("el0_list.FillDirection = Enum.FillDirection.Horizontal");
+    expect(code).toContain("el0_list.Padding = UDim.new(0.1, 12)");
+    expect(code).toContain("el0_list.HorizontalAlignment = Enum.HorizontalAlignment.Center");
+    expect(code).toContain("el0_list.VerticalAlignment = Enum.VerticalAlignment.Bottom");
+  });
+
+  it("exports responsive grid layout properties", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "grid",
+        parentId: "root",
+        layout: "grid",
+        gridCellSize: {
+          scale: { x: 0.25, y: 0.5 },
+          offset: { x: 12, y: 24 },
+        },
+        gridCellPadding: {
+          scale: { x: 0.01, y: 0.02 },
+          offset: { x: 4, y: 6 },
+        },
+        layoutHorizontalAlignment: "right",
+        layoutVerticalAlignment: "center",
+      }),
+    ]);
+
+    expect(code).toContain("el0_grid.CellSize = UDim2.new(0.25, 12, 0.5, 24)");
+    expect(code).toContain("el0_grid.CellPadding = UDim2.new(0.01, 4, 0.02, 6)");
+    expect(code).toContain("el0_grid.HorizontalAlignment = Enum.HorizontalAlignment.Right");
+    expect(code).toContain("el0_grid.VerticalAlignment = Enum.VerticalAlignment.Center");
+  });
+
+  it("preserves legacy list and grid layout defaults", () => {
+    const listCode = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({ id: "list", parentId: "root", layout: "list" }),
+    ]);
+    const gridCode = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({ id: "grid", parentId: "root", layout: "grid" }),
+    ]);
+
+    expect(listCode).toContain("el0_list.FillDirection = Enum.FillDirection.Vertical");
+    expect(listCode).toContain("el0_list.Padding = UDim.new(0, 8)");
+    expect(gridCode).toContain("el0_grid.CellSize = UDim2.new(0, 100, 0, 100)");
+    expect(gridCode).toContain("el0_grid.CellPadding = UDim2.new(0, 8, 0, 8)");
+  });
+
+  it("exports vertical automatic canvas sizing for ScrollingFrames", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "scroll",
+        cls: "ScrollingFrame",
+        parentId: "root",
+        automaticCanvasSize: "y",
+      }),
+    ]);
+
+    expect(code).toContain("el0.AutomaticCanvasSize = Enum.AutomaticSize.Y");
+    expect(code).toContain("el0.CanvasSize = UDim2.fromScale(0, 0)");
+  });
+
+  it("does not export disabled or inapplicable automatic canvas sizing", () => {
+    const disabledCode = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "scroll",
+        cls: "ScrollingFrame",
+        parentId: "root",
+        automaticCanvasSize: "none",
+      }),
+    ]);
+    const frameCode = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "frame",
+        cls: "Frame",
+        parentId: "root",
+        automaticCanvasSize: "y",
+      }),
+    ]);
+
+    expect(disabledCode).not.toContain("AutomaticCanvasSize");
+    expect(disabledCode).not.toContain("CanvasSize");
+    expect(frameCode).not.toContain("AutomaticCanvasSize");
+    expect(frameCode).not.toContain("CanvasSize");
+  });
 });
 
 describe("visual asset Luau", () => {
