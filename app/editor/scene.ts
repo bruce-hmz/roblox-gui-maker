@@ -9,7 +9,7 @@ import {
   robloxHorizontalAlignment,
   robloxListDirection,
   robloxVerticalAlignment,
-} from "./layout";
+} from "./layout-config";
 import { collectRemoteEventBindings, luauString } from "./remote-events";
 import {
   collectTeleportPlaceIds,

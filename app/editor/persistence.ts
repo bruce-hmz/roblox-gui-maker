@@ -1,6 +1,6 @@
 import type { RobloxClass, SceneNode } from "./catalog";
 import { sanitizeResponsiveGeometry } from "./geometry";
-import { sanitizeLayoutFields } from "./layout";
+import { sanitizeLayoutFields } from "./layout-config";
 import { sanitizeRemoteEventAction } from "./remote-events";
 import { sanitizeTeleportAction } from "./teleports";
 import { FONTS } from "./scene";

@@ -13,7 +13,7 @@ import {
   robloxVerticalAlignment,
   sanitizeLayoutFields,
   udimCss,
-} from "./layout";
+} from "./layout-config";
 
 const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
   id: "container",
