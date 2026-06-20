@@ -35,7 +35,7 @@
 - Create: `app/editor/layout.test.ts`
 - Modify: `app/editor/catalog.ts:37-110`
 
-- [ ] **Step 1: Write failing default and CSS mapping tests**
+- [x] **Step 1: Write failing default and CSS mapping tests**
 
 Create `layout.test.ts` with a local SceneNode fixture and these behaviors:
 
@@ -155,13 +155,13 @@ describe("layout defaults", () => {
 });
 ```
 
-- [ ] **Step 2: Run the new unit file and verify RED**
+- [x] **Step 2: Run the new unit file and verify RED**
 
 Run: `npm test -- app/editor/layout.test.ts`
 
 Expected: FAIL because `./layout` and the new SceneNode fields do not exist.
 
-- [ ] **Step 3: Add shared types and optional scene fields**
+- [x] **Step 3: Add shared types and optional scene fields**
 
 In `catalog.ts`, add exactly:
 
@@ -179,7 +179,7 @@ export type AutomaticCanvasSize = "none" | "x" | "y" | "xy";
 
 Add the approved optional fields beside `layout` and `padding` in SceneNode.
 
-- [ ] **Step 4: Implement pure defaults, sanitization, enum mapping, and CSS mapping**
+- [x] **Step 4: Implement pure defaults, sanitization, enum mapping, and CSS mapping**
 
 `layout.ts` exports immutable defaults, `resolveListLayout`,
 `resolveGridLayout`, `sanitizeLayoutFields(raw, cls)`, `udimCss`,
@@ -199,7 +199,7 @@ const CONTAINERS = new Set(["ScreenGui", "Frame", "ScrollingFrame"]);
 padding, axis-specific overflow, and the active layout styles. Physical
 alignment mapping must remain correct when List direction changes.
 
-- [ ] **Step 5: Run focused tests and TypeScript for GREEN**
+- [x] **Step 5: Run focused tests and TypeScript for GREEN**
 
 Run:
 
@@ -210,7 +210,7 @@ npx tsc --noEmit
 
 Expected: all layout tests pass and TypeScript exits 0.
 
-- [ ] **Step 6: Commit the shared layout contract**
+- [x] **Step 6: Commit the shared layout contract**
 
 Stage only `catalog.ts`, `layout.ts`, and `layout.test.ts`. Commit with the lore
 format; record that UIPageLayout and Grid traversal controls are excluded.
@@ -223,7 +223,7 @@ format; record that UIPageLayout and Grid traversal controls are excluded.
 - Modify: `app/editor/scene.test.ts`
 - Modify: `app/editor/scene.ts`
 
-- [ ] **Step 1: Write failing persistence tests**
+- [x] **Step 1: Write failing persistence tests**
 
 Add a version 1 round-trip case containing every approved field. Add a boundary
 case proving scales clamp to `0..1`, offsets round and clamp to `0..4096`, bad
@@ -248,13 +248,13 @@ expect(sanitizeScene([node({
 });
 ```
 
-- [ ] **Step 2: Write a failing nested-copy test**
+- [x] **Step 2: Write a failing nested-copy test**
 
 Duplicate a Grid container, mutate clone `gridCellSize.scale.x`,
 `gridCellSize.offset.x`, `gridCellPadding.scale.x`, and `listGap.offset`, then
 assert the source retains its original values.
 
-- [ ] **Step 3: Run persistence and scene tests for RED**
+- [x] **Step 3: Run persistence and scene tests for RED**
 
 Run:
 
@@ -265,19 +265,19 @@ npm test -- app/editor/persistence.test.ts app/editor/scene.test.ts
 Expected: FAIL because import sanitization and duplicateSubtree do not carry the
 new fields.
 
-- [ ] **Step 4: Connect the shared sanitizer at the JSON boundary**
+- [x] **Step 4: Connect the shared sanitizer at the JSON boundary**
 
 Spread `sanitizeLayoutFields(source, source.cls as RobloxClass)` into the
 sanitized node after base geometry. Keep `PROJECT_VERSION = 1`; do not reject an
 otherwise valid node when an optional layout field is malformed.
 
-- [ ] **Step 5: Deep-clone every nested layout value**
+- [x] **Step 5: Deep-clone every nested layout value**
 
 In `duplicateSubtree`, clone `listGap`, `gridCellSize`, and `gridCellPadding`
 including both nested Scale and Offset vectors. Scalar enums copy through the
 existing object spread.
 
-- [ ] **Step 6: Run focused tests for GREEN**
+- [x] **Step 6: Run focused tests for GREEN**
 
 Run:
 
@@ -288,7 +288,7 @@ npx tsc --noEmit
 
 Expected: both files and TypeScript pass with all legacy tests unchanged.
 
-- [ ] **Step 7: Commit persistence compatibility**
+- [x] **Step 7: Commit persistence compatibility**
 
 Stage only persistence and scene cloning files/tests. Commit with the lore
 format and state that version 1 remains valid because all fields are optional.
@@ -299,7 +299,7 @@ format and state that version 1 remains valid because all fields are optional.
 - Modify: `app/editor/scene.test.ts`
 - Modify: `app/editor/scene.ts`
 
-- [ ] **Step 1: Write failing explicit and legacy Luau tests**
+- [x] **Step 1: Write failing explicit and legacy Luau tests**
 
 For a horizontal List, assert:
 
@@ -321,20 +321,20 @@ expect(code).toContain("el0.CanvasSize = UDim2.fromScale(0, 0)");
 Keep a legacy scene assertion for Vertical, 8px List and 100px/8px Grid
 defaults. Assert Frame automaticCanvasSize is not emitted.
 
-- [ ] **Step 2: Run scene tests for RED**
+- [x] **Step 2: Run scene tests for RED**
 
 Run: `npm test -- app/editor/scene.test.ts`
 
 Expected: FAIL on hard-coded layout assignments and absent AutomaticCanvasSize.
 
-- [ ] **Step 3: Generate from resolved layout configuration**
+- [x] **Step 3: Generate from resolved layout configuration**
 
 Replace hard-coded List/Grid values with `resolveListLayout` and
 `resolveGridLayout`. Use the shared enum mapping helpers. Emit
 AutomaticCanvasSize and zero CanvasSize only when node class is ScrollingFrame
 and mode is not None.
 
-- [ ] **Step 4: Run scene tests and TypeScript for GREEN**
+- [x] **Step 4: Run scene tests and TypeScript for GREEN**
 
 Run:
 
@@ -345,7 +345,7 @@ npx tsc --noEmit
 
 Expected: scene tests and TypeScript pass.
 
-- [ ] **Step 5: Commit generated layout code**
+- [x] **Step 5: Commit generated layout code**
 
 Stage `scene.ts` and `scene.test.ts`; commit with exact generated fragments in
 `Tested:` and Roblox Studio runtime in `Not-tested:`.
@@ -357,7 +357,7 @@ Stage `scene.ts` and `scene.test.ts`; commit with exact generated fragments in
 - Modify: `app/editor/PropertiesPanel.tsx`
 - Create: `e2e/editor-layout.spec.ts`
 
-- [ ] **Step 1: Write the failing property-control browser slice**
+- [x] **Step 1: Write the failing property-control browser slice**
 
 Create an `@full` Playwright test that opens `/editor?template=shop`, selects
 ItemGrid from Hierarchy, and expects these accessible controls:
@@ -375,7 +375,7 @@ await page.getByRole("combobox", { name: "Automatic canvas size" }).selectOption
 Switch Layout to List and assert Direction plus Gap controls appear while Grid
 controls disappear. Switch back and assert the Grid draft values are restored.
 
-- [ ] **Step 2: Build and run the browser test for RED**
+- [x] **Step 2: Build and run the browser test for RED**
 
 Run:
 
@@ -386,14 +386,14 @@ npx playwright test e2e/editor-layout.spec.ts
 
 Expected: FAIL because the approved layout controls are absent.
 
-- [ ] **Step 3: Implement bounded local numeric drafts**
+- [x] **Step 3: Implement bounded local numeric drafts**
 
 In `LayoutProperties.tsx`, define `BoundedNumberField` with `draft` and inline
 error state. It accepts `ariaLabel`, `value`, `min`, `max`, `step`, and
 `onCommit`. Empty/invalid/out-of-range drafts stay visible and do not call
 `onCommit`; valid values commit immediately.
 
-- [ ] **Step 4: Implement conditional List, Grid, alignment, and scrolling controls**
+- [x] **Step 4: Implement conditional List, Grid, alignment, and scrolling controls**
 
 `LayoutProperties` receives `node` and `onChange`. It renders Layout and
 existing content Padding for containers, layout-specific controls for the
@@ -401,13 +401,13 @@ active type, and AutomaticCanvasSize only for ScrollingFrame. All enum selects
 use the exact lower-case scene values. Each nested update creates fresh Scale
 and Offset objects.
 
-- [ ] **Step 5: Replace the inline Container group**
+- [x] **Step 5: Replace the inline Container group**
 
 Remove the current unconditional Container block from PropertiesPanel. Render
 LayoutProperties only when selected node class is ScreenGui, Frame, or
 ScrollingFrame. Keep all unrelated property groups unchanged.
 
-- [ ] **Step 6: Rebuild and rerun the browser test for GREEN**
+- [x] **Step 6: Rebuild and rerun the browser test for GREEN**
 
 Run:
 
@@ -419,7 +419,7 @@ npx playwright test e2e/editor-layout.spec.ts
 
 Expected: the conditional control slice passes with no console errors.
 
-- [ ] **Step 7: Commit layout controls**
+- [x] **Step 7: Commit layout controls**
 
 Stage LayoutProperties, PropertiesPanel, and the browser test. Commit with the
 lore format; record numeric draft validation and inactive configuration
@@ -433,7 +433,7 @@ preservation.
 - Modify: `app/editor/ScenePreview.tsx`
 - Modify: `e2e/editor-layout.spec.ts`
 
-- [ ] **Step 1: Add failing rendered-layout assertions**
+- [x] **Step 1: Add failing rendered-layout assertions**
 
 Extend the browser test to assert ItemGrid's child wrapper exposes
 `data-layout="grid"` and the exact computed track/gap styles from the values
@@ -441,27 +441,27 @@ entered in Task 4. Add Inventory public preview and editor checks that assert
 both paths use the same legacy default layout data before explicit template
 adoption in Task 6.
 
-- [ ] **Step 2: Run the browser test for RED**
+- [x] **Step 2: Run the browser test for RED**
 
 Run: `npx playwright test e2e/editor-layout.spec.ts`
 
 Expected: FAIL because Canvas and ScenePreview still use hard-coded Tailwind
 List/Grid classes and expose no stable layout state.
 
-- [ ] **Step 3: Use one style resolver in Canvas**
+- [x] **Step 3: Use one style resolver in Canvas**
 
 Replace ChildrenWrapper's separate hard-coded branches with one wrapper using
 `layoutChildrenStyle(node)`. Add `data-layout` and
 `data-automatic-canvas-size`. For Grid children, override width and height to
 100%; for List children set `flexShrink: 0`; manual children retain geometry.
 
-- [ ] **Step 4: Use ordered children and the same resolver in ScenePreview**
+- [x] **Step 4: Use ordered children and the same resolver in ScenePreview**
 
 Replace local scene filtering with `orderedChildren`, use the shared style
 resolver, and apply the same Grid/List child sizing rules. Preserve static SSR,
 initial visibility, typography, and existing template markup.
 
-- [ ] **Step 5: Run unit, browser, and build verification for GREEN**
+- [x] **Step 5: Run unit, browser, and build verification for GREEN**
 
 Run:
 
@@ -474,7 +474,7 @@ npx playwright test e2e/editor-layout.spec.ts
 
 Expected: shared mapping, editor, and public preview checks pass.
 
-- [ ] **Step 6: Commit shared preview rendering**
+- [x] **Step 6: Commit shared preview rendering**
 
 Stage layout tests, Canvas, ScenePreview, and browser assertions. Commit with
 the lore format; state that CSS rounding is an approximation and Luau values are
@@ -487,7 +487,7 @@ authoritative.
 - Modify: `app/editor/templates.ts`
 - Modify: `e2e/editor-layout.spec.ts`
 
-- [ ] **Step 1: Write failing template contracts**
+- [x] **Step 1: Write failing template contracts**
 
 Assert Shop ItemGrid equals:
 
@@ -523,19 +523,19 @@ expect(slots).toMatchObject({
 });
 ```
 
-- [ ] **Step 2: Run template tests for RED**
+- [x] **Step 2: Run template tests for RED**
 
 Run: `npm test -- app/editor/templates.test.ts`
 
 Expected: FAIL because Shop and Inventory use only the legacy layout string.
 
-- [ ] **Step 3: Add explicit fields without redesigning templates**
+- [x] **Step 3: Add explicit fields without redesigning templates**
 
 Extend the local `mk` helper to copy every approved optional layout field when
 present. Add the exact Shop and Inventory settings asserted above. Do not change
 text, colors, node IDs, actions, or hierarchy.
 
-- [ ] **Step 4: Run template and browser tests for GREEN**
+- [x] **Step 4: Run template and browser tests for GREEN**
 
 Run:
 
@@ -547,7 +547,7 @@ npx playwright test e2e/editor-layout.spec.ts
 
 Expected: template contracts and public/editor preview paths pass.
 
-- [ ] **Step 5: Commit template adoption**
+- [x] **Step 5: Commit template adoption**
 
 Stage templates, template tests, and focused browser assertions. Commit with
 the lore format and note that visual composition remains intentionally stable.
@@ -558,7 +558,7 @@ the lore format and note that visual composition remains intentionally stable.
 - Modify: `e2e/editor-layout.spec.ts`
 - Modify: `docs/superpowers/plans/2026-06-20-complete-layout-p0.md`
 
-- [ ] **Step 1: Complete the layout browser journey**
+- [x] **Step 1: Complete the layout browser journey**
 
 Extend the focused test to verify:
 
@@ -571,7 +571,7 @@ Extend the focused test to verify:
 - mobile and desktop template pages have no horizontal page overflow;
 - console errors remain empty.
 
-- [ ] **Step 2: Run focused editor suites**
+- [x] **Step 2: Run focused editor suites**
 
 Run:
 
@@ -581,13 +581,13 @@ npm test -- app/editor/layout.test.ts app/editor/persistence.test.ts app/editor/
 
 Expected: all focused files pass with zero failures.
 
-- [ ] **Step 3: Run the full unit suite**
+- [x] **Step 3: Run the full unit suite**
 
 Run: `npm test`
 
 Expected: all Vitest files pass with zero failures.
 
-- [ ] **Step 4: Run TypeScript and production build sequentially**
+- [x] **Step 4: Run TypeScript and production build sequentially**
 
 Run:
 
@@ -598,7 +598,7 @@ npm run build
 
 Expected: both exit 0 and all static routes generate.
 
-- [ ] **Step 5: Run smoke and full browser gates**
+- [x] **Step 5: Run smoke and full browser gates**
 
 Run:
 
@@ -609,7 +609,7 @@ npm run test:e2e:full
 
 Expected: every Playwright test passes with zero console errors.
 
-- [ ] **Step 6: Run React best-practices review and inspect the diff**
+- [x] **Step 6: Run React best-practices review and inspect the diff**
 
 Review LayoutProperties, Canvas, and ScenePreview for hook correctness,
 accessibility, stable keys, unnecessary state, and TypeScript escapes. Run:
@@ -623,11 +623,33 @@ git diff --stat main...HEAD
 Do not stage or modify the user's existing `.gitignore`, `.superpowers/`, or
 `docs/youtube-60s-script.md` changes.
 
-- [ ] **Step 7: Record evidence and commit release proof**
+- [x] **Step 7: Record evidence and commit release proof**
 
 Mark completed checkboxes and append exact test counts, build route count,
 browser counts, residual risks, and Not-tested items. Commit only the plan
 update using the lore format.
+
+#### Task 7 Release Evidence (2026-06-21)
+
+- Focused unit gate: 4 files passed, 115 tests passed.
+- Full unit gate: 13 files passed, 215 tests passed.
+- TypeScript gate: `npx tsc --noEmit` exited 0 with zero errors.
+- Production build gate: Next.js 16.2.9 compiled successfully and generated
+  42/42 static pages; the dynamic `/editor` route remained server-rendered on
+  demand.
+- Browser smoke gate: 3 Chromium tests passed.
+- Browser full gate: 5 Chromium tests passed, including the 3 focused layout
+  journeys and console-error assertions.
+- Diff hygiene: `git diff --check` passed; only the Task 7 E2E spec and this
+  plan evidence were changed by Task 7.
+- React review: no blocking hook, key, state, or TypeScript escape findings in
+  `LayoutProperties`, `Canvas`, or `ScenePreview`.
+- Residual risk: the four Canvas resize handles remain pointer-only `<span>`
+  elements without keyboard resize semantics or accessible names. This is a
+  pre-existing accessibility issue outside Task 7's two-file edit boundary.
+- Not-tested: Roblox Studio execution of the generated Luau, non-Chromium
+  browser engines, assistive-technology interaction, and real touch-device
+  behavior.
 
 ### Task 8: Start The Tween Presets Planning Cycle
 
