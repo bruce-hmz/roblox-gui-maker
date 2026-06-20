@@ -64,6 +64,23 @@ describe("layout defaults", () => {
       expect(Object.isFrozen(value.offset)).toBe(true);
     }
   });
+
+  it("accepts mutable persisted values through readonly resolver views", () => {
+    const persisted = node({
+      layout: "grid",
+      listGap: { scale: 0, offset: 8 },
+      gridCellSize: {
+        scale: { x: 0.25, y: 0 },
+        offset: { x: 0, y: 100 },
+      },
+    });
+
+    persisted.listGap!.offset = 12;
+    persisted.gridCellSize!.scale.x = 0.4;
+
+    expect(resolveListLayout(persisted).gap.offset).toBe(12);
+    expect(resolveGridLayout(persisted).cellSize.scale.x).toBe(0.4);
+  });
 });
 
 describe("CSS layout mapping", () => {

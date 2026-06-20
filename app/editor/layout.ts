@@ -10,33 +10,43 @@ import type {
   UDimValue,
 } from "./catalog";
 
-export const DEFAULT_LIST_GAP: UDimValue = Object.freeze({
+export type ReadonlyUDimValue = {
+  readonly scale: number;
+  readonly offset: number;
+};
+
+export type ReadonlyUDim2Value = {
+  readonly scale: { readonly x: number; readonly y: number };
+  readonly offset: { readonly x: number; readonly y: number };
+};
+
+export const DEFAULT_LIST_GAP: ReadonlyUDimValue = Object.freeze({
   scale: 0,
   offset: 8,
 });
 
-export const DEFAULT_GRID_CELL_SIZE: UDim2Value = Object.freeze({
+export const DEFAULT_GRID_CELL_SIZE: ReadonlyUDim2Value = Object.freeze({
   scale: Object.freeze({ x: 0, y: 0 }),
   offset: Object.freeze({ x: 100, y: 100 }),
 });
 
-export const DEFAULT_GRID_CELL_PADDING: UDim2Value = Object.freeze({
+export const DEFAULT_GRID_CELL_PADDING: ReadonlyUDim2Value = Object.freeze({
   scale: Object.freeze({ x: 0, y: 0 }),
   offset: Object.freeze({ x: 8, y: 8 }),
 });
 
-type ListLayout = {
-  direction: ListDirection;
-  gap: UDimValue;
-  horizontalAlignment: LayoutHorizontalAlignment;
-  verticalAlignment: LayoutVerticalAlignment;
+export type ListLayout = {
+  readonly direction: ListDirection;
+  readonly gap: ReadonlyUDimValue;
+  readonly horizontalAlignment: LayoutHorizontalAlignment;
+  readonly verticalAlignment: LayoutVerticalAlignment;
 };
 
-type GridLayout = {
-  cellSize: UDim2Value;
-  cellPadding: UDim2Value;
-  horizontalAlignment: LayoutHorizontalAlignment;
-  verticalAlignment: LayoutVerticalAlignment;
+export type GridLayout = {
+  readonly cellSize: ReadonlyUDim2Value;
+  readonly cellPadding: ReadonlyUDim2Value;
+  readonly horizontalAlignment: LayoutHorizontalAlignment;
+  readonly verticalAlignment: LayoutVerticalAlignment;
 };
 
 const HORIZONTAL_ALIGNMENTS = ["left", "center", "right"] as const;
@@ -76,7 +86,7 @@ export function resolveGridLayout(node: SceneNode): GridLayout {
   };
 }
 
-export function udimCss(value: UDimValue): string {
+export function udimCss(value: ReadonlyUDimValue): string {
   const percent = formatCssNumber(value.scale * 100);
   if (value.scale === 0) return `${value.offset}px`;
   if (value.offset === 0) return `${percent}%`;
@@ -189,7 +199,7 @@ function sanitizeUDim2(raw: unknown): UDim2Value | undefined {
   };
 }
 
-function axisValue(value: UDim2Value, axis: "x" | "y"): UDimValue {
+function axisValue(value: ReadonlyUDim2Value, axis: "x" | "y"): ReadonlyUDimValue {
   return { scale: value.scale[axis], offset: value.offset[axis] };
 }
 
