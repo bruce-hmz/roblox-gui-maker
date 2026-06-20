@@ -105,6 +105,31 @@ test("@full edits container layout properties without losing inactive values", a
     .getByRole("combobox", { name: "Automatic canvas size" })
     .selectOption("y");
 
+  const itemGridLayout = page
+    .locator('[data-node-id]')
+    .filter({ has: page.locator(':scope > [data-layout="grid"]') })
+    .locator(':scope > [data-layout="grid"]');
+  await expect(itemGridLayout).toHaveCount(1);
+  await expect(itemGridLayout).toHaveAttribute("data-automatic-canvas-size", "y");
+  await expect
+    .poll(() =>
+      itemGridLayout.evaluate((element) => {
+        const style = (element as HTMLElement).style;
+        return {
+          gridTemplateColumns: style.gridTemplateColumns,
+          gridAutoRows: style.gridAutoRows,
+          columnGap: style.columnGap,
+          rowGap: style.rowGap,
+        };
+      })
+    )
+    .toEqual({
+      gridTemplateColumns: "repeat(auto-fill, calc(30% + 100px))",
+      gridAutoRows: "120px",
+      columnGap: "calc(2% + 8px)",
+      rowGap: "8px",
+    });
+
   await layout.selectOption("list");
   await expect(page.getByRole("combobox", { name: "Direction" })).toBeVisible();
   await expect(page.getByRole("spinbutton", { name: "Gap scale" })).toBeVisible();
@@ -132,6 +157,52 @@ test("@full edits container layout properties without losing inactive values", a
   await expect(
     page.getByRole("combobox", { name: "Automatic canvas size" })
   ).toHaveValue("y");
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("@full renders the same legacy inventory grid defaults publicly and in the editor", async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
+  const legacyGridContract = {
+    automaticCanvasSize: "none",
+    gridTemplateColumns: "repeat(auto-fill, 100px)",
+    gridAutoRows: "100px",
+    columnGap: "8px",
+    rowGap: "8px",
+  };
+  const readLegacyGridContract = (locator: ReturnType<typeof page.locator>) =>
+    locator.evaluate((element) => {
+      const wrapper = element as HTMLElement;
+      return {
+        automaticCanvasSize: wrapper.dataset.automaticCanvasSize,
+        gridTemplateColumns: wrapper.style.gridTemplateColumns,
+        gridAutoRows: wrapper.style.gridAutoRows,
+        columnGap: wrapper.style.columnGap,
+        rowGap: wrapper.style.rowGap,
+      };
+    });
+
+  await page.goto("/templates/inventory");
+  const publicGrid = page
+    .getByRole("link", { name: "Open in Editor" })
+    .locator("xpath=../preceding-sibling::div[1]")
+    .locator('[data-layout="grid"]');
+  await expect(publicGrid).toHaveCount(1);
+  const publicContract = await readLegacyGridContract(publicGrid);
+  expect(publicContract).toEqual(legacyGridContract);
+
+  await page.goto("/editor?template=inventory");
+  const editorGrid = page.locator('[data-layout="grid"]');
+  await expect(editorGrid).toHaveCount(1);
+  const editorContract = await readLegacyGridContract(editorGrid);
+  expect(editorContract).toEqual(legacyGridContract);
+  expect(editorContract).toEqual(publicContract);
 
   expect(consoleErrors).toEqual([]);
 });

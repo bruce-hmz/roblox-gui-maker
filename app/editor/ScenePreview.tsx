@@ -3,6 +3,8 @@
 // Server component (SSR-friendly) so preview content lands in the HTML for SEO.
 
 import type { DeviceKind, SceneNode } from "./catalog";
+import { layoutChildrenStyle } from "./layout-config";
+import { orderedChildren } from "./scene";
 
 const ASPECT: Record<DeviceKind, string> = {
   desktop: "aspect-video",
@@ -18,7 +20,7 @@ export function ScenePreview({
   device?: DeviceKind;
 }) {
   const childrenOf = (id: string | null) =>
-    scene.filter((n) => (n.parentId ?? null) === id);
+    orderedChildren(scene, id);
 
   return (
     <div
@@ -51,21 +53,21 @@ function PreviewNode({
       ? "transparent"
       : hexToRgba(node.color, 1 - node.transparency);
 
-  const wrapperClass =
-    node.layout === "list"
-      ? "absolute inset-0 flex flex-col gap-2 overflow-hidden"
-      : node.layout === "grid"
-        ? "absolute inset-0 grid grid-cols-3 gap-2 overflow-hidden"
-        : "absolute inset-0";
-  const wrapperStyle = node.padding ? { padding: `${node.padding}px` } : undefined;
+  const flowStyle =
+    containerLayout === "grid"
+      ? { width: "100%", height: "100%" }
+      : containerLayout === "list"
+        ? { flexShrink: 0 }
+        : {};
 
   return (
     <div
       className={isFlow ? "relative" : "absolute"}
       style={{
         ...(isFlow ? {} : { left: `${node.pos.x * 100}%`, top: `${node.pos.y * 100}%` }),
-        width: `${node.size.x * 100}%`,
-        height: `${node.size.y * 100}%`,
+        width: containerLayout === "grid" ? "100%" : `${node.size.x * 100}%`,
+        height: containerLayout === "grid" ? "100%" : `${node.size.y * 100}%`,
+        ...flowStyle,
         background,
         borderRadius: node.cornerRadius,
         zIndex: node.zindex,
@@ -88,7 +90,13 @@ function PreviewNode({
         </span>
       )}
       {kids.length > 0 && (
-        <div className={wrapperClass} style={wrapperStyle}>
+        <div
+          data-layout={node.layout ?? "none"}
+          data-automatic-canvas-size={
+            node.cls === "ScrollingFrame" ? node.automaticCanvasSize ?? "none" : "none"
+          }
+          style={layoutChildrenStyle(node)}
+        >
           {kids.map((c) => (
             <PreviewNode
               key={c.id}

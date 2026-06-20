@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { DeviceKind, SceneNode } from "./catalog";
 import { canvasGeometryStyle } from "./geometry";
 import { assetIdNumber, resolveThumbnail } from "./image-assets";
+import { layoutChildrenStyle } from "./layout-config";
 import { orderedChildren, type PreviewVisibility } from "./scene";
 import { useInteraction, type Corner } from "./useInteraction";
 
@@ -141,6 +142,12 @@ function NodeView({
       ? "transparent"
       : hexToRgba(node.color, 1 - node.transparency);
   const geometryStyle = canvasGeometryStyle(node);
+  const flowStyle =
+    containerLayout === "grid"
+      ? { width: "100%", height: "100%" }
+      : containerLayout === "list"
+        ? { flexShrink: 0 }
+        : {};
 
   return (
     <div
@@ -169,6 +176,7 @@ function NodeView({
               transform: node.rotation
                 ? `rotate(${node.rotation}deg)`
                 : undefined,
+              ...flowStyle,
             }
           : {}),
         background,
@@ -343,28 +351,17 @@ function ChildrenWrapper({
   node: SceneNode;
   children: React.ReactNode;
 }) {
-  const pad = node.padding ? `${node.padding}px` : undefined;
-  if (node.layout === "list") {
-    return (
-      <div
-        className="absolute inset-0 flex flex-col gap-2 overflow-hidden"
-        style={{ padding: pad }}
-      >
-        {children}
-      </div>
-    );
-  }
-  if (node.layout === "grid") {
-    return (
-      <div
-        className="absolute inset-0 grid grid-cols-3 gap-2 overflow-hidden"
-        style={{ padding: pad }}
-      >
-        {children}
-      </div>
-    );
-  }
-  return <div className="absolute inset-0" style={{ padding: pad }}>{children}</div>;
+  return (
+    <div
+      data-layout={node.layout ?? "none"}
+      data-automatic-canvas-size={
+        node.cls === "ScrollingFrame" ? node.automaticCanvasSize ?? "none" : "none"
+      }
+      style={layoutChildrenStyle(node)}
+    >
+      {children}
+    </div>
+  );
 }
 
 function hexToRgba(hex: string, alpha: number): string {
