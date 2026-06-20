@@ -9,7 +9,6 @@ import {
   Layers,
   Move,
   Palette as PaletteIcon,
-  Rows3,
   Trash2,
   Type,
   Zap,
@@ -25,6 +24,7 @@ import { FONTS } from "./scene";
 import { RemoteEventActionFields } from "./RemoteEventActionFields";
 import { TeleportActionFields } from "./TeleportActionFields";
 import { ImageAssetField } from "./ImageAssetField";
+import { LayoutProperties } from "./LayoutProperties";
 
 type Props = {
   node: SceneNode | null;
@@ -316,34 +316,11 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
             </Row>
           </Group>
 
-          <Group icon={Rows3} label="Container">
-            <Row label="Layout" stacked>
-              <select
-                value={node.layout ?? "none"}
-                onChange={(e) =>
-                  onChange(node.id, {
-                    layout:
-                      e.target.value === "none"
-                        ? undefined
-                        : (e.target.value as "list" | "grid"),
-                  })
-                }
-                className="w-full px-2 py-1 rounded bg-input text-ink text-xs outline-none focus:ring-1 focus:ring-focus"
-              >
-                <option value="none">none — manual position</option>
-                <option value="list">List — vertical stack</option>
-                <option value="grid">Grid — auto cells</option>
-              </select>
-            </Row>
-            <Row label="Padding">
-              <NumberInput
-                value={node.padding ?? 0}
-                step={1}
-                min={0}
-                onValue={(v) => onChange(node.id, { padding: Math.round(v) })}
-              />
-            </Row>
-          </Group>
+          {(node.cls === "ScreenGui" ||
+            node.cls === "Frame" ||
+            node.cls === "ScrollingFrame") && (
+            <LayoutProperties key={node.id} node={node} onChange={onChange} />
+          )}
 
           {node.text != null && (
             <Group icon={Type} label="Text">
