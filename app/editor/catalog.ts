@@ -40,6 +40,16 @@ export type StrokeStyle = {
   thickness: number;
 };
 
+export type UDimValue = { scale: number; offset: number };
+export type UDim2Value = {
+  scale: { x: number; y: number };
+  offset: { x: number; y: number };
+};
+export type ListDirection = "vertical" | "horizontal";
+export type LayoutHorizontalAlignment = "left" | "center" | "right";
+export type LayoutVerticalAlignment = "top" | "center" | "bottom";
+export type AutomaticCanvasSize = "none" | "x" | "y" | "xy";
+
 // How a palette item behaves:
 //  - add:    drops a new positioned node onto the canvas
 //  - apply:  modifies the currently selected node (e.g. UICorner rounds it)
@@ -93,6 +103,13 @@ export type SceneNode = {
   gradient?: { from: string; to: string };
   layout?: "list" | "grid"; // auto-arrange this node's children
   padding?: number; // px on all sides (UIPadding)
+  listDirection?: ListDirection;
+  listGap?: UDimValue;
+  layoutHorizontalAlignment?: LayoutHorizontalAlignment;
+  layoutVerticalAlignment?: LayoutVerticalAlignment;
+  gridCellSize?: UDim2Value;
+  gridCellPadding?: UDim2Value;
+  automaticCanvasSize?: AutomaticCanvasSize;
   layoutOrder?: number;
   initialVisible?: boolean;
   action?: NodeAction;
