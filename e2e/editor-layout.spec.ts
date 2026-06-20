@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 test("@full edits container layout properties without losing inactive values", async ({
   page,
@@ -111,24 +111,20 @@ test("@full edits container layout properties without losing inactive values", a
     .locator(':scope > [data-layout="grid"]');
   await expect(itemGridLayout).toHaveCount(1);
   await expect(itemGridLayout).toHaveAttribute("data-automatic-canvas-size", "y");
-  await expect
-    .poll(() =>
-      itemGridLayout.evaluate((element) => {
-        const style = (element as HTMLElement).style;
-        return {
-          gridTemplateColumns: style.gridTemplateColumns,
-          gridAutoRows: style.gridAutoRows,
-          columnGap: style.columnGap,
-          rowGap: style.rowGap,
-        };
-      })
-    )
-    .toEqual({
-      gridTemplateColumns: "repeat(auto-fill, calc(30% + 100px))",
-      gridAutoRows: "120px",
-      columnGap: "calc(2% + 8px)",
-      rowGap: "8px",
-    });
+  const itemGridEvidence = await readGridEvidence(itemGridLayout);
+  expect(itemGridEvidence.inline).toEqual({
+    gridTemplateColumns: "repeat(auto-fill, calc(30% + 100px))",
+    gridAutoRows: "120px",
+    columnGap: "calc(2% + 8px)",
+    rowGap: "8px",
+  });
+  expect(itemGridEvidence.contentWidth).toBe(361.59375);
+  expect(itemGridEvidence.computed).toEqual({
+    gridTemplateColumns: "208.469px",
+    gridAutoRows: "120px",
+    columnGap: "calc(2% + 8px)",
+    rowGap: "8px",
+  });
 
   await layout.selectOption("list");
   await expect(page.getByRole("combobox", { name: "Direction" })).toBeVisible();
@@ -170,39 +166,71 @@ test("@full renders the same legacy inventory grid defaults publicly and in the 
   });
 
   const legacyGridContract = {
-    automaticCanvasSize: "none",
     gridTemplateColumns: "repeat(auto-fill, 100px)",
     gridAutoRows: "100px",
     columnGap: "8px",
     rowGap: "8px",
   };
-  const readLegacyGridContract = (locator: ReturnType<typeof page.locator>) =>
-    locator.evaluate((element) => {
-      const wrapper = element as HTMLElement;
-      return {
-        automaticCanvasSize: wrapper.dataset.automaticCanvasSize,
-        gridTemplateColumns: wrapper.style.gridTemplateColumns,
-        gridAutoRows: wrapper.style.gridAutoRows,
-        columnGap: wrapper.style.columnGap,
-        rowGap: wrapper.style.rowGap,
-      };
-    });
-
   await page.goto("/templates/inventory");
   const publicGrid = page
     .getByRole("link", { name: "Open in Editor" })
     .locator("xpath=../preceding-sibling::div[1]")
     .locator('[data-layout="grid"]');
   await expect(publicGrid).toHaveCount(1);
-  const publicContract = await readLegacyGridContract(publicGrid);
-  expect(publicContract).toEqual(legacyGridContract);
+  const publicEvidence = await readGridEvidence(publicGrid);
+  expect(publicEvidence.automaticCanvasSize).toBe("none");
+  expect(publicEvidence.inline).toEqual(legacyGridContract);
+  expectLegacyComputedGrid(publicEvidence);
 
   await page.goto("/editor?template=inventory");
   const editorGrid = page.locator('[data-layout="grid"]');
   await expect(editorGrid).toHaveCount(1);
-  const editorContract = await readLegacyGridContract(editorGrid);
-  expect(editorContract).toEqual(legacyGridContract);
-  expect(editorContract).toEqual(publicContract);
+  const editorEvidence = await readGridEvidence(editorGrid);
+  expect(editorEvidence.automaticCanvasSize).toBe("none");
+  expect(editorEvidence.inline).toEqual(legacyGridContract);
+  expectLegacyComputedGrid(editorEvidence);
+  expect(editorEvidence.inline).toEqual(publicEvidence.inline);
 
   expect(consoleErrors).toEqual([]);
 });
+
+type GridEvidence = Awaited<ReturnType<typeof readGridEvidence>>;
+
+function readGridEvidence(locator: Locator) {
+  return locator.evaluate((element) => {
+    const wrapper = element as HTMLElement;
+    const computed = getComputedStyle(wrapper);
+    const contentWidth =
+      wrapper.getBoundingClientRect().width -
+      parseFloat(computed.paddingLeft) -
+      parseFloat(computed.paddingRight) -
+      parseFloat(computed.borderLeftWidth) -
+      parseFloat(computed.borderRightWidth);
+    return {
+      automaticCanvasSize: wrapper.dataset.automaticCanvasSize,
+      contentWidth,
+      inline: {
+        gridTemplateColumns: wrapper.style.gridTemplateColumns,
+        gridAutoRows: wrapper.style.gridAutoRows,
+        columnGap: wrapper.style.columnGap,
+        rowGap: wrapper.style.rowGap,
+      },
+      computed: {
+        gridTemplateColumns: computed.gridTemplateColumns,
+        gridAutoRows: computed.gridAutoRows,
+        columnGap: computed.columnGap,
+        rowGap: computed.rowGap,
+      },
+    };
+  });
+}
+
+function expectLegacyComputedGrid(evidence: GridEvidence) {
+  const columns = evidence.computed.gridTemplateColumns.split(" ");
+  const expectedColumnCount = Math.max(1, Math.floor((evidence.contentWidth + 8) / 108));
+  expect(columns).toHaveLength(expectedColumnCount);
+  expect(columns.every((column) => column === "100px")).toBe(true);
+  expect(evidence.computed.gridAutoRows).toBe("100px");
+  expect(evidence.computed.columnGap).toBe("8px");
+  expect(evidence.computed.rowGap).toBe("8px");
+}
