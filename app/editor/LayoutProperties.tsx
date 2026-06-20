@@ -57,14 +57,17 @@ export function BoundedNumberField({
   return (
     <div className="min-w-0">
       <input
-        type="number"
+        type="text"
+        role="spinbutton"
+        inputMode="decimal"
         aria-label={ariaLabel}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errorId : undefined}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={error ? undefined : Number(draft)}
         value={draft}
-        min={min}
-        max={max}
-        step={step}
+        data-step={step}
         onFocus={() => {
           focused.current = true;
         }}
@@ -75,6 +78,17 @@ export function BoundedNumberField({
           const nextDraft = event.target.value;
           setDraft(nextDraft);
           if (!draftError(nextDraft, min, max)) onCommit(Number(nextDraft));
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+          event.preventDefault();
+          const current = error ? value : Number(draft);
+          const direction = event.key === "ArrowUp" ? 1 : -1;
+          const next = Math.max(min, Math.min(max, current + direction * step));
+          const precision = Math.max(0, (String(step).split(".")[1] ?? "").length);
+          const rounded = Number(next.toFixed(precision));
+          setDraft(String(rounded));
+          onCommit(rounded);
         }}
         className={`w-full min-w-0 rounded bg-input px-2 py-1 text-xs font-mono text-ink outline-none focus:ring-1 ${
           error ? "ring-1 ring-danger focus:ring-danger" : "focus:ring-focus"
