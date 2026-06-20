@@ -1,5 +1,6 @@
 import type { RobloxClass, SceneNode } from "./catalog";
 import { sanitizeResponsiveGeometry } from "./geometry";
+import { sanitizeLayoutFields } from "./layout";
 import { sanitizeRemoteEventAction } from "./remote-events";
 import { sanitizeTeleportAction } from "./teleports";
 import { FONTS } from "./scene";
@@ -65,6 +66,7 @@ function sanitizeNode(raw: unknown): SceneNode | null {
     cornerRadius: Math.max(0, source.cornerRadius),
     zindex: Math.round(source.zindex),
     ...sanitizeResponsiveGeometry(source),
+    ...sanitizeLayoutFields(source, source.cls as RobloxClass),
   };
 
   if (typeof source.text === "string") node.text = source.text;
@@ -115,10 +117,6 @@ function sanitizeNode(raw: unknown): SceneNode | null {
   if (gradient && isHex(gradient.from) && isHex(gradient.to)) {
     node.gradient = { from: gradient.from, to: gradient.to };
   }
-  if (source.layout === "list" || source.layout === "grid") {
-    node.layout = source.layout;
-  }
-  if (isFiniteNum(source.padding)) node.padding = Math.max(0, source.padding);
   if (isFiniteNum(source.layoutOrder)) {
     node.layoutOrder = Math.max(0, Math.round(source.layoutOrder));
   }

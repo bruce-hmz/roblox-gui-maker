@@ -119,6 +119,23 @@ export function duplicateSubtree(
     ...(n.anchor ? { anchor: { ...n.anchor } } : {}),
     ...(n.minSize ? { minSize: { ...n.minSize } } : {}),
     ...(n.maxSize ? { maxSize: { ...n.maxSize } } : {}),
+    ...(n.listGap ? { listGap: { ...n.listGap } } : {}),
+    ...(n.gridCellSize
+      ? {
+          gridCellSize: {
+            scale: { ...n.gridCellSize.scale },
+            offset: { ...n.gridCellSize.offset },
+          },
+        }
+      : {}),
+    ...(n.gridCellPadding
+      ? {
+          gridCellPadding: {
+            scale: { ...n.gridCellPadding.scale },
+            offset: { ...n.gridCellPadding.offset },
+          },
+        }
+      : {}),
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
     ...(n.stroke ? { stroke: { ...n.stroke } } : {}),
     ...(n.action ? { action: { ...n.action } } : {}),

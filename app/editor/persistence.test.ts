@@ -22,6 +22,63 @@ const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
 });
 
 describe("sanitizeScene", () => {
+  it("sanitizes layout values while preserving valid scrolling canvas sizing", () => {
+    const scene = sanitizeScene([
+      node({
+        cls: "ScrollingFrame",
+        layout: "grid",
+        gridCellSize: {
+          scale: { x: 2, y: -1 },
+          offset: { x: 12.7, y: 9000 },
+        },
+        automaticCanvasSize: "y",
+      }),
+    ]);
+
+    expect(scene?.[0]).toMatchObject({
+      layout: "grid",
+      gridCellSize: {
+        scale: { x: 1, y: 0 },
+        offset: { x: 13, y: 4096 },
+      },
+      automaticCanvasSize: "y",
+    });
+  });
+
+  it("drops invalid layout enums without removing the node", () => {
+    const scene = sanitizeScene([
+      {
+        ...node(),
+        layout: "columns",
+        listDirection: "diagonal",
+        layoutHorizontalAlignment: "middle",
+        layoutVerticalAlignment: "baseline",
+        automaticCanvasSize: "both",
+      },
+    ]);
+
+    expect(scene).toHaveLength(1);
+    expect(scene?.[0]).not.toHaveProperty("layout");
+    expect(scene?.[0]).not.toHaveProperty("listDirection");
+    expect(scene?.[0]).not.toHaveProperty("layoutHorizontalAlignment");
+    expect(scene?.[0]).not.toHaveProperty("layoutVerticalAlignment");
+    expect(scene?.[0]).not.toHaveProperty("automaticCanvasSize");
+  });
+
+  it("keeps AutomaticCanvasSize only on ScrollingFrame nodes", () => {
+    const scene = sanitizeScene([
+      node({ id: "frame", cls: "Frame", automaticCanvasSize: "xy" }),
+      node({
+        id: "scrolling-frame",
+        cls: "ScrollingFrame",
+        automaticCanvasSize: "xy",
+      }),
+    ]);
+
+    expect(scene?.[0]).not.toHaveProperty("automaticCanvasSize");
+    expect(scene?.[1].automaticCanvasSize).toBe("xy");
+  });
+
   it("sanitizes visual fields by class and bounds", () => {
     const scene = sanitizeScene([
       node({
@@ -234,6 +291,34 @@ describe("sanitizeScene", () => {
 });
 
 describe("scene project documents", () => {
+  it("round-trips every approved layout field in document version 1", () => {
+    const scene: SceneNode[] = [
+      node({
+        cls: "ScrollingFrame",
+        layout: "grid",
+        padding: 16,
+        listDirection: "horizontal",
+        listGap: { scale: 0.05, offset: 8 },
+        layoutHorizontalAlignment: "right",
+        layoutVerticalAlignment: "bottom",
+        gridCellSize: {
+          scale: { x: 0.25, y: 0.5 },
+          offset: { x: 12, y: 24 },
+        },
+        gridCellPadding: {
+          scale: { x: 0.01, y: 0.02 },
+          offset: { x: 4, y: 6 },
+        },
+        automaticCanvasSize: "xy",
+      }),
+    ];
+
+    const serialized = serializeSceneDocument(scene);
+
+    expect(JSON.parse(serialized).version).toBe(1);
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
   it("round-trips visual asset properties", () => {
     const scene = [
       node({

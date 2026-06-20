@@ -390,6 +390,35 @@ describe("scene action state", () => {
     cloneStroke.color = "#ffffff";
     expect(source.stroke?.color).toBe("#123456");
   });
+
+  it("deep-clones nested layout values when duplicating a grid container", () => {
+    const source = node({
+      layout: "grid",
+      listGap: { scale: 0.1, offset: 8 },
+      gridCellSize: {
+        scale: { x: 0.25, y: 0.5 },
+        offset: { x: 12, y: 24 },
+      },
+      gridCellPadding: {
+        scale: { x: 0.01, y: 0.02 },
+        offset: { x: 4, y: 6 },
+      },
+    });
+
+    const clone = duplicateSubtree([source], source.id)?.nodes[0];
+    if (!clone?.listGap || !clone.gridCellSize || !clone.gridCellPadding) {
+      throw new Error("Expected duplicated layout values");
+    }
+    clone.gridCellSize.scale.x = 0.75;
+    clone.gridCellSize.offset.x = 100;
+    clone.gridCellPadding.scale.x = 0.2;
+    clone.listGap.offset = 32;
+
+    expect(source.gridCellSize?.scale.x).toBe(0.25);
+    expect(source.gridCellSize?.offset.x).toBe(12);
+    expect(source.gridCellPadding?.scale.x).toBe(0.01);
+    expect(source.listGap?.offset).toBe(8);
+  });
 });
 
 describe("hierarchy mutations", () => {
