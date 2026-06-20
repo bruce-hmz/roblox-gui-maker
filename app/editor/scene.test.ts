@@ -284,6 +284,85 @@ describe("responsive Luau geometry", () => {
     expect(code).toContain("el0_grid.VerticalAlignment = Enum.VerticalAlignment.Center");
   });
 
+  it("exports responsive list layout on the root ScreenGui", () => {
+    const code = generateLuau([
+      node({
+        id: "root",
+        cls: "ScreenGui",
+        name: "Gui",
+        layout: "list",
+        listDirection: "horizontal",
+        listGap: { scale: 0.2, offset: 16 },
+        layoutHorizontalAlignment: "center",
+        layoutVerticalAlignment: "bottom",
+      }),
+    ]);
+
+    expect(code).toContain('local gui_list = Instance.new("UIListLayout")');
+    expect(code).toContain("gui_list.FillDirection = Enum.FillDirection.Horizontal");
+    expect(code).toContain("gui_list.Padding = UDim.new(0.2, 16)");
+    expect(code).toContain("gui_list.HorizontalAlignment = Enum.HorizontalAlignment.Center");
+    expect(code).toContain("gui_list.VerticalAlignment = Enum.VerticalAlignment.Bottom");
+    expect(code).toContain("gui_list.Parent = gui");
+  });
+
+  it("exports responsive grid layout on the root ScreenGui", () => {
+    const code = generateLuau([
+      node({
+        id: "root",
+        cls: "ScreenGui",
+        name: "Gui",
+        layout: "grid",
+        gridCellSize: {
+          scale: { x: 0.25, y: 0.5 },
+          offset: { x: 12, y: 24 },
+        },
+        gridCellPadding: {
+          scale: { x: 0.01, y: 0.02 },
+          offset: { x: 4, y: 6 },
+        },
+        layoutHorizontalAlignment: "right",
+        layoutVerticalAlignment: "center",
+      }),
+    ]);
+
+    expect(code).toContain('local gui_grid = Instance.new("UIGridLayout")');
+    expect(code).toContain("gui_grid.CellSize = UDim2.new(0.25, 12, 0.5, 24)");
+    expect(code).toContain("gui_grid.CellPadding = UDim2.new(0.01, 4, 0.02, 6)");
+    expect(code).toContain("gui_grid.HorizontalAlignment = Enum.HorizontalAlignment.Right");
+    expect(code).toContain("gui_grid.VerticalAlignment = Enum.VerticalAlignment.Center");
+    expect(code).toContain("gui_grid.Parent = gui");
+  });
+
+  it("preserves exact finite scale values in layout dimensions", () => {
+    const listCode = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "list",
+        parentId: "root",
+        layout: "list",
+        listGap: { scale: 0.123456, offset: 8 },
+      }),
+    ]);
+    const gridCode = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "grid",
+        parentId: "root",
+        layout: "grid",
+        gridCellSize: {
+          scale: { x: 0.0004, y: 0.500001 },
+          offset: { x: 12, y: 24 },
+        },
+      }),
+    ]);
+
+    expect(listCode).toContain("el0_list.Padding = UDim.new(0.123456, 8)");
+    expect(gridCode).toContain(
+      "el0_grid.CellSize = UDim2.new(0.0004, 12, 0.500001, 24)"
+    );
+  });
+
   it("preserves legacy list and grid layout defaults", () => {
     const listCode = generateLuau([
       node({ id: "root", cls: "ScreenGui", name: "Gui" }),

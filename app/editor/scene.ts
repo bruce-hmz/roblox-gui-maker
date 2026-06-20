@@ -333,13 +333,19 @@ export function reorderSibling(
 const fmt = (n: number) => Number(n.toFixed(3)).toString();
 const vector2 = (vector: { x: number; y: number }) =>
   `Vector2.new(${fmt(vector.x)}, ${fmt(vector.y)})`;
-const udim = (value: { scale: number; offset: number }) =>
-  `UDim.new(${fmt(value.scale)}, ${fmt(value.offset)})`;
 const udim2 = (
   scale: { x: number; y: number },
   offset: { x: number; y: number } = { x: 0, y: 0 }
 ) =>
   `UDim2.new(${fmt(scale.x)}, ${fmt(offset.x)}, ${fmt(scale.y)}, ${fmt(offset.y)})`;
+const layoutNumber = (n: number) => (Object.is(n, -0) ? "0" : n.toString());
+const layoutUdim = (value: { scale: number; offset: number }) =>
+  `UDim.new(${layoutNumber(value.scale)}, ${layoutNumber(value.offset)})`;
+const layoutUdim2 = (
+  scale: { x: number; y: number },
+  offset: { x: number; y: number }
+) =>
+  `UDim2.new(${layoutNumber(scale.x)}, ${layoutNumber(offset.x)}, ${layoutNumber(scale.y)}, ${layoutNumber(offset.y)})`;
 function color3(hex: string): string {
   const m = /^#?([0-9a-f]{6})$/i.exec((hex ?? "").trim());
   if (!m) return "Color3.fromRGB(255, 255, 255)";
@@ -383,6 +389,45 @@ export function generateLuau(scene: SceneNode[]): string {
     return v;
   };
 
+  const emitLayout = (node: SceneNode, parentVar: string) => {
+    if (node.layout === "list") {
+      const layout = resolveListLayout(node);
+      out.push("");
+      out.push(`local ${parentVar}_list = Instance.new("UIListLayout")`);
+      out.push(
+        `${parentVar}_list.FillDirection = Enum.FillDirection.${robloxListDirection(layout.direction)}`
+      );
+      out.push(`${parentVar}_list.Padding = ${layoutUdim(layout.gap)}`);
+      out.push(
+        `${parentVar}_list.HorizontalAlignment = Enum.HorizontalAlignment.${robloxHorizontalAlignment(layout.horizontalAlignment)}`
+      );
+      out.push(
+        `${parentVar}_list.VerticalAlignment = Enum.VerticalAlignment.${robloxVerticalAlignment(layout.verticalAlignment)}`
+      );
+      out.push(`${parentVar}_list.SortOrder = Enum.SortOrder.LayoutOrder`);
+      out.push(`${parentVar}_list.Parent = ${parentVar}`);
+    }
+    if (node.layout === "grid") {
+      const layout = resolveGridLayout(node);
+      out.push("");
+      out.push(`local ${parentVar}_grid = Instance.new("UIGridLayout")`);
+      out.push(
+        `${parentVar}_grid.CellSize = ${layoutUdim2(layout.cellSize.scale, layout.cellSize.offset)}`
+      );
+      out.push(
+        `${parentVar}_grid.CellPadding = ${layoutUdim2(layout.cellPadding.scale, layout.cellPadding.offset)}`
+      );
+      out.push(
+        `${parentVar}_grid.HorizontalAlignment = Enum.HorizontalAlignment.${robloxHorizontalAlignment(layout.horizontalAlignment)}`
+      );
+      out.push(
+        `${parentVar}_grid.VerticalAlignment = Enum.VerticalAlignment.${robloxVerticalAlignment(layout.verticalAlignment)}`
+      );
+      out.push(`${parentVar}_grid.SortOrder = Enum.SortOrder.LayoutOrder`);
+      out.push(`${parentVar}_grid.Parent = ${parentVar}`);
+    }
+  };
+
   // Always emit a ScreenGui wrapper parented to PlayerGui.
   out.push('local gui = Instance.new("ScreenGui")');
   if (rootGui) {
@@ -392,6 +437,7 @@ export function generateLuau(scene: SceneNode[]): string {
     varNames.set(rootGui.id, "gui");
   }
   out.push('gui.Parent = player:WaitForChild("PlayerGui")');
+  if (rootGui) emitLayout(rootGui, "gui");
 
   // ScreenGui has no background in Roblox; if the root carried visual styling
   // (e.g. the loading-screen gradient), reproduce it on a full-screen Frame.
@@ -478,40 +524,7 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push(`${v}_stroke.Thickness = ${fmt(node.stroke.thickness)}`);
       out.push(`${v}_stroke.Parent = ${v}`);
     }
-    if (node.layout === "list") {
-      const layout = resolveListLayout(node);
-      out.push("");
-      out.push(`local ${v}_list = Instance.new("UIListLayout")`);
-      out.push(
-        `${v}_list.FillDirection = Enum.FillDirection.${robloxListDirection(layout.direction)}`
-      );
-      out.push(`${v}_list.Padding = ${udim(layout.gap)}`);
-      out.push(
-        `${v}_list.HorizontalAlignment = Enum.HorizontalAlignment.${robloxHorizontalAlignment(layout.horizontalAlignment)}`
-      );
-      out.push(
-        `${v}_list.VerticalAlignment = Enum.VerticalAlignment.${robloxVerticalAlignment(layout.verticalAlignment)}`
-      );
-      out.push(`${v}_list.SortOrder = Enum.SortOrder.LayoutOrder`);
-      out.push(`${v}_list.Parent = ${v}`);
-    }
-    if (node.layout === "grid") {
-      const layout = resolveGridLayout(node);
-      out.push("");
-      out.push(`local ${v}_grid = Instance.new("UIGridLayout")`);
-      out.push(`${v}_grid.CellSize = ${udim2(layout.cellSize.scale, layout.cellSize.offset)}`);
-      out.push(
-        `${v}_grid.CellPadding = ${udim2(layout.cellPadding.scale, layout.cellPadding.offset)}`
-      );
-      out.push(
-        `${v}_grid.HorizontalAlignment = Enum.HorizontalAlignment.${robloxHorizontalAlignment(layout.horizontalAlignment)}`
-      );
-      out.push(
-        `${v}_grid.VerticalAlignment = Enum.VerticalAlignment.${robloxVerticalAlignment(layout.verticalAlignment)}`
-      );
-      out.push(`${v}_grid.SortOrder = Enum.SortOrder.LayoutOrder`);
-      out.push(`${v}_grid.Parent = ${v}`);
-    }
+    emitLayout(node, v);
     if (node.padding) {
       out.push("");
       out.push(`local ${v}_pad = Instance.new("UIPadding")`);
