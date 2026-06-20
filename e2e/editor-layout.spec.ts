@@ -118,13 +118,25 @@ test("@full edits container layout properties without losing inactive values", a
     columnGap: "calc(2% + 8px)",
     rowGap: "8px",
   });
-  expect(itemGridEvidence.contentWidth).toBe(361.59375);
-  expect(itemGridEvidence.computed).toEqual({
-    gridTemplateColumns: "208.469px",
-    gridAutoRows: "120px",
-    columnGap: "calc(2% + 8px)",
-    rowGap: "8px",
-  });
+  const expectedTrackWidth = itemGridEvidence.contentWidth * 0.3 + 100;
+  const expectedColumnGap = itemGridEvidence.contentWidth * 0.02 + 8;
+  const computedTracks = itemGridEvidence.computed.gridTemplateColumns
+    .split(" ")
+    .map(Number.parseFloat);
+  const expectedTrackCount = Math.max(
+    1,
+    Math.floor(
+      (itemGridEvidence.contentWidth + expectedColumnGap) /
+        (expectedTrackWidth + expectedColumnGap)
+    )
+  );
+  expect(computedTracks).toHaveLength(expectedTrackCount);
+  for (const trackWidth of computedTracks) {
+    expect(Math.abs(trackWidth - expectedTrackWidth)).toBeLessThanOrEqual(0.02);
+  }
+  expect(itemGridEvidence.computed.gridAutoRows).toBe("120px");
+  expect(itemGridEvidence.computed.columnGap).toBe("calc(2% + 8px)");
+  expect(itemGridEvidence.computed.rowGap).toBe("8px");
 
   await layout.selectOption("list");
   await expect(page.getByRole("combobox", { name: "Direction" })).toBeVisible();
