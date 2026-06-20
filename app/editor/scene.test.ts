@@ -290,20 +290,29 @@ describe("responsive Luau geometry", () => {
         id: "root",
         cls: "ScreenGui",
         name: "Gui",
+        transparency: 1,
+        gradient: { from: "#112233", to: "#445566" },
         layout: "list",
         listDirection: "horizontal",
         listGap: { scale: 0.2, offset: 16 },
         layoutHorizontalAlignment: "center",
         layoutVerticalAlignment: "bottom",
       }),
+      node({ id: "child", parentId: "root", name: "Child" }),
     ]);
 
-    expect(code).toContain('local gui_list = Instance.new("UIListLayout")');
-    expect(code).toContain("gui_list.FillDirection = Enum.FillDirection.Horizontal");
-    expect(code).toContain("gui_list.Padding = UDim.new(0.2, 16)");
-    expect(code).toContain("gui_list.HorizontalAlignment = Enum.HorizontalAlignment.Center");
-    expect(code).toContain("gui_list.VerticalAlignment = Enum.VerticalAlignment.Bottom");
-    expect(code).toContain("gui_list.Parent = gui");
+    expect(code).toContain('local gui_content = Instance.new("Frame")');
+    expect(code).toContain("gui_content.Size = UDim2.fromScale(1, 1)");
+    expect(code).toContain("gui_content.BackgroundTransparency = 1");
+    expect(code).toContain("gui_content.Parent = gui");
+    expect(code).toContain('local gui_content_list = Instance.new("UIListLayout")');
+    expect(code).toContain("gui_content_list.FillDirection = Enum.FillDirection.Horizontal");
+    expect(code).toContain("gui_content_list.Padding = UDim.new(0.2, 16)");
+    expect(code).toContain("gui_content_list.HorizontalAlignment = Enum.HorizontalAlignment.Center");
+    expect(code).toContain("gui_content_list.VerticalAlignment = Enum.VerticalAlignment.Bottom");
+    expect(code).toContain("gui_content_list.Parent = gui_content");
+    expect(code).toContain("gui_bg.Parent = gui");
+    expect(code).toContain("el0.Parent = gui_content");
   });
 
   it("exports responsive grid layout on the root ScreenGui", () => {
@@ -324,14 +333,21 @@ describe("responsive Luau geometry", () => {
         layoutHorizontalAlignment: "right",
         layoutVerticalAlignment: "center",
       }),
+      node({ id: "child", parentId: "root", name: "Child" }),
     ]);
 
-    expect(code).toContain('local gui_grid = Instance.new("UIGridLayout")');
-    expect(code).toContain("gui_grid.CellSize = UDim2.new(0.25, 12, 0.5, 24)");
-    expect(code).toContain("gui_grid.CellPadding = UDim2.new(0.01, 4, 0.02, 6)");
-    expect(code).toContain("gui_grid.HorizontalAlignment = Enum.HorizontalAlignment.Right");
-    expect(code).toContain("gui_grid.VerticalAlignment = Enum.VerticalAlignment.Center");
-    expect(code).toContain("gui_grid.Parent = gui");
+    expect(code).toContain('local gui_content = Instance.new("Frame")');
+    expect(code).toContain("gui_content.Size = UDim2.fromScale(1, 1)");
+    expect(code).toContain("gui_content.BackgroundTransparency = 1");
+    expect(code).toContain("gui_content.Parent = gui");
+    expect(code).toContain('local gui_content_grid = Instance.new("UIGridLayout")');
+    expect(code).toContain("gui_content_grid.CellSize = UDim2.new(0.25, 12, 0.5, 24)");
+    expect(code).toContain("gui_content_grid.CellPadding = UDim2.new(0.01, 4, 0.02, 6)");
+    expect(code).toContain("gui_content_grid.HorizontalAlignment = Enum.HorizontalAlignment.Right");
+    expect(code).toContain("gui_content_grid.VerticalAlignment = Enum.VerticalAlignment.Center");
+    expect(code).toContain("gui_content_grid.Parent = gui_content");
+    expect(code).toContain("gui_bg.Parent = gui");
+    expect(code).toContain("el0.Parent = gui_content");
   });
 
   it("preserves exact finite scale values in layout dimensions", () => {

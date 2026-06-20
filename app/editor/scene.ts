@@ -434,10 +434,17 @@ export function generateLuau(scene: SceneNode[]): string {
     out.push(`gui.Name = ${luauString(rootGui.name)}`);
     out.push("gui.ResetOnSpawn = false");
     out.push("gui.IgnoreGuiInset = true");
-    varNames.set(rootGui.id, "gui");
+    varNames.set(rootGui.id, rootGui.layout ? "gui_content" : "gui");
   }
   out.push('gui.Parent = player:WaitForChild("PlayerGui")');
-  if (rootGui) emitLayout(rootGui, "gui");
+  if (rootGui?.layout) {
+    out.push("");
+    out.push('local gui_content = Instance.new("Frame")');
+    out.push("gui_content.Size = UDim2.fromScale(1, 1)");
+    out.push("gui_content.BackgroundTransparency = 1");
+    out.push("gui_content.Parent = gui");
+    emitLayout(rootGui, "gui_content");
+  }
 
   // ScreenGui has no background in Roblox; if the root carried visual styling
   // (e.g. the loading-screen gradient), reproduce it on a full-screen Frame.
@@ -564,10 +571,11 @@ export function generateLuau(scene: SceneNode[]): string {
     for (const child of childrenOf(node.id)) emit(child, v);
   };
 
-  // Top-level nodes parent to the ScreenGui wrapper ("gui").
+  // Root children use its mapped content container; other top-level nodes use gui.
   for (const n of childrenOf(null)) {
     if (n === rootGui) {
-      for (const child of childrenOf(n.id)) emit(child, "gui");
+      const rootParentVar = varNames.get(n.id) ?? "gui";
+      for (const child of childrenOf(n.id)) emit(child, rootParentVar);
     } else {
       emit(n, "gui");
     }
