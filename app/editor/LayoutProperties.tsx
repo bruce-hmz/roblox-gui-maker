@@ -36,6 +36,13 @@ function draftError(draft: string, min: number, max: number): string | null {
   return null;
 }
 
+function decimalPlaces(value: number): number {
+  const [coefficient, exponentText] = value.toString().toLowerCase().split("e");
+  const fractionLength = (coefficient.split(".")[1] ?? "").length;
+  const exponent = exponentText === undefined ? 0 : Number(exponentText);
+  return Math.max(0, fractionLength - exponent);
+}
+
 export function BoundedNumberField({
   ariaLabel,
   value,
@@ -50,9 +57,8 @@ export function BoundedNumberField({
   const error = draftError(draft, min, max);
 
   useEffect(() => {
-    if (focused.current && draftError(draft, min, max)) return;
-    setDraft(String(value));
-  }, [draft, max, min, value]);
+    if (!focused.current) setDraft(String(value));
+  }, [value]);
 
   return (
     <div className="min-w-0">
@@ -65,7 +71,8 @@ export function BoundedNumberField({
         aria-describedby={error ? errorId : undefined}
         aria-valuemin={min}
         aria-valuemax={max}
-        aria-valuenow={error ? undefined : Number(draft)}
+        aria-valuenow={error ? value : Number(draft)}
+        aria-valuetext={error ? `Invalid draft "${draft}": ${error}` : undefined}
         value={draft}
         data-step={step}
         onFocus={() => {
@@ -73,6 +80,7 @@ export function BoundedNumberField({
         }}
         onBlur={() => {
           focused.current = false;
+          if (!draftError(draft, min, max)) setDraft(String(value));
         }}
         onChange={(event) => {
           const nextDraft = event.target.value;
@@ -84,11 +92,19 @@ export function BoundedNumberField({
           event.preventDefault();
           const current = error ? value : Number(draft);
           const direction = event.key === "ArrowUp" ? 1 : -1;
-          const next = Math.max(min, Math.min(max, current + direction * step));
-          const precision = Math.max(0, (String(step).split(".")[1] ?? "").length);
-          const rounded = Number(next.toFixed(precision));
-          setDraft(String(rounded));
-          onCommit(rounded);
+          const precision = Math.max(decimalPlaces(current), decimalPlaces(step));
+          const scale = 10 ** precision;
+          const scaledCurrent = Math.round(current * scale);
+          const scaledStep = Math.round(step * scale);
+          const scaledMin = Math.round(min * scale);
+          const scaledMax = Math.round(max * scale);
+          const scaledNext = Math.max(
+            scaledMin,
+            Math.min(scaledMax, scaledCurrent + direction * scaledStep)
+          );
+          const next = scaledNext / scale;
+          setDraft(String(next));
+          onCommit(next);
         }}
         className={`w-full min-w-0 rounded bg-input px-2 py-1 text-xs font-mono text-ink outline-none focus:ring-1 ${
           error ? "ring-1 ring-danger focus:ring-danger" : "focus:ring-focus"

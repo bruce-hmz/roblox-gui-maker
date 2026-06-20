@@ -18,7 +18,9 @@ test("@full edits container layout properties without losing inactive values", a
   const cellSizeXScale = page.getByRole("spinbutton", {
     name: "Cell size X scale",
   });
-  await cellSizeXScale.fill("0.3");
+  await cellSizeXScale.fill("");
+  await cellSizeXScale.pressSequentially("0.3", { delay: 100 });
+  await expect(cellSizeXScale).toHaveValue("0.3");
   const clientCode = page.getByLabel("Client Luau code");
   await expect(clientCode).toContainText(
     ".CellSize = UDim2.new(0.3, 100, 0, 100)"
@@ -26,6 +28,11 @@ test("@full edits container layout properties without losing inactive values", a
 
   await cellSizeXScale.fill("abc");
   await expect(cellSizeXScale).toHaveValue("abc");
+  await expect(cellSizeXScale).toHaveAttribute("aria-valuenow", "0.3");
+  await expect(cellSizeXScale).toHaveAttribute(
+    "aria-valuetext",
+    'Invalid draft "abc": Enter a valid number.'
+  );
   await expect(page.getByText("Enter a valid number.")).toBeVisible();
   await expect(clientCode).toContainText(
     ".CellSize = UDim2.new(0.3, 100, 0, 100)"
@@ -53,6 +60,20 @@ test("@full edits container layout properties without losing inactive values", a
   ]) {
     await expect(page.getByText(error)).toHaveCount(0);
   }
+
+  await cellSizeXScale.fill("0.005");
+  await cellSizeXScale.press("ArrowUp");
+  await expect(cellSizeXScale).toHaveValue("0.015");
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(0.015, 100, 0, 100)"
+  );
+  await cellSizeXScale.fill("0.1");
+  await cellSizeXScale.press("ArrowUp");
+  await expect(cellSizeXScale).toHaveValue("0.11");
+  await expect(clientCode).toContainText(
+    ".CellSize = UDim2.new(0.11, 100, 0, 100)"
+  );
+  await cellSizeXScale.fill("0.3");
   await page.getByRole("spinbutton", { name: "Cell size Y offset" }).fill("120");
   await page.getByRole("spinbutton", { name: "Cell padding X scale" }).fill("0.02");
   await page
