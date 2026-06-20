@@ -10,31 +10,31 @@ import type {
   UDimValue,
 } from "./catalog";
 
-export const DEFAULT_LIST_GAP: Readonly<UDimValue> = Object.freeze({
+export const DEFAULT_LIST_GAP: UDimValue = Object.freeze({
   scale: 0,
   offset: 8,
 });
 
-export const DEFAULT_GRID_CELL_SIZE: Readonly<UDim2Value> = Object.freeze({
+export const DEFAULT_GRID_CELL_SIZE: UDim2Value = Object.freeze({
   scale: Object.freeze({ x: 0, y: 0 }),
   offset: Object.freeze({ x: 100, y: 100 }),
 });
 
-export const DEFAULT_GRID_CELL_PADDING: Readonly<UDim2Value> = Object.freeze({
+export const DEFAULT_GRID_CELL_PADDING: UDim2Value = Object.freeze({
   scale: Object.freeze({ x: 0, y: 0 }),
   offset: Object.freeze({ x: 8, y: 8 }),
 });
 
 type ListLayout = {
   direction: ListDirection;
-  gap: Readonly<UDimValue>;
+  gap: UDimValue;
   horizontalAlignment: LayoutHorizontalAlignment;
   verticalAlignment: LayoutVerticalAlignment;
 };
 
 type GridLayout = {
-  cellSize: Readonly<UDim2Value>;
-  cellPadding: Readonly<UDim2Value>;
+  cellSize: UDim2Value;
+  cellPadding: UDim2Value;
   horizontalAlignment: LayoutHorizontalAlignment;
   verticalAlignment: LayoutVerticalAlignment;
 };
@@ -43,6 +43,15 @@ const HORIZONTAL_ALIGNMENTS = ["left", "center", "right"] as const;
 const VERTICAL_ALIGNMENTS = ["top", "center", "bottom"] as const;
 const LIST_DIRECTIONS = ["vertical", "horizontal"] as const;
 const CANVAS_SIZES = ["none", "x", "y", "xy"] as const;
+const ROBLOX_AUTOMATIC_CANVAS_SIZE: Record<
+  AutomaticCanvasSize,
+  "None" | "X" | "Y" | "XY"
+> = {
+  none: "None",
+  x: "X",
+  y: "Y",
+  xy: "XY",
+};
 const LAYOUT_CONTAINERS: ReadonlySet<RobloxClass> = new Set([
   "ScreenGui",
   "Frame",
@@ -67,8 +76,8 @@ export function resolveGridLayout(node: SceneNode): GridLayout {
   };
 }
 
-export function udimCss(value: Readonly<UDimValue>): string {
-  const percent = value.scale * 100;
+export function udimCss(value: UDimValue): string {
+  const percent = formatCssNumber(value.scale * 100);
   if (value.scale === 0) return `${value.offset}px`;
   if (value.offset === 0) return `${percent}%`;
   return `calc(${percent}% + ${value.offset}px)`;
@@ -158,7 +167,7 @@ export function robloxListDirection(value: ListDirection): "Vertical" | "Horizon
 }
 
 export function robloxAutomaticCanvasSize(value: AutomaticCanvasSize): "None" | "X" | "Y" | "XY" {
-  return value === "none" ? "None" : value === "xy" ? "XY" : value.toUpperCase() as "X" | "Y";
+  return ROBLOX_AUTOMATIC_CANVAS_SIZE[value];
 }
 
 function sanitizeUDim(raw: unknown): UDimValue | undefined {
@@ -180,7 +189,7 @@ function sanitizeUDim2(raw: unknown): UDim2Value | undefined {
   };
 }
 
-function axisValue(value: Readonly<UDim2Value>, axis: "x" | "y"): UDimValue {
+function axisValue(value: UDim2Value, axis: "x" | "y"): UDimValue {
   return { scale: value.scale[axis], offset: value.offset[axis] };
 }
 
@@ -209,7 +218,11 @@ function isFiniteNumber(value: unknown): value is number {
 }
 
 function isMember<const T extends readonly string[]>(value: unknown, values: T): value is T[number] {
-  return typeof value === "string" && (values as readonly string[]).includes(value);
+  return typeof value === "string" && values.some((candidate) => candidate === value);
+}
+
+function formatCssNumber(value: number): string {
+  return Number(value.toFixed(6)).toString();
 }
 
 function clamp(value: number, min: number, max: number): number {

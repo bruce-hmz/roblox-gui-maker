@@ -40,10 +40,10 @@ export type StrokeStyle = {
   thickness: number;
 };
 
-export type UDimValue = { scale: number; offset: number };
+export type UDimValue = { readonly scale: number; readonly offset: number };
 export type UDim2Value = {
-  scale: { x: number; y: number };
-  offset: { x: number; y: number };
+  readonly scale: { readonly x: number; readonly y: number };
+  readonly offset: { readonly x: number; readonly y: number };
 };
 export type ListDirection = "vertical" | "horizontal";
 export type LayoutHorizontalAlignment = "left" | "center" | "right";

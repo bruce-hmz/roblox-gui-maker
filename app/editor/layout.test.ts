@@ -55,6 +55,15 @@ describe("layout defaults", () => {
       offset: { x: 8, y: 8 },
     });
   });
+
+  it("deep-freezes shared defaults", () => {
+    expect(Object.isFrozen(DEFAULT_LIST_GAP)).toBe(true);
+    for (const value of [DEFAULT_GRID_CELL_SIZE, DEFAULT_GRID_CELL_PADDING]) {
+      expect(Object.isFrozen(value)).toBe(true);
+      expect(Object.isFrozen(value.scale)).toBe(true);
+      expect(Object.isFrozen(value.offset)).toBe(true);
+    }
+  });
 });
 
 describe("CSS layout mapping", () => {
@@ -64,6 +73,10 @@ describe("CSS layout mapping", () => {
     [{ scale: 0.25, offset: 8 }, "calc(25% + 8px)"],
   ] as const)("maps a UDim value to CSS", (value, expected) => {
     expect(udimCss(value)).toBe(expected);
+  });
+
+  it("formats floating-point percentages deterministically", () => {
+    expect(udimCss({ scale: 0.1 + 0.2, offset: 0 })).toBe("30%");
   });
 
   it("maps horizontal list axes and alignment to flexbox", () => {
@@ -180,5 +193,55 @@ describe("layout sanitization", () => {
     expect(sanitizeLayoutFields({ automaticCanvasSize: "xy" }, "ScrollingFrame")).toEqual({
       automaticCanvasSize: "xy",
     });
+  });
+
+  it("omits non-finite and partially malformed dimensions", () => {
+    expect(
+      sanitizeLayoutFields(
+        {
+          listGap: { scale: Number.NaN, offset: Number.POSITIVE_INFINITY },
+          gridCellSize: {
+            scale: { x: 0.5 },
+            offset: { x: 10, y: 20 },
+          },
+          gridCellPadding: {
+            scale: { x: 0, y: Number.NEGATIVE_INFINITY },
+            offset: { x: 8, y: 8 },
+          },
+        },
+        "Frame",
+      ),
+    ).toEqual({});
+  });
+
+  it("rejects all layout fields on non-container classes", () => {
+    expect(
+      sanitizeLayoutFields(
+        {
+          layout: "grid",
+          padding: 12,
+          gridCellSize: DEFAULT_GRID_CELL_SIZE,
+          automaticCanvasSize: "xy",
+        },
+        "TextLabel",
+      ),
+    ).toEqual({});
+  });
+
+  it("rounds and clamps padding while omitting invalid enum values", () => {
+    expect(
+      sanitizeLayoutFields(
+        {
+          padding: 5000.6,
+          listDirection: "diagonal",
+          layoutHorizontalAlignment: "middle",
+          layoutVerticalAlignment: "baseline",
+          automaticCanvasSize: "both",
+        },
+        "ScrollingFrame",
+      ),
+    ).toEqual({ padding: 4096 });
+    expect(sanitizeLayoutFields({ padding: -3.4 }, "Frame")).toEqual({ padding: 0 });
+    expect(sanitizeLayoutFields({ padding: Number.NaN }, "Frame")).toEqual({});
   });
 });
