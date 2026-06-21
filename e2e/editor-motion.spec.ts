@@ -518,10 +518,11 @@ test("@full interrupts visibility actions safely and gates hover by motion state
     Object.assign(window, { __reopenPhases: phases });
   });
   await page.locator('[data-node-id="show"]').dispatchEvent("pointerdown");
-  await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("opening");
   await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("open");
   await expect(animated).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as { __reopenPhases: string[] }).__reopenPhases)).not.toContain("closed");
+  const reopenPhases = await page.evaluate(() => (window as unknown as { __reopenPhases: string[] }).__reopenPhases);
+  expect(reopenPhases).toContain("opening");
+  expect(reopenPhases).not.toContain("closed");
   expect(Number(await animated.getAttribute("data-motion-token"))).toBeGreaterThan(closingToken);
   await page.locator('[data-node-id="toggle"]').dispatchEvent("pointerdown");
   await expect(page.locator('[data-node-id="plain-target"]')).toHaveCount(0);
