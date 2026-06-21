@@ -34,6 +34,15 @@ export type TeleportAction = {
 
 export type NodeAction = VisibilityAction | RemoteEventAction | TeleportAction;
 
+export type MotionPreset = "fade" | "slide" | "scale";
+export type SlideDirection = "left" | "right" | "up" | "down";
+export type NodeMotion = {
+  preset?: MotionPreset;
+  durationMs?: number;
+  slideDirection?: SlideDirection;
+  hover?: boolean;
+};
+
 export type StrokeStyle = {
   color: string;
   transparency: number;
@@ -112,6 +121,7 @@ export type SceneNode = {
   automaticCanvasSize?: AutomaticCanvasSize;
   layoutOrder?: number;
   initialVisible?: boolean;
+  motion?: NodeMotion;
   action?: NodeAction;
   parentId?: string | null; // null/undefined = child of the ScreenGui root
   text?: string;
