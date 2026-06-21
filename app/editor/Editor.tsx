@@ -485,6 +485,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   function togglePreview() {
     setPreviewNotice(null);
     if (preview.active) {
+      activeRef.current = false;
       preview.stop();
       return;
     }
@@ -499,6 +500,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       autosaveTimer.current = null;
       persistWorkspace(sceneRef.current, selectedIdRef.current);
     }
+    activeRef.current = true;
     preview.start();
     setSelectedId(null);
   }

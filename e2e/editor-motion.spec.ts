@@ -346,6 +346,98 @@ test("@full freezes editing controls while Preview is active", async ({ page }, 
   await expect.poll(() => panel.evaluate((node) => getComputedStyle(node).left)).not.toBe(previewLeft);
 });
 
+test("@full closes the same-task mutation window when Preview starts", async ({ page }, testInfo) => {
+  await importScene(page, [
+    fixtureNode("root", "RaceRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("panel", "RacePanel", "root", { motion: { preset: "scale", durationMs: 700 } }),
+  ]);
+  await selectHierarchyNode(page, "RacePanel");
+  await page.evaluate(() => {
+    Object.assign(window, { __confirmCalls: 0 });
+    window.confirm = () => {
+      (window as unknown as { __confirmCalls: number }).__confirmCalls++;
+      return true;
+    };
+    (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Delete", bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "d", ctrlKey: true, bubbles: true }));
+    const frame = [...document.querySelectorAll("button")].find((button) => button.textContent?.includes("Frame"));
+    (frame as HTMLButtonElement | undefined)?.click();
+    (document.querySelector('button[aria-label="New"]') as HTMLButtonElement).click();
+  });
+  await expect(page.locator('[data-node-id="panel"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { __confirmCalls: number }).__confirmCalls)).toBe(0);
+  const exportPath = testInfo.outputPath("same-task-frozen.json");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export JSON" }).click();
+  const download = await downloadPromise;
+  await download.saveAs(exportPath);
+  expect(JSON.parse(await readFile(exportPath, "utf8")).scene.map((node: { id: string }) => node.id)).toEqual(["root", "panel"]);
+});
+
+test("@full freezes active move and resize gestures across Preview", async ({ page }) => {
+  await importScene(page, [
+    fixtureNode("root", "GestureRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("panel", "GesturePanel", "root", { pos: { x: 0.2, y: 0.2 }, size: { x: 0.3, y: 0.3 } }),
+  ]);
+  await selectHierarchyNode(page, "GesturePanel");
+  const panel = page.locator('[data-node-id="panel"]');
+  const original = await panel.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { left: style.left, top: style.top, width: style.width, height: style.height };
+  });
+  const box = (await panel.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.evaluate(() => (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click());
+  await page.mouse.move(box.x + box.width / 2 + 100, box.y + box.height / 2 + 80);
+  await page.mouse.up();
+  expect(await panel.evaluate((node) => ({ left: getComputedStyle(node).left, top: getComputedStyle(node).top }))).toEqual({ left: original.left, top: original.top });
+  await page.getByRole("button", { name: "Stop preview" }).click();
+
+  await selectHierarchyNode(page, "GesturePanel");
+  const resize = panel.locator("span.cursor-nwse-resize").last();
+  const handle = (await resize.boundingBox())!;
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.evaluate(() => (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click());
+  await page.mouse.move(handle.x + 120, handle.y + 100);
+  await page.mouse.up();
+  expect(await panel.evaluate((node) => ({ width: getComputedStyle(node).width, height: getComputedStyle(node).height }))).toEqual({ width: original.width, height: original.height });
+  await page.getByRole("button", { name: "Stop preview" }).click();
+  await selectHierarchyNode(page, "GesturePanel");
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => panel.evaluate((node) => getComputedStyle(node).left)).not.toBe(original.left);
+});
+
+test("@full keeps Hierarchy rename and selection inert during Preview", async ({ page }, testInfo) => {
+  await importScene(page, [
+    fixtureNode("root", "HierarchyRoot", null, { cls: "ScreenGui" }),
+    fixtureNode("panel", "HierarchyPanel", "root"),
+  ]);
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  const item = page.locator('[data-tree-node="panel"] > [role="treeitem"]');
+  await item.dblclick();
+  const rename = item.locator("input");
+  await expect(rename).toBeVisible();
+  await page.evaluate(() => {
+    const input = document.querySelector('[data-tree-node="panel"] input') as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
+    setter.call(input, "MutatedInPreview");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
+    (document.querySelector('[data-tree-node="panel"] > [role="treeitem"]') as HTMLElement).click();
+  });
+  await expect(page.getByText("Select an element on the canvas to edit its properties.")).toBeVisible();
+  const exportPath = testInfo.outputPath("hierarchy-frozen.json");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export JSON" }).click();
+  const download = await downloadPromise;
+  await download.saveAs(exportPath);
+  expect(JSON.parse(await readFile(exportPath, "utf8")).scene.find((node: { id: string }) => node.id === "panel").name).toBe("HierarchyPanel");
+});
+
 test("@full discards an import that resolves after Preview starts", async ({ page }) => {
   await importScene(page, [
     fixtureNode("root", "OriginalRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
@@ -406,11 +498,19 @@ test("@full interrupts visibility actions safely and gates hover by motion state
   await page.locator('[data-node-id="hide"]').dispatchEvent("pointerdown");
   await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("closing");
   const closingToken = Number(await animated.getAttribute("data-motion-token"));
+  await animated.evaluate((node) => {
+    const phases: string[] = [];
+    new MutationObserver(() => {
+      const phase = node.getAttribute("data-motion-phase");
+      if (phase) phases.push(phase);
+    }).observe(node, { attributes: true });
+    Object.assign(window, { __reopenPhases: phases });
+  });
   await page.locator('[data-node-id="show"]').dispatchEvent("pointerdown");
   await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("opening");
-  await animated.dispatchEvent("transitionend", { propertyName: "transform" });
-  await expect(animated).toHaveAttribute("data-motion-phase", "open");
+  await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("open");
   await expect(animated).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { __reopenPhases: string[] }).__reopenPhases)).not.toContain("closed");
   expect(Number(await animated.getAttribute("data-motion-token"))).toBeGreaterThan(closingToken);
   await page.locator('[data-node-id="toggle"]').dispatchEvent("pointerdown");
   await expect(page.locator('[data-node-id="plain-target"]')).toHaveCount(0);
@@ -420,6 +520,7 @@ test("@full interrupts visibility actions safely and gates hover by motion state
   await expect(page.getByRole("status")).toContainText("RemoteEvent actions run in Roblox Studio");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBe(1);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.locator('[data-node-id="hide-gui"]').dispatchEvent("pointerdown");
   await expect(page.locator('[data-node-id="root"]')).toHaveCount(0);
 });
@@ -483,6 +584,7 @@ test("@full gates hover eligibility and composes rotated Slide in screen directi
     fixtureNode("root", "Root", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
     fixtureNode("plain", "Plain", "root", { cls: "TextButton", text: "Plain", motion: { preset: "scale", durationMs: 700 } }),
     fixtureNode("hover", "Hover", "root", { cls: "TextButton", text: "Hover", motion: { preset: "fade", durationMs: 700, hover: true } }),
+    fixtureNode("hover-only", "HoverOnly", "root", { cls: "TextButton", text: "HoverOnly", motion: { durationMs: 700, hover: true } }),
     fixtureNode("rotated", "Rotated", "root", { rotation: 90, anchor: { x: 0.5, y: 0.5 }, motion: { preset: "slide", durationMs: 700, slideDirection: "right" } }),
     fixtureNode("fade-flow", "FadeFlow", "root", { motion: { preset: "fade", durationMs: 700 } }),
     fixtureNode("flow-list", "FlowList", "fade-flow", { layout: "list" }),
@@ -490,6 +592,7 @@ test("@full gates hover eligibility and composes rotated Slide in screen directi
   ]);
   const plain = page.locator('[data-node-id="plain"]');
   const hover = page.locator('[data-node-id="hover"]');
+  const hoverOnly = page.locator('[data-node-id="hover-only"]');
   const rotated = page.locator('[data-node-id="rotated"]');
   const flowChild = page.locator('[data-node-id="flow-child"]');
   const canonicalX = await rotated.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).m41);
@@ -514,14 +617,22 @@ test("@full gates hover eligibility and composes rotated Slide in screen directi
     Object.assign(window, { __rotatedRecords: records, __flowRecords: flowRecords });
     (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
   });
+  await expect.poll(() => hover.getAttribute("data-motion-phase")).toBe("opening");
+  await hover.focus();
+  await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBe(1);
   await expect.poll(() => plain.getAttribute("data-motion-phase")).toBe("open");
   await plain.dispatchEvent("pointerover");
   await expect.poll(() => plain.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBe(1);
   await expect.poll(() => hover.getAttribute("data-motion-phase")).toBe("open");
-  await hover.focus();
   await expect(hover).toHaveCSS("transition-property", "opacity, transform");
   await expect(hover).toHaveCSS("transition-duration", "0.7s");
   await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBeCloseTo(1.03, 2);
+  await expect(hoverOnly).toHaveAttribute("data-motion-phase", "open");
+  await hoverOnly.focus();
+  await expect.poll(() => hoverOnly.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBeCloseTo(1.03, 2);
+  await hoverOnly.dispatchEvent("transitionend", { propertyName: "transform" });
+  await expect(hoverOnly).toHaveAttribute("data-motion-phase", "open");
+  await expect(hoverOnly).toBeVisible();
   const initialX = await page.evaluate(() => (window as unknown as { __rotatedRecords: { phase: string; x: number }[] }).__rotatedRecords.find((record) => record.phase === "closed")!.x);
   expect(initialX - canonicalX).toBeCloseTo(24, 4);
   await expect(flowChild).toHaveAttribute("data-effective-motion", "scale");
