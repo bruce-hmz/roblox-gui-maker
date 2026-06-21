@@ -657,26 +657,47 @@ update using the lore format.
 - Create after user approval: `docs/superpowers/specs/2026-06-20-tween-presets-design.md`
 - Create after spec review: `docs/superpowers/plans/2026-06-20-tween-presets.md`
 
-- [ ] **Step 1: Verify Complete Layout P0 is integrated or preserved on a clean feature branch**
+- [x] **Step 1: Verify Complete Layout P0 is integrated or preserved on a clean feature branch**
 
 Do not declare the phase closed until Task 7 evidence is committed and the
 integration choice has been executed or the verified branch is explicitly kept.
 
-- [ ] **Step 2: Invoke the brainstorming workflow for Tween Presets**
+- [x] **Step 2: Invoke the brainstorming workflow for Tween Presets**
 
 Explore the current action and preview architecture, then ask one scope question
 at a time. Compare at least these approaches: per-node animation properties,
 button-action animation payloads, and an animation timeline. Recommend the
 smallest honest model for Open, Close, Fade, Slide, Scale, and Hover.
 
-- [ ] **Step 3: Write, self-review, and commit the approved Tween specification**
+- [x] **Step 3: Write, self-review, and commit the approved Tween specification**
 
 The spec must define preview behavior, Luau TweenService output, reduced-motion
 handling, action interaction, persistence, security boundaries, and tests. Scan
 for placeholders, contradictions, ambiguous defaults, and scope expansion.
 
-- [ ] **Step 4: Obtain written-spec approval and create the Tween implementation plan**
+- [x] **Step 4: Obtain written-spec approval and create the Tween implementation plan**
 
 After user review, invoke `superpowers:writing-plans`, save the plan under
 `docs/superpowers/plans/`, self-review it for coverage and type consistency, and
 commit it separately. Only then is Complete Layout P0's phase closeout complete.
+
+#### Task 8 Planning Evidence (2026-06-21)
+
+- Integration choice: the verified implementation remains preserved on the
+  clean `codex/complete-layout-p0` feature branch. Task 7 evidence was committed
+  before Tween planning began.
+- Brainstorming compared node-owned presets, action-owned payloads, and a
+  timeline. The approved P0 model is node-owned, pairs Open and Close, offers
+  Fade/Slide/Scale plus TextButton Hover, exposes duration and Slide direction,
+  and snaps under reduced motion.
+- The approved design is committed at `93c9aef` in
+  `docs/superpowers/specs/2026-06-20-tween-presets-design.md`. Four review rounds
+  closed nested Fade ownership, Preview freeze, version migration, dynamic
+  reduced-motion, direct-target visibility, and interruption ambiguities.
+- The implementation plan is committed separately at `85667e0` in
+  `docs/superpowers/plans/2026-06-20-tween-presets.md`. Three execution-review
+  rounds closed initial-frame, visibility atomicity, autosave/import race,
+  generator cleanup, and test-order gaps.
+- Complete Layout P0 phase closeout condition is satisfied. The next executable
+  phase is Tween Presets Task 1: motion contract, sanitizer, and resolver
+  precedence.
