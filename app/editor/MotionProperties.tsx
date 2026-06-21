@@ -15,7 +15,7 @@ const selectClass =
 
 export function MotionProperties({ node, scene, onChange }: MotionPropertiesProps) {
   const resolved = resolveSceneMotion(scene).get(node.id);
-  if (!resolved) return null;
+  if (!resolved?.eligible) return null;
 
   const commitMotion = (patch: Partial<NonNullable<SceneNode["motion"]>>) => {
     onChange({ motion: sanitizeMotion({ ...node.motion, ...patch }, node.cls) });

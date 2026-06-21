@@ -91,6 +91,37 @@ test("@full edits motion properties only for eligible nodes", async ({ page }) =
   await expect(page.getByRole("group", { name: "Motion" })).toHaveCount(0);
 });
 
+test("@full hides motion controls for ambiguous duplicate node ids", async ({ page }) => {
+  const scene: FixtureNode[] = [
+    fixtureNode("root", "DuplicateRoot", null, {
+      cls: "ScreenGui",
+      size: { x: 1, y: 1 },
+      transparency: 1,
+      zindex: 0,
+    }),
+    fixtureNode("duplicate-motion", "DuplicateFade", "root", {
+      motion: { preset: "fade", durationMs: 260 },
+    }),
+    fixtureNode("duplicate-motion", "DuplicateSlide", "root", {
+      motion: { preset: "slide", durationMs: 420, slideDirection: "right" },
+    }),
+  ];
+
+  await page.goto("/editor?template=main-menu");
+  await page
+    .locator('input[type="file"][aria-label="Import JSON"]')
+    .setInputFiles({
+      name: "duplicate-motion-ids.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(
+        JSON.stringify({ format: "roblox-gui-maker", version: 2, scene })
+      ),
+    });
+
+  await selectHierarchyNode(page, "DuplicateFade");
+  await expect(page.getByRole("group", { name: "Motion" })).toHaveCount(0);
+});
+
 test("@full shows resolved motion fallbacks while preserving stored values and invalid drafts", async ({
   page,
 }, testInfo) => {
