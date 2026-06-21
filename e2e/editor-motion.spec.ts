@@ -443,7 +443,18 @@ test("@full discards an import that resolves after Preview starts", async ({ pag
     fixtureNode("root", "OriginalRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
     fixtureNode("original", "Original", "root", { motion: { preset: "scale", durationMs: 700 } }),
   ]);
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("rgm:scene:v1"))).not.toBeNull();
+  await expect.poll(() => page.evaluate(() => {
+    const raw = localStorage.getItem("rgm:scene:v1");
+    if (!raw) return false;
+    const saved = JSON.parse(raw) as {
+      scene?: { id?: string }[];
+      selectedId?: string | null;
+    };
+    const ids = saved.scene?.map((node) => node.id) ?? [];
+    return ids.includes("root") &&
+      ids.includes("original") &&
+      (saved.selectedId === null || ids.includes(saved.selectedId ?? ""));
+  })).toBe(true);
   const saved = await page.evaluate(() => localStorage.getItem("rgm:scene:v1"));
   await page.evaluate(() => {
     const original = File.prototype.text;
