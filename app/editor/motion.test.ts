@@ -281,4 +281,85 @@ describe("motion resolution", () => {
       fadeBlocked: true,
     });
   });
+
+  it("fails closed for duplicate IDs independent of duplicate ordering", () => {
+    const duplicateFrame = node({
+      id: "duplicate",
+      motion: { preset: "fade" },
+    });
+    const duplicateButton = node({
+      id: "duplicate",
+      cls: "TextButton",
+      motion: { preset: "slide", hover: true },
+    });
+    const child = node({
+      id: "child",
+      parentId: "duplicate",
+      motion: { preset: "slide" },
+    });
+
+    const first = resolveSceneMotion([duplicateFrame, duplicateButton, child]);
+    const second = resolveSceneMotion([child, duplicateButton, duplicateFrame]);
+    expect([...first]).toEqual([...second]);
+    expect(first.get("duplicate")).toEqual({
+      eligible: false,
+      durationMs: 240,
+      slideDirection: "left",
+      hover: false,
+      slideBlocked: false,
+      fadeBlocked: false,
+      initialOpen: false,
+    });
+    expect(first.get("child")).toMatchObject({
+      effectivePreset: "slide",
+      slideBlocked: false,
+      fadeBlocked: false,
+      initialOpen: false,
+    });
+  });
+
+  it("resolves a 6000-node child-first chain without using the call stack", () => {
+    const depth = 6000;
+    const scene = Array.from({ length: depth }, (_, index) =>
+      node({
+        id: `deep-${index}`,
+        parentId: index === 0 ? undefined : `deep-${index - 1}`,
+        ...(index === 0 || index === depth - 1 ? { motion: { preset: "fade" } as const } : {}),
+      }),
+    ).reverse();
+
+    expect(() => resolveSceneMotion(scene)).not.toThrow();
+    expect(resolveSceneMotion(scene).get(`deep-${depth - 1}`)).toMatchObject({
+      effectivePreset: "scale",
+      fadeBlocked: true,
+      initialOpen: true,
+    });
+  });
+
+  it("memoizes effective visibility across a broad deep scene", () => {
+    const depth = 1200;
+    let parentReads = 0;
+    const scene = Array.from({ length: depth }, (_, index) => {
+      const parentId = index === 0 ? undefined : `visible-${index - 1}`;
+      const current = node({
+        id: `visible-${index}`,
+        initialVisible: index === 600 ? false : undefined,
+        motion: { preset: "scale" },
+      });
+      Object.defineProperty(current, "parentId", {
+        enumerable: true,
+        get: () => {
+          parentReads += 1;
+          return parentId;
+        },
+      });
+      return current;
+    });
+    scene.push(node({ id: "visible-sibling", motion: { preset: "scale" } }));
+
+    const resolved = resolveSceneMotion(scene);
+    expect(resolved.get(`visible-${depth - 1}`)?.initialOpen).toBe(false);
+    expect(resolved.get("visible-sibling")?.initialOpen).toBe(true);
+    expect(parentReads).toBeLessThan(depth * 20);
+  });
 });
