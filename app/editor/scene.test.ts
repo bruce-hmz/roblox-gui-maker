@@ -550,6 +550,26 @@ describe("scene action state", () => {
     expect(resolvePreviewActionTarget(actionScene({ type: "show", targetId: "missing" }), "button")).toBeNull();
   });
 
+  it.each([false, true])("rejects duplicate direct-action button ids in either order (%s)", (reverse) => {
+    const scene = actionScene({ type: "show", targetId: "panel" });
+    const duplicate = node({
+      id: "button",
+      cls: "TextButton",
+      action: { type: "hide", targetId: "panel" },
+    });
+    const ambiguous = reverse ? [duplicate, ...scene] : [...scene, duplicate];
+
+    expect(resolvePreviewActionTarget(ambiguous, "button")).toBeNull();
+  });
+
+  it.each([false, true])("rejects duplicate direct-action target ids in either order (%s)", (reverse) => {
+    const scene = actionScene({ type: "show", targetId: "panel" });
+    const duplicate = node({ id: "panel", cls: "ScrollingFrame" });
+    const ambiguous = reverse ? [duplicate, ...scene] : [...scene, duplicate];
+
+    expect(resolvePreviewActionTarget(ambiguous, "button")).toBeNull();
+  });
+
   it("clears actions that target a deleted subtree", () => {
     const scene = actionScene({ type: "show", targetId: "panel" });
 

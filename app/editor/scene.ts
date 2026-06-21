@@ -171,11 +171,24 @@ export type PreviewVisibilityActionTarget = Readonly<{
   request: "show" | "hide" | "toggle";
 }>;
 
+export function findUniqueSceneNode(
+  scene: readonly SceneNode[],
+  nodeId: string,
+): SceneNode | null {
+  let found: SceneNode | null = null;
+  for (const node of scene) {
+    if (node.id !== nodeId) continue;
+    if (found) return null;
+    found = node;
+  }
+  return found;
+}
+
 export function resolvePreviewActionTarget(
   scene: readonly SceneNode[],
   buttonId: string,
 ): PreviewVisibilityActionTarget | null {
-  const button = scene.find((node) => node.id === buttonId);
+  const button = findUniqueSceneNode(scene, buttonId);
   if (button?.cls !== "TextButton") return null;
   const action = button.action;
   if (
@@ -186,12 +199,10 @@ export function resolvePreviewActionTarget(
     return null;
   }
 
-  const target = scene.find(
-    (node) =>
-      node.id === action.targetId &&
-      (node.cls === "Frame" || node.cls === "ScrollingFrame"),
-  );
-  return target ? { targetId: target.id, request: action.type } : null;
+  const target = findUniqueSceneNode(scene, action.targetId);
+  return target && (target.cls === "Frame" || target.cls === "ScrollingFrame")
+    ? { targetId: target.id, request: action.type }
+    : null;
 }
 
 export function applyPreviewAction(

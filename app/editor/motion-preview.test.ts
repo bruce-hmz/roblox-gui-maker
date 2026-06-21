@@ -10,6 +10,8 @@ import {
   requestPreviewVisibility,
   resolvePreviewAction,
   setPreviewHoverInput,
+  type PreviewMotionController,
+  type PreviewMotionSession,
 } from "./motion-preview";
 import { MOTION_DEFAULTS } from "./motion";
 
@@ -125,6 +127,42 @@ describe("preview motion session", () => {
     expect(applyPreviewReducedMotion(snapped, false)).toBe(snapped);
   });
 
+  it("snaps a large sentinel set with one controller-record read", () => {
+    const count = 256;
+    let controllerReads = 0;
+    const controllers: Record<string, PreviewMotionController> = {};
+    const visibility: Record<string, boolean> = {};
+    for (let index = 0; index < count; index += 1) {
+      const id = `panel-${index}`;
+      visibility[id] = true;
+      Object.defineProperty(controllers, id, {
+        enumerable: true,
+        get: () => {
+          controllerReads += 1;
+          return Object.freeze({
+            desiredOpen: true,
+            phase: "closed" as const,
+            token: 0,
+            pointerInside: false,
+            focused: false,
+          });
+        },
+      });
+    }
+    const session: PreviewMotionSession = Object.freeze({
+      controllers: Object.freeze(controllers),
+      visibility: Object.freeze(visibility),
+    });
+
+    const snapped = applyPreviewReducedMotion(session, true);
+
+    expect(controllerReads).toBe(count);
+    expect(Object.values(snapped.controllers)).toHaveLength(count);
+    expect(snapped.controllers["panel-255"]).toMatchObject({ phase: "open", token: 1 });
+    expect(Object.values(snapped.visibility).every(Boolean)).toBe(true);
+    expect(applyPreviewReducedMotion(snapped, true)).toBe(snapped);
+  });
+
   it("tracks pointer and focus independently and derives hover scale", () => {
     const initial = createPreviewMotionSession([node({ id: "button", cls: "TextButton", motion: { hover: true } })]);
     const pointer = setPreviewHoverInput(initial, "button", "pointer", true);
@@ -200,6 +238,11 @@ describe("preview motion session", () => {
     expect(Object.isFrozen(opening.controllers.panel)).toBe(true);
     expect(initial).toEqual(initialBefore);
     expect(scene).toEqual(sceneBefore);
+
+    if (false) {
+      // @ts-expect-error Preview visibility is immutable at the public boundary.
+      initial.visibility.panel = false;
+    }
   });
 
   it("derives transition durations from lifecycle state", () => {
@@ -253,5 +296,26 @@ describe("preview action routing", () => {
     const malformed = sceneFor({ type: "show", targetId: "panel" });
     malformed[2].cls = "Frame";
     expect(resolvePreviewAction(malformed, "button")).toEqual({ kind: "none" });
+  });
+
+  it.each([false, true])("rejects ambiguous button ids in either order (%s)", (reverse) => {
+    const first = sceneFor({ type: "hideGui" });
+    const duplicate = node({
+      id: "button",
+      cls: "TextButton",
+      parentId: "root",
+      action: { type: "remoteEvent", eventName: "ShopAction", argument: "buy" },
+    });
+    const scene = reverse ? [duplicate, ...first] : [...first, duplicate];
+
+    expect(resolvePreviewAction(scene, "button")).toEqual({ kind: "none" });
+  });
+
+  it.each([false, true])("rejects ambiguous visibility target ids in either order (%s)", (reverse) => {
+    const scene = sceneFor({ type: "show", targetId: "panel" });
+    const duplicate = node({ id: "panel", cls: "ScrollingFrame", parentId: "root" });
+    const ambiguous = reverse ? [duplicate, ...scene] : [...scene, duplicate];
+
+    expect(resolvePreviewAction(ambiguous, "button")).toEqual({ kind: "none" });
   });
 });

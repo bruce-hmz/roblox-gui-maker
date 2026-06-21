@@ -3,6 +3,7 @@ import { MOTION_DEFAULTS, resolveSceneMotion } from "./motion";
 import { sanitizeRemoteEventAction } from "./remote-events";
 import {
   createPreviewVisibility,
+  findUniqueSceneNode,
   previewActionNotice,
   resolvePreviewActionTarget,
   type PreviewVisibility,
@@ -25,7 +26,7 @@ export type PreviewMotionState = Readonly<
 
 export type PreviewMotionSession = Readonly<{
   controllers: PreviewMotionState;
-  visibility: PreviewVisibility;
+  visibility: Readonly<PreviewVisibility>;
 }>;
 
 export type PreviewActionRequest =
@@ -214,22 +215,28 @@ export function applyPreviewReducedMotion(
 ): PreviewMotionSession {
   if (!reducedMotion) return session;
 
-  let next = session;
+  let changed = false;
+  const controllers: Record<string, PreviewMotionController> = {};
+  const visibility: PreviewVisibility = { ...session.visibility };
   for (const [nodeId, controller] of Object.entries(session.controllers)) {
     const terminalPhase = controller.desiredOpen ? "open" : "closed";
-    if (controller.phase === terminalPhase) continue;
-    next = updateSession(
-      next,
-      nodeId,
-      {
+    if (controller.phase === terminalPhase) {
+      controllers[nodeId] = controller;
+    } else {
+      changed = true;
+      controllers[nodeId] = freezeController({
         ...controller,
         phase: terminalPhase,
         token: controller.token + 1,
-      },
-      controller.desiredOpen,
-    );
+      });
+      visibility[nodeId] = controller.desiredOpen;
+    }
   }
-  return next;
+  if (!changed) return session;
+  return Object.freeze({
+    controllers: Object.freeze(controllers),
+    visibility: Object.freeze(visibility),
+  });
 }
 
 export function previewHoverScale(
@@ -262,7 +269,7 @@ export function resolvePreviewAction(
   scene: readonly SceneNode[],
   buttonId: string,
 ): PreviewActionRequest {
-  const button = scene.find((node) => node.id === buttonId);
+  const button = findUniqueSceneNode(scene, buttonId);
   if (button?.cls !== "TextButton" || !button.action) return NONE;
 
   const target = resolvePreviewActionTarget(scene, buttonId);
