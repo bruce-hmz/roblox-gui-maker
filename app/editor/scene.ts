@@ -162,8 +162,36 @@ export function duplicateSubtree(
 
 export type PreviewVisibility = Record<string, boolean>;
 
-export function createPreviewVisibility(scene: SceneNode[]): PreviewVisibility {
+export function createPreviewVisibility(scene: readonly SceneNode[]): PreviewVisibility {
   return Object.fromEntries(scene.map((node) => [node.id, node.initialVisible !== false]));
+}
+
+export type PreviewVisibilityActionTarget = Readonly<{
+  targetId: string;
+  request: "show" | "hide" | "toggle";
+}>;
+
+export function resolvePreviewActionTarget(
+  scene: readonly SceneNode[],
+  buttonId: string,
+): PreviewVisibilityActionTarget | null {
+  const button = scene.find((node) => node.id === buttonId);
+  if (button?.cls !== "TextButton") return null;
+  const action = button.action;
+  if (
+    !action ||
+    (action.type !== "show" && action.type !== "hide" && action.type !== "toggle") ||
+    typeof action.targetId !== "string"
+  ) {
+    return null;
+  }
+
+  const target = scene.find(
+    (node) =>
+      node.id === action.targetId &&
+      (node.cls === "Frame" || node.cls === "ScrollingFrame"),
+  );
+  return target ? { targetId: target.id, request: action.type } : null;
 }
 
 export function applyPreviewAction(
@@ -197,7 +225,7 @@ export function applyPreviewAction(
 }
 
 export function previewActionNotice(
-  scene: SceneNode[],
+  scene: readonly SceneNode[],
   buttonId: string
 ): string | null {
   const action = scene.find((node) => node.id === buttonId)?.action;

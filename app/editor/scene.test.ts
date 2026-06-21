@@ -11,6 +11,7 @@ import {
   reorderSibling,
   removeSubtree,
   previewActionNotice,
+  resolvePreviewActionTarget,
 } from "./scene";
 
 const node = (overrides: Partial<SceneNode>): SceneNode => ({
@@ -538,6 +539,17 @@ describe("visual asset Luau", () => {
 });
 
 describe("scene action state", () => {
+  it("resolves only valid direct visibility targets", () => {
+    const scene = actionScene({ type: "show", targetId: "panel" });
+    scene.push(node({ id: "child", parentId: "panel" }));
+
+    expect(resolvePreviewActionTarget(scene, "button")).toEqual({
+      targetId: "panel",
+      request: "show",
+    });
+    expect(resolvePreviewActionTarget(actionScene({ type: "show", targetId: "missing" }), "button")).toBeNull();
+  });
+
   it("clears actions that target a deleted subtree", () => {
     const scene = actionScene({ type: "show", targetId: "panel" });
 
