@@ -138,6 +138,11 @@ export function requestPreviewVisibility(
     });
   }
   if (controller.desiredOpen === desiredOpen) return session;
+  const hidingUntouchedInitialOpen =
+    !desiredOpen &&
+    controller.desiredOpen &&
+    controller.phase === "closed" &&
+    controller.token === 0;
 
   return updateSession(
     session,
@@ -145,7 +150,7 @@ export function requestPreviewVisibility(
     {
       ...controller,
       desiredOpen,
-      phase: reducedMotion
+      phase: reducedMotion || hidingUntouchedInitialOpen
         ? desiredOpen
           ? "open"
           : "closed"
@@ -154,7 +159,11 @@ export function requestPreviewVisibility(
           : "closing",
       token: controller.token + 1,
     },
-    desiredOpen ? true : reducedMotion ? false : session.visibility[nodeId],
+    desiredOpen
+      ? true
+      : reducedMotion || hidingUntouchedInitialOpen
+        ? false
+        : session.visibility[nodeId],
   );
 }
 

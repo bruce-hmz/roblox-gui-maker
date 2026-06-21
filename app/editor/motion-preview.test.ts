@@ -94,10 +94,11 @@ describe("preview motion session", () => {
 
   it("cancels the initial sentinel when hidden before its scheduled begin", () => {
     const initial = createPreviewMotionSession([node({ id: "panel", motion: { preset: "fade" } })]);
-    const closing = requestPreviewVisibility(initial, "panel", false, false);
-    expect(closing.controllers.panel).toMatchObject({ desiredOpen: false, phase: "closing", token: 1 });
-    expect(beginPreviewInitialOpen(closing, "panel", false)).toBe(closing);
-    expect(completePreviewTransition(closing, "panel", 1).visibility.panel).toBe(false);
+    const closed = requestPreviewVisibility(initial, "panel", false, false);
+    expect(closed.controllers.panel).toMatchObject({ desiredOpen: false, phase: "closed", token: 1 });
+    expect(closed.visibility.panel).toBe(false);
+    expect(beginPreviewInitialOpen(closed, "panel", false)).toBe(closed);
+    expect(completePreviewTransition(closed, "panel", 1)).toBe(closed);
   });
 
   it("snaps requests and active transitions under reduced motion", () => {
@@ -136,6 +137,69 @@ describe("preview motion session", () => {
     const closing = requestPreviewVisibility(noPointer, "button", false, false);
     expect(previewHoverScale(closing.controllers.button, false)).toBe(1);
     expect(setPreviewHoverInput(closing, "button", "pointer", false)).toBe(closing);
+  });
+
+  it("updates pointer and focus orthogonally in every motion phase", () => {
+    const closed = createPreviewMotionSession([node({ id: "button", cls: "TextButton", motion: { preset: "fade", hover: true } })]);
+    const opening = beginPreviewInitialOpen(closed, "button", false);
+    const open = completePreviewTransition(opening, "button", 1);
+    const closing = requestPreviewVisibility(open, "button", false, false);
+
+    for (const session of [closed, opening, open, closing]) {
+      const before = session.controllers.button;
+      const visible = session.visibility.button;
+      const pointer = setPreviewHoverInput(session, "button", "pointer", true);
+      expect(pointer.controllers.button).toMatchObject({
+        phase: before.phase,
+        token: before.token,
+        pointerInside: true,
+        focused: false,
+      });
+      expect(pointer.visibility.button).toBe(visible);
+      expect(setPreviewHoverInput(pointer, "button", "pointer", true)).toBe(pointer);
+
+      const focused = setPreviewHoverInput(pointer, "button", "focus", true);
+      expect(focused.controllers.button).toMatchObject({
+        phase: before.phase,
+        token: before.token,
+        pointerInside: true,
+        focused: true,
+      });
+      expect(focused.visibility.button).toBe(visible);
+      expect(setPreviewHoverInput(focused, "button", "focus", true)).toBe(focused);
+
+      const pointerLeft = setPreviewHoverInput(focused, "button", "pointer", false);
+      expect(pointerLeft.controllers.button).toMatchObject({
+        phase: before.phase,
+        token: before.token,
+        pointerInside: false,
+        focused: true,
+      });
+      expect(pointerLeft.visibility.button).toBe(visible);
+    }
+  });
+
+  it("freezes session state and never mutates scene or prior sessions", () => {
+    const scene = [
+      node({ id: "root", cls: "ScreenGui" }),
+      node({ id: "panel", parentId: "root", motion: { preset: "scale" } }),
+    ];
+    const sceneBefore = structuredClone(scene);
+    const initial = createPreviewMotionSession(scene);
+    const initialBefore = structuredClone(initial);
+
+    expect(Object.isFrozen(initial)).toBe(true);
+    expect(Object.isFrozen(initial.controllers)).toBe(true);
+    expect(Object.isFrozen(initial.visibility)).toBe(true);
+    expect(Object.isFrozen(initial.controllers.panel)).toBe(true);
+
+    const opening = beginPreviewInitialOpen(initial, "panel", false);
+    expect(Object.isFrozen(opening)).toBe(true);
+    expect(Object.isFrozen(opening.controllers)).toBe(true);
+    expect(Object.isFrozen(opening.visibility)).toBe(true);
+    expect(Object.isFrozen(opening.controllers.panel)).toBe(true);
+    expect(initial).toEqual(initialBefore);
+    expect(scene).toEqual(sceneBefore);
   });
 
   it("derives transition durations from lifecycle state", () => {
