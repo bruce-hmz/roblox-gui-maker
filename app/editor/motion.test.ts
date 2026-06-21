@@ -263,4 +263,22 @@ describe("motion resolution", () => {
     expect(resolveSceneMotion(cycle).get("a")?.effectivePreset).toBe("fade");
     expect(resolveSceneMotion(cycle).get("b")?.effectivePreset).toBe("fade");
   });
+
+  it("propagates a finalized Fade from a cycle node to descendants outside the cycle", () => {
+    const scene = [
+      node({ id: "child", parentId: "cycleFade", motion: { preset: "fade" } }),
+      node({ id: "cycleScale", parentId: "cycleFade", motion: { preset: "scale" } }),
+      node({ id: "cycleFade", parentId: "cycleScale", motion: { preset: "fade" } }),
+    ];
+    const resolved = resolveSceneMotion(scene);
+
+    expect(resolved.get("cycleFade")).toMatchObject({
+      effectivePreset: "fade",
+      fadeBlocked: false,
+    });
+    expect(resolved.get("child")).toMatchObject({
+      effectivePreset: "scale",
+      fadeBlocked: true,
+    });
+  });
 });

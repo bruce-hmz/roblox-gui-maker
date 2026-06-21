@@ -132,17 +132,72 @@ export function resolveSceneMotion(scene: readonly SceneNode[]): ReadonlyMap<str
     slideBlockedById.set(node.id, slideBlocked);
   }
 
+  const cycleIds = new Set<string>();
+  const checkedIds = new Set<string>();
+  for (const start of scene) {
+    const path: string[] = [];
+    const pathIndex = new Map<string, number>();
+    let current: SceneNode | undefined = start;
+
+    while (current && !checkedIds.has(current.id)) {
+      const cycleStart = pathIndex.get(current.id);
+      if (cycleStart !== undefined) {
+        for (const id of path.slice(cycleStart)) cycleIds.add(id);
+        break;
+      }
+      pathIndex.set(current.id, path.length);
+      path.push(current.id);
+      current = current.parentId == null ? undefined : nodesById.get(current.parentId);
+    }
+    for (const id of path) checkedIds.add(id);
+  }
+
+  type FinalizedPreset = {
+    effectivePreset?: MotionPreset;
+    fadeBlocked: boolean;
+    effectiveFadeInAncestors: boolean;
+  };
+  const finalizedById = new Map<string, FinalizedPreset>();
+  const visiting = new Set<string>();
+
+  const finalizePreset = (node: SceneNode): FinalizedPreset => {
+    const cached = finalizedById.get(node.id);
+    if (cached) return cached;
+
+    const preliminaryPreset = preliminaryById.get(node.id);
+    if (cycleIds.has(node.id) || visiting.has(node.id)) {
+      const cycleResult = {
+        effectivePreset: preliminaryPreset,
+        fadeBlocked: false,
+        effectiveFadeInAncestors: false,
+      };
+      finalizedById.set(node.id, cycleResult);
+      return cycleResult;
+    }
+
+    visiting.add(node.id);
+    const parent = node.parentId == null ? undefined : nodesById.get(node.parentId);
+    const parentFinalized = parent ? finalizePreset(parent) : undefined;
+    visiting.delete(node.id);
+
+    const effectiveFadeInAncestors =
+      parentFinalized?.effectivePreset === "fade" ||
+      parentFinalized?.effectiveFadeInAncestors === true;
+    const fadeBlocked = preliminaryPreset === "fade" && effectiveFadeInAncestors;
+    const result = {
+      effectivePreset: fadeBlocked ? "scale" : preliminaryPreset,
+      fadeBlocked,
+      effectiveFadeInAncestors,
+    } satisfies FinalizedPreset;
+    finalizedById.set(node.id, result);
+    return result;
+  };
+
   const resolved = new Map<string, ResolvedMotion>();
   for (const node of scene) {
     const eligible = isMotionClass(node.cls);
     const sanitized = sanitizedById.get(node.id);
-    const preliminaryPreset = preliminaryById.get(node.id);
-    const ancestors = ancestorChain(node, nodesById);
-    const fadeBlocked =
-      preliminaryPreset === "fade" &&
-      ancestors !== undefined &&
-      ancestors.some((ancestor) => preliminaryById.get(ancestor.id) === "fade");
-    const effectivePreset = fadeBlocked ? "scale" : preliminaryPreset;
+    const { effectivePreset, fadeBlocked } = finalizePreset(node);
     const initialOpen =
       effectivePreset !== undefined && isEffectivelyInitiallyVisible(scene, node);
 
