@@ -35,6 +35,7 @@ type Props = {
   canRedo: boolean;
   onNew: () => void;
   previewing: boolean;
+  previewActive: boolean;
   onPreview: () => void;
   onImportProject: (file: File) => void;
   onExportProject: () => void;
@@ -52,6 +53,7 @@ export function Toolbar({
   canRedo,
   onNew,
   previewing,
+  previewActive,
   onPreview,
   onImportProject,
   onExportProject,
@@ -75,7 +77,7 @@ export function Toolbar({
         <div className="flex items-center gap-0.5 ml-1">
           <button
             onClick={onUndo}
-            disabled={!canUndo}
+            disabled={previewActive || !canUndo}
             aria-label="Undo"
             title="Undo (⌘Z / Ctrl+Z)"
             className="grid place-items-center w-8 h-8 rounded-md text-ink-dim hover:text-ink hover:bg-raised disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors"
@@ -84,7 +86,7 @@ export function Toolbar({
           </button>
           <button
             onClick={onRedo}
-            disabled={!canRedo}
+            disabled={previewActive || !canRedo}
             aria-label="Redo"
             title="Redo (⌘⇧Z / Ctrl+Y)"
             className="grid place-items-center w-8 h-8 rounded-md text-ink-dim hover:text-ink hover:bg-raised disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors"
@@ -133,9 +135,10 @@ export function Toolbar({
         </button>
         <button
           onClick={onNew}
+          disabled={previewActive}
           aria-label="New"
           title="Start a new GUI (clears the current one)"
-          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink xl:w-auto xl:px-3"
+          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink disabled:cursor-not-allowed disabled:opacity-30 xl:w-auto xl:px-3"
         >
           <FilePlus2 className="w-4 h-4" />
           <span className="hidden xl:inline">New</span>
@@ -151,7 +154,7 @@ export function Toolbar({
         </Link>
         <label
           title="Import JSON"
-          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary xl:w-auto xl:px-3"
+          className={`flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary xl:w-auto xl:px-3 ${previewActive ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:bg-raised hover:text-ink"}`}
         >
           <Upload className="w-4 h-4" />
           <span className="hidden xl:inline">Import JSON</span>
@@ -159,11 +162,12 @@ export function Toolbar({
             type="file"
             accept="application/json,.json"
             aria-label="Import JSON"
+            disabled={previewActive}
             className="sr-only"
             onChange={(event) => {
               const file = event.currentTarget.files?.[0];
               event.currentTarget.value = "";
-              if (file) onImportProject(file);
+              if (file && !previewActive) onImportProject(file);
             }}
           />
         </label>

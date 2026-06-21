@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { DeviceKind, SceneNode } from "./catalog";
 import { canvasGeometryStyle } from "./geometry";
 import { assetIdNumber, resolveThumbnail } from "./image-assets";
 import { layoutChildrenStyle } from "./layout-config";
 import { orderedChildren, type PreviewVisibility } from "./scene";
 import { useInteraction, type Corner } from "./useInteraction";
+import { motionClosedOffset, resolveSceneMotion, type ResolvedMotion } from "./motion";
+import {
+  previewHoverScale,
+  previewTransitionDurationMs,
+  type PreviewMotionController,
+  type PreviewMotionState,
+} from "./motion-preview";
 
 const FRAME_CLASS: Record<DeviceKind, string> = {
   desktop: "w-full max-w-[860px] aspect-video",
@@ -36,6 +43,10 @@ type Props = {
   previewVisibility: PreviewVisibility | null;
   previewNotice: string | null;
   onPreviewAction: (id: string) => void;
+  controllers: PreviewMotionState;
+  reducedMotion: boolean;
+  onTransitionComplete: (id: string, token: number) => void;
+  onHoverInput: (id: string, input: "pointer" | "focus", active: boolean) => void;
 };
 
 export function Canvas({
@@ -47,8 +58,13 @@ export function Canvas({
   previewVisibility,
   previewNotice,
   onPreviewAction,
+  controllers,
+  reducedMotion,
+  onTransitionComplete,
+  onHoverInput,
 }: Props) {
   const { startMove, startResize } = useInteraction(onChange);
+  const resolvedMotion = useMemo(() => resolveSceneMotion(scene), [scene]);
 
   const getChild = (parentId: string | null) => orderedChildren(scene, parentId);
 
@@ -90,6 +106,11 @@ export function Canvas({
               startResize={startResize}
               previewVisibility={previewVisibility}
               onPreviewAction={onPreviewAction}
+              resolvedMotion={resolvedMotion}
+              controllers={controllers}
+              reducedMotion={reducedMotion}
+              onTransitionComplete={onTransitionComplete}
+              onHoverInput={onHoverInput}
             />
           ))}
         </div>
@@ -108,6 +129,11 @@ function NodeView({
   startResize,
   previewVisibility,
   onPreviewAction,
+  resolvedMotion,
+  controllers,
+  reducedMotion,
+  onTransitionComplete,
+  onHoverInput,
 }: {
   node: SceneNode;
   containerLayout: "none" | "list" | "grid";
@@ -118,6 +144,11 @@ function NodeView({
   startResize: (e: React.PointerEvent, node: SceneNode, corner: Corner) => void;
   previewVisibility: PreviewVisibility | null;
   onPreviewAction: (id: string) => void;
+  resolvedMotion: ReadonlyMap<string, ResolvedMotion>;
+  controllers: PreviewMotionState;
+  reducedMotion: boolean;
+  onTransitionComplete: (id: string, token: number) => void;
+  onHoverInput: (id: string, input: "pointer" | "focus", active: boolean) => void;
 }) {
   const thumbnail = useRobloxThumbnail(
     node.cls === "ImageLabel" ? node.image : undefined
@@ -129,7 +160,8 @@ function NodeView({
   const visible =
     node.transparency < 1 || node.text != null || !!node.gradient || kids.length > 0;
   if (!visible) return null;
-  if (previewVisibility && previewVisibility[node.id] === false) return null;
+  const controller = controllers[node.id];
+  if (previewVisibility && previewVisibility[node.id] === false && controller?.phase !== "closing") return null;
 
   const selected = node.id === selectedId;
   const startsHidden = !previewVisibility && node.initialVisible === false;
@@ -142,6 +174,8 @@ function NodeView({
       ? "transparent"
       : hexToRgba(node.color, 1 - node.transparency);
   const geometryStyle = canvasGeometryStyle(node);
+  const resolved = previewVisibility ? resolvedMotion.get(node.id) : undefined;
+  const motionStyle = previewMotionStyle(geometryStyle.transform, resolved, controller, reducedMotion);
   const flowStyle =
     containerLayout === "grid"
       ? { width: "100%", height: "100%" }
@@ -153,6 +187,20 @@ function NodeView({
     <div
       data-node-id={node.id}
       data-image-state={node.cls === "ImageLabel" ? thumbnail.state : undefined}
+      data-motion-phase={controller?.phase}
+      data-effective-motion={previewVisibility ? resolved?.effectivePreset ?? "none" : undefined}
+      data-motion-token={controller?.token}
+      data-motion-initial-closed={controller?.phase === "closed" && controller.token === 0 ? "true" : undefined}
+      tabIndex={previewVisibility && node.cls === "TextButton" ? 0 : undefined}
+      onPointerEnter={() => controller && onHoverInput(node.id, "pointer", true)}
+      onPointerLeave={() => controller && onHoverInput(node.id, "pointer", false)}
+      onFocus={() => controller && onHoverInput(node.id, "focus", true)}
+      onBlur={() => controller && onHoverInput(node.id, "focus", false)}
+      onTransitionEnd={(event) => {
+        if (!controller || event.currentTarget !== event.target || !resolved?.effectivePreset) return;
+        const property = resolved.effectivePreset === "fade" ? "opacity" : "transform";
+        if (event.propertyName === property) onTransitionComplete(node.id, controller.token);
+      }}
       onPointerDown={(e) => {
         e.stopPropagation();
         if (previewVisibility) {
@@ -179,6 +227,7 @@ function NodeView({
               ...flowStyle,
             }
           : {}),
+        ...motionStyle,
         background,
         borderRadius: node.cornerRadius,
         boxShadow: node.stroke
@@ -284,12 +333,44 @@ function NodeView({
               startResize={startResize}
               previewVisibility={previewVisibility}
               onPreviewAction={onPreviewAction}
+              resolvedMotion={resolvedMotion}
+              controllers={controllers}
+              reducedMotion={reducedMotion}
+              onTransitionComplete={onTransitionComplete}
+              onHoverInput={onHoverInput}
             />
           ))}
         </ChildrenWrapper>
       )}
     </div>
   );
+}
+
+function previewMotionStyle(
+  canonicalTransform: string | undefined,
+  resolved: ResolvedMotion | undefined,
+  controller: PreviewMotionController | undefined,
+  reducedMotion: boolean,
+): React.CSSProperties {
+  if (!resolved || !controller) return {};
+  const closed = controller.phase === "closed" || controller.phase === "closing";
+  const transforms = canonicalTransform ? [canonicalTransform] : [];
+  if (resolved.effectivePreset === "slide" && closed) {
+    const offset = motionClosedOffset(resolved.slideDirection);
+    transforms.push(`translate(${offset.x}px, ${offset.y}px)`);
+  }
+  const visibilityScale = resolved.effectivePreset === "scale" && closed ? 0.92 : 1;
+  const hoverScale = previewHoverScale(controller, reducedMotion);
+  if (visibilityScale * hoverScale !== 1) transforms.push(`scale(${visibilityScale * hoverScale})`);
+  const duration = previewTransitionDurationMs(controller, resolved.durationMs, reducedMotion);
+  const property = resolved.effectivePreset === "fade" ? "opacity" : "transform";
+  return {
+    transform: transforms.length ? transforms.join(" ") : "none",
+    opacity: resolved.effectivePreset === "fade" && closed ? 0 : 1,
+    transitionProperty: property,
+    transitionDuration: `${duration}ms`,
+    transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  };
 }
 
 type ThumbnailPreview = {

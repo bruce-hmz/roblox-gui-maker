@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 type FixtureNode = {
   id: string;
-  cls: "ScreenGui" | "Frame";
+  cls: "ScreenGui" | "Frame" | "TextButton";
   name: string;
   parentId: string | null;
   pos: { x: number; y: number };
@@ -13,12 +13,25 @@ type FixtureNode = {
   cornerRadius: number;
   zindex: number;
   layout?: "list";
+  initialVisible?: boolean;
+  text?: string;
+  action?: { type: "show" | "hide" | "toggle"; targetId: string };
   motion?: {
-    preset?: "fade" | "slide";
+    preset?: "fade" | "slide" | "scale";
     durationMs?: number;
     slideDirection?: "left" | "right" | "up" | "down";
+    hover?: boolean;
   };
 };
+
+async function importScene(page: Page, scene: FixtureNode[]) {
+  await page.goto("/editor?template=main-menu");
+  await page.locator('input[type="file"][aria-label="Import JSON"]').setInputFiles({
+    name: "motion-preview.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({ format: "roblox-gui-maker", version: 2, scene })),
+  });
+}
 
 function fixtureNode(
   id: string,
@@ -210,4 +223,147 @@ test("@full shows resolved motion fallbacks while preserving stored values and i
   await expect(
     motion.getByText("Fade uses Scale while an ancestor fades this subtree.")
   ).toBeVisible();
+});
+
+test("@full previews initial motion, fallback markers, and reduced-motion snaps", async ({ page }) => {
+  const scene: FixtureNode[] = [
+    fixtureNode("root", "MotionRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("slide", "SlideRight", "root", { motion: { preset: "slide", durationMs: 700, slideDirection: "right" } }),
+    fixtureNode("fade", "FadeOwner", "root", { motion: { preset: "fade", durationMs: 700 } }),
+    fixtureNode("nested", "NestedFade", "fade", { motion: { preset: "fade", durationMs: 700 } }),
+  ];
+  await importScene(page, scene);
+  const slide = page.locator('[data-node-id="slide"]');
+  const nested = page.locator('[data-node-id="nested"]');
+  await page.evaluate(() => {
+    const target = document.querySelector('[data-node-id="slide"]');
+    const records: { phase: string; x: number; duration: string; sentinel: string | null }[] = [];
+    new MutationObserver(() => {
+      const value = target?.getAttribute("data-motion-phase");
+      if (value) records.push({
+        phase: value,
+        x: new DOMMatrix(getComputedStyle(target! as Element).transform).m41,
+        duration: getComputedStyle(target! as Element).transitionDuration,
+        sentinel: target?.getAttribute("data-motion-initial-closed") ?? null,
+      });
+    }).observe(target!, { attributes: true });
+    Object.assign(window, { __motionPhases: records });
+    (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
+  });
+
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __motionPhases: { phase: string }[] }).__motionPhases.map((record) => record.phase))).toContain("closed");
+  await expect.poll(() => slide.getAttribute("data-motion-phase")).toBe("opening");
+  await expect.poll(async () => {
+    const phase = await slide.getAttribute("data-motion-phase");
+    if (phase !== "open") return null;
+    return slide.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).m41);
+  }).toBe(0);
+  const records = await page.evaluate(() => (window as unknown as { __motionPhases: { phase: string; x: number; duration: string; sentinel: string | null }[] }).__motionPhases);
+  expect(records.map((record) => record.phase)).toEqual(expect.arrayContaining(["closed", "opening", "open"]));
+  expect(records.find((record) => record.phase === "closed")).toMatchObject({ x: 24, duration: "0s", sentinel: "true" });
+  await expect(nested).toHaveAttribute("data-effective-motion", "scale");
+
+  await page.getByRole("button", { name: "Stop preview" }).click();
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect.poll(() => slide.getAttribute("data-motion-phase")).toBe("opening");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => slide.getAttribute("data-motion-phase")).toBe("open");
+  await expect(slide).toHaveCSS("transition-duration", "0s");
+});
+
+test("@full freezes editing controls while Preview is active", async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = Storage.prototype.setItem;
+    Object.assign(window, { __storageWrites: 0 });
+    Storage.prototype.setItem = function (...args) {
+      (window as unknown as { __storageWrites: number }).__storageWrites++;
+      return original.apply(this, args);
+    };
+  });
+  await importScene(page, [
+    fixtureNode("root", "MotionRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("panel", "Panel", "root", { motion: { preset: "scale", durationMs: 700 } }),
+  ]);
+  await selectHierarchyNode(page, "Panel");
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("rgm:scene:v1") ?? "{}").selectedId)).toBe("panel");
+  await page.getByRole("button", { name: "Preview" }).click();
+  await page.evaluate(() => { (window as unknown as { __storageWrites: number }).__storageWrites = 0; });
+  await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Redo" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "New" })).toBeDisabled();
+  await expect(page.locator('input[type="file"][aria-label="Import JSON"]')).toBeDisabled();
+  await expect(page.locator('aside[aria-disabled="true"]')).toHaveCount(1);
+  await expect(page.getByRole("group", { name: "Motion" })).toHaveCount(0);
+  await expect.poll(() => page.locator('[data-node-id="panel"]').getAttribute("data-motion-phase")).toBe("open");
+  expect(await page.evaluate(() => (window as unknown as { __storageWrites: number }).__storageWrites)).toBe(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("rgm:scene:v1") ?? "{}").selectedId)).toBe("panel");
+  await page.getByRole("button", { name: "Stop preview" }).click();
+  await expect(page.getByRole("button", { name: "New" })).toBeEnabled();
+});
+
+test("@full discards an import that resolves after Preview starts", async ({ page }) => {
+  await importScene(page, [
+    fixtureNode("root", "OriginalRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("original", "Original", "root", { motion: { preset: "scale", durationMs: 700 } }),
+  ]);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("rgm:scene:v1"))).not.toBeNull();
+  const saved = await page.evaluate(() => localStorage.getItem("rgm:scene:v1"));
+  await page.evaluate(() => {
+    const original = File.prototype.text;
+    File.prototype.text = () => new Promise<string>((done) => {
+      Object.assign(window, { __resolveImport: done });
+    });
+    Object.assign(window, {
+      __restoreFileText: () => { File.prototype.text = original; },
+    });
+  });
+  try {
+    await page.locator('input[type="file"][aria-label="Import JSON"]').setInputFiles({
+      name: "late.json",
+      mimeType: "application/json",
+      buffer: Buffer.from("deferred by File.text"),
+    });
+    await expect.poll(() => page.evaluate(() => typeof (window as unknown as { __resolveImport?: unknown }).__resolveImport)).toBe("function");
+    await page.getByRole("button", { name: "Preview" }).click();
+    await page.evaluate((scene) => {
+      (window as unknown as { __resolveImport: (value: string) => void }).__resolveImport(
+        JSON.stringify({ format: "roblox-gui-maker", version: 2, scene }),
+      );
+    }, [fixtureNode("late-root", "LateRoot", null, { cls: "ScreenGui" })]);
+    await expect(page.locator('[data-node-id="original"]')).toBeVisible();
+    await expect(page.locator('[data-node-id="late-root"]')).toHaveCount(0);
+    expect(await page.evaluate(() => localStorage.getItem("rgm:scene:v1"))).toBe(saved);
+  } finally {
+    await page.evaluate(() => (window as unknown as { __restoreFileText: () => void }).__restoreFileText());
+  }
+});
+
+test("@full interrupts visibility actions safely and gates hover by motion state", async ({ page }) => {
+  const target = fixtureNode("target", "Target", "root", { motion: { preset: "scale", durationMs: 700 } });
+  await importScene(page, [
+    fixtureNode("root", "MotionRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    target,
+    fixtureNode("hover", "Hover", "root", { cls: "TextButton", text: "Hover", motion: { preset: "scale", durationMs: 700, hover: true } }),
+    { ...fixtureNode("hide", "Hide", "root", { cls: "TextButton", text: "Hide" }), action: { type: "hide", targetId: "target" } },
+    { ...fixtureNode("show", "Show", "root", { cls: "TextButton", text: "Show" }), action: { type: "show", targetId: "target" } },
+  ]);
+  await page.getByRole("button", { name: "Preview" }).click();
+  const animated = page.locator('[data-node-id="target"]');
+  const hover = page.locator('[data-node-id="hover"]');
+  await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("open");
+  await expect.poll(() => hover.getAttribute("data-motion-phase")).toBe("open");
+  await hover.dispatchEvent("pointerover");
+  await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBeCloseTo(1.03, 2);
+  await page.locator('[data-node-id="hide"]').dispatchEvent("pointerdown");
+  await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("closing");
+  const closingToken = Number(await animated.getAttribute("data-motion-token"));
+  await page.locator('[data-node-id="show"]').dispatchEvent("pointerdown");
+  await expect.poll(() => animated.getAttribute("data-motion-phase")).toBe("opening");
+  await animated.dispatchEvent("transitionend", { propertyName: "transform" });
+  await expect(animated).toHaveAttribute("data-motion-phase", "open");
+  await expect(animated).toBeVisible();
+  expect(Number(await animated.getAttribute("data-motion-token"))).toBeGreaterThan(closingToken);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBe(1);
 });

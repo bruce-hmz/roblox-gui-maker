@@ -15,20 +15,17 @@ import {
   serializeSceneDocument,
 } from "./persistence";
 import {
-  applyPreviewAction,
   createNode,
-  createPreviewVisibility,
   duplicateSubtree,
   generateLuau,
   reparentNode,
   reorderSibling,
   removeSubtree,
-  previewActionNotice,
   shade,
-  type PreviewVisibility,
 } from "./scene";
 import { generateServerLuau } from "./server-luau";
 import { createProjectPackage } from "./project-package";
+import { useMotionPreview } from "./useMotionPreview";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -72,6 +69,14 @@ function loadSaved(): Saved | null {
   }
 }
 
+function persistWorkspace(scene: SceneNode[], selectedId: string | null) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ scene, selectedId }));
+  } catch {
+    // Storage may be full or blocked; editing remains available in-session.
+  }
+}
+
 function detachTemplateUrl() {
   const currentUrl = new URL(window.location.href);
   if (!currentUrl.searchParams.has("template")) return;
@@ -90,12 +95,17 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [selectedId, setSelectedId] = useState<string | null>("play");
   const [copied, setCopied] = useState<CodeOutput | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
-  const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   const sceneRef = useRef(scene);
+  const selectedIdRef = useRef(selectedId);
   const importRequest = useRef(0);
   const copyRequest = useRef(0);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const preview = useMotionPreview(scene);
+  const activeRef = useRef(preview.active);
+  activeRef.current = preview.active;
+  selectedIdRef.current = selectedId;
 
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
   // continuous edits (drag/typing/nudge) commit on a debounced timer so a
@@ -110,8 +120,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const selected = scene.find((n) => n.id === selectedId) ?? null;
   const clientCode = generateLuau(scene);
   const serverCode = generateServerLuau(scene);
-  const canUndo = history.current.index > 0;
-  const canRedo = history.current.index < history.current.stack.length - 1;
+  const canUndo = !preview.active && history.current.index > 0;
+  const canRedo = !preview.active && history.current.index < history.current.stack.length - 1;
 
   const commit = useCallback((scene: SceneNode[], ...scenes: SceneNode[][]) => {
     const h = history.current;
@@ -136,6 +146,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   // immediate=true commits now (discrete); otherwise debounced (continuous).
   const mutate = useCallback(
     (updater: (prev: SceneNode[]) => SceneNode[], immediate = false) => {
+      if (activeRef.current) return;
       const currentScene = sceneRef.current;
       const next = updater(currentScene);
       if (scenesEqual(currentScene, next)) return;
@@ -164,6 +175,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   );
 
   function undo() {
+    if (activeRef.current) return;
     if (commitTimer.current) {
       clearTimeout(commitTimer.current);
       commitTimer.current = null;
@@ -180,6 +192,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function redo() {
+    if (activeRef.current) return;
     const h = history.current;
     if (h.index < h.stack.length - 1) {
       h.index++;
@@ -191,6 +204,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function addNode(cls: RobloxClass) {
+    if (activeRef.current) return;
     if (cls === "ScreenGui" && scene.some((n) => n.cls === "ScreenGui")) return;
     const parentId =
       selected && (selected.cls === "Frame" || selected.cls === "ScrollingFrame")
@@ -202,6 +216,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function applyDecorator(cls: RobloxClass) {
+    if (activeRef.current) return;
     if (!selectedId) return;
     mutate((s) => {
       const map = (fn: (n: SceneNode) => SceneNode) => s.map((n) => (n.id === selectedId ? fn(n) : n));
@@ -218,16 +233,19 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function updateNode(id: string, patch: Partial<SceneNode>) {
+    if (activeRef.current) return;
     mutate((s) => s.map((n) => (n.id === id ? { ...n, ...patch } : n)));
   }
 
   function deleteNode(id: string) {
+    if (activeRef.current) return;
     const next = removeSubtree(scene, id);
     mutate(() => next, true);
     setSelectedId((cur) => (cur && next.some((node) => node.id === cur) ? cur : null));
   }
 
   function duplicateSelected() {
+    if (activeRef.current) return;
     if (!selectedId) return;
     const result = duplicateSubtree(scene, selectedId);
     if (!result) return;
@@ -236,6 +254,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function moveInside(id: string, parentId: string) {
+    if (activeRef.current) return;
     const next = reparentNode(scene, id, parentId);
     if (next === scene) return;
     mutate(() => next, true);
@@ -247,6 +266,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     targetId: string,
     position: "before" | "after"
   ) {
+    if (activeRef.current) return;
     const moving = scene.find((node) => node.id === id);
     const target = scene.find((node) => node.id === targetId);
     if (!moving || !target || target.cls === "ScreenGui") return;
@@ -278,17 +298,19 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
 
   // Autosave (debounced) so refresh doesn't lose work.
   useEffect(() => {
-    const id = setTimeout(() => {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ scene, selectedId }));
-      } catch {
-        // storage full / blocked — ignore, the tool still works in-session
-      }
+    if (activeRef.current) return;
+    autosaveTimer.current = setTimeout(() => {
+      autosaveTimer.current = null;
+      persistWorkspace(scene, selectedId);
     }, 400);
-    return () => clearTimeout(id);
+    return () => {
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+      autosaveTimer.current = null;
+    };
   }, [scene, selectedId]);
 
   function newWorkspace() {
+    if (activeRef.current) return;
     if (typeof window !== "undefined" && !window.confirm("Start a new GUI? Your current one will be cleared.")) return;
     if (commitTimer.current) {
       clearTimeout(commitTimer.current);
@@ -308,6 +330,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     function onKey(e: KeyboardEvent) {
       const t = e.target as HTMLElement | null;
       if (t?.closest('[data-editor-shortcuts="ignore"]')) return;
+      if (activeRef.current) return;
       const typing =
         !!t &&
         (t.tagName === "INPUT" ||
@@ -436,18 +459,18 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   async function importProject(file: File) {
+    if (activeRef.current) return;
     const request = ++importRequest.current;
     setImportError(null);
     try {
       const text = await file.text();
-      if (request !== importRequest.current) return;
+      if (request !== importRequest.current || activeRef.current) return;
       const imported = parseSceneDocument(text);
       mutate(() => imported, true);
       setSelectedId(
         imported.find((node) => node.cls === "ScreenGui" && !node.parentId)?.id ??
           imported[0].id
       );
-      setPreviewVisibility(null);
       setPreviewNotice(null);
     } catch (error) {
       if (request !== importRequest.current) return;
@@ -461,9 +484,22 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
 
   function togglePreview() {
     setPreviewNotice(null);
-    setPreviewVisibility((current) =>
-      current ? null : createPreviewVisibility(scene)
-    );
+    if (preview.active) {
+      preview.stop();
+      return;
+    }
+    if (commitTimer.current) {
+      clearTimeout(commitTimer.current);
+      commitTimer.current = null;
+      commit(sceneRef.current);
+    }
+    importRequest.current++;
+    if (autosaveTimer.current) {
+      clearTimeout(autosaveTimer.current);
+      autosaveTimer.current = null;
+      persistWorkspace(sceneRef.current, selectedIdRef.current);
+    }
+    preview.start();
     setSelectedId(null);
   }
 
@@ -505,7 +541,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         canUndo={canUndo}
         canRedo={canRedo}
         onNew={newWorkspace}
-        previewing={previewVisibility !== null}
+        previewing={preview.active}
+        previewActive={preview.active}
         onPreview={togglePreview}
         onImportProject={importProject}
         onExportProject={exportProject}
@@ -514,10 +551,11 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       <div className="flex-1 min-h-0 flex">
         <Palette
           onAdd={addNode}
+          disabled={preview.active}
           onApply={applyDecorator}
           scene={scene}
           selectedId={selectedId}
-          onSelect={setSelectedId}
+          onSelect={(id) => { if (!activeRef.current) setSelectedId(id); }}
           onRename={(id, name) => updateNode(id, { name })}
           onMoveInside={moveInside}
           onMoveRelative={moveRelative}
@@ -526,21 +564,17 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           scene={scene}
           selectedId={selectedId}
           device={device}
-          onSelect={setSelectedId}
+          onSelect={(id) => { if (!activeRef.current) setSelectedId(id); }}
           onChange={updateNode}
-          previewVisibility={previewVisibility}
+          previewVisibility={preview.visibility}
           previewNotice={previewNotice}
           onPreviewAction={(id) => {
-            const notice = previewActionNotice(scene, id);
-            if (notice) {
-              setPreviewNotice(notice);
-              return;
-            }
-            setPreviewNotice(null);
-            setPreviewVisibility((current) =>
-              current ? applyPreviewAction(scene, current, id) : current
-            );
+            setPreviewNotice(preview.requestButtonAction(id));
           }}
+          controllers={preview.controllers}
+          reducedMotion={preview.reducedMotion}
+          onTransitionComplete={preview.completeTransition}
+          onHoverInput={preview.setHoverInput}
         />
         <PropertiesPanel
           node={selected}

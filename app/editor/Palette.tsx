@@ -44,6 +44,7 @@ type Props = {
   onRename: (id: string, name: string) => void;
   onMoveInside: (id: string, parentId: string) => void;
   onMoveRelative: (id: string, targetId: string, position: "before" | "after") => void;
+  disabled: boolean;
 };
 
 export function Palette({
@@ -55,10 +56,15 @@ export function Palette({
   onRename,
   onMoveInside,
   onMoveRelative,
+  disabled,
 }: Props) {
   const [tab, setTab] = useState<"components" | "hierarchy">("components");
   return (
-    <aside className="w-72 shrink-0 bg-panel border-r border-line flex flex-col">
+    <aside
+      className={`w-72 shrink-0 bg-panel border-r border-line flex flex-col ${disabled ? "opacity-50" : ""}`}
+      aria-disabled={disabled}
+      ref={(element) => { if (element) element.inert = disabled; }}
+    >
       <div className="h-9 shrink-0 grid grid-cols-2 border-b border-line px-2 pt-1">
         <Tab active={tab === "components"} onClick={() => setTab("components")}>Components</Tab>
         <Tab active={tab === "hierarchy"} onClick={() => setTab("hierarchy")}>Hierarchy</Tab>
