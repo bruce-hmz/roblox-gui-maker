@@ -16,7 +16,7 @@ import {
 import type { PreviewVisibility } from "./scene";
 import { resolveSceneMotion } from "./motion";
 
-type Result = {
+export type UseMotionPreviewResult = {
   active: boolean;
   start: () => void;
   stop: () => void;
@@ -32,12 +32,15 @@ const EMPTY_CONTROLLERS: PreviewMotionState = Object.freeze({});
 const cloneScene = (scene: readonly SceneNode[]) =>
   scene.map((node) => structuredClone(node));
 
-export function useMotionPreview(scene: SceneNode[]): Result {
+export function useMotionPreview(scene: SceneNode[]): UseMotionPreviewResult {
   const [session, updateSession] = useReducer(
     (_: PreviewMotionSession | null, next: PreviewMotionSession | null) => next,
     null,
   );
   const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotionRef = useRef(false);
+  const mediaQueryRef = useRef<MediaQueryList | null>(null);
+  const mediaListenerRef = useRef<(() => void) | null>(null);
   const snapshot = useRef<SceneNode[]>([]);
   const frames = useRef<number[]>([]);
   const sessionRef = useRef<PreviewMotionSession | null>(null);
@@ -55,15 +58,35 @@ export function useMotionPreview(scene: SceneNode[]): Result {
     for (const frame of frames.current) cancelAnimationFrame(frame);
     frames.current = [];
   }, []);
+  const unsubscribeReducedMotion = useCallback(() => {
+    const query = mediaQueryRef.current;
+    const listener = mediaListenerRef.current;
+    if (query && listener) query.removeEventListener("change", listener);
+    mediaQueryRef.current = null;
+    mediaListenerRef.current = null;
+  }, []);
 
   const stop = useCallback(() => {
     cancelFrames();
+    unsubscribeReducedMotion();
     snapshot.current = [];
     setSession(null);
-  }, [cancelFrames, setSession]);
+  }, [cancelFrames, setSession, unsubscribeReducedMotion]);
 
   const start = useCallback(() => {
     cancelFrames();
+    unsubscribeReducedMotion();
+    const query = matchMedia("(prefers-reduced-motion: reduce)");
+    const changed = () => {
+      reducedMotionRef.current = query.matches;
+      setReducedMotion(query.matches);
+      if (query.matches) transform((value) => applyPreviewReducedMotion(value, true));
+    };
+    reducedMotionRef.current = query.matches;
+    setReducedMotion(query.matches);
+    query.addEventListener("change", changed);
+    mediaQueryRef.current = query;
+    mediaListenerRef.current = changed;
     snapshot.current = cloneScene(scene);
     const initial = createPreviewMotionSession(snapshot.current);
     const resolved = resolveSceneMotion(snapshot.current);
@@ -71,7 +94,7 @@ export function useMotionPreview(scene: SceneNode[]): Result {
     const first = requestAnimationFrame(() => {
       const second = requestAnimationFrame(() => {
         transform((current) => Object.keys(current.controllers).reduce((next, nodeId) => {
-          const begun = beginPreviewInitialOpen(next, nodeId, reducedMotion);
+          const begun = beginPreviewInitialOpen(next, nodeId, reducedMotionRef.current);
           const controller = begun.controllers[nodeId];
           return controller?.phase === "opening" && !resolved.get(nodeId)?.effectivePreset
             ? completePreviewTransition(begun, nodeId, controller.token)
@@ -81,22 +104,12 @@ export function useMotionPreview(scene: SceneNode[]): Result {
       frames.current.push(second);
     });
     frames.current.push(first);
-  }, [cancelFrames, reducedMotion, scene, setSession, transform]);
-
-  useEffect(() => {
-    const query = matchMedia("(prefers-reduced-motion: reduce)");
-    const changed = () => {
-      setReducedMotion(query.matches);
-      if (query.matches) transform((value) => applyPreviewReducedMotion(value, true));
-    };
-    changed();
-    query.addEventListener("change", changed);
-    return () => query.removeEventListener("change", changed);
-  }, [transform]);
+  }, [cancelFrames, scene, setSession, transform, unsubscribeReducedMotion]);
   useEffect(() => () => {
     cancelFrames();
+    unsubscribeReducedMotion();
     sessionRef.current = null;
-  }, [cancelFrames]);
+  }, [cancelFrames, unsubscribeReducedMotion]);
 
   const requestButtonAction = useCallback((buttonId: string) => {
     if (!sessionRef.current) return null;
@@ -107,15 +120,15 @@ export function useMotionPreview(scene: SceneNode[]): Result {
       if (action.kind === "hideGui") {
         return snapshot.current
           .filter((node) => node.cls === "ScreenGui" && node.parentId === null)
-          .reduce((next, node) => requestPreviewVisibility(next, node.id, false, reducedMotion), current);
+          .reduce((next, node) => requestPreviewVisibility(next, node.id, false, reducedMotionRef.current), current);
       }
       const controller = current.controllers[action.targetId];
       const visible = controller?.desiredOpen ?? current.visibility[action.targetId] === true;
       const desired = action.request === "show" ? true : action.request === "hide" ? false : !visible;
-      return requestPreviewVisibility(current, action.targetId, desired, reducedMotion);
+      return requestPreviewVisibility(current, action.targetId, desired, reducedMotionRef.current);
     });
     return null;
-  }, [reducedMotion, transform]);
+  }, [transform]);
 
   return {
     active: session !== null,

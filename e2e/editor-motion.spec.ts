@@ -15,7 +15,13 @@ type FixtureNode = {
   layout?: "list";
   initialVisible?: boolean;
   text?: string;
-  action?: { type: "show" | "hide" | "toggle"; targetId: string };
+  rotation?: number;
+  anchor?: { x: number; y: number };
+  action?:
+    | { type: "show" | "hide" | "toggle"; targetId: string }
+    | { type: "hideGui" }
+    | { type: "remoteEvent"; eventName: string; argument?: string }
+    | { type: "teleport"; placeId: string };
   motion?: {
     preset?: "fade" | "slide" | "scale";
     durationMs?: number;
@@ -270,9 +276,23 @@ test("@full previews initial motion, fallback markers, and reduced-motion snaps"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect.poll(() => slide.getAttribute("data-motion-phase")).toBe("open");
   await expect(slide).toHaveCSS("transition-duration", "0s");
+  await page.getByRole("button", { name: "Stop preview" }).click();
+  await page.evaluate(() => {
+    const target = document.querySelector('[data-node-id="slide"]')!;
+    const phases: string[] = [];
+    new MutationObserver(() => {
+      const phase = target.getAttribute("data-motion-phase");
+      if (phase) phases.push(phase);
+    }).observe(target, { attributes: true });
+    Object.assign(window, { __reducedPhases: phases });
+    (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
+  });
+  await expect.poll(() => slide.getAttribute("data-motion-phase")).toBe("open");
+  expect(await page.evaluate(() => (window as unknown as { __reducedPhases: string[] }).__reducedPhases)).not.toContain("opening");
+  await expect(slide).toHaveCSS("transition-duration", "0s");
 });
 
-test("@full freezes editing controls while Preview is active", async ({ page }) => {
+test("@full freezes editing controls while Preview is active", async ({ page }, testInfo) => {
   await page.addInitScript(() => {
     const original = Storage.prototype.setItem;
     Object.assign(window, { __storageWrites: 0 });
@@ -289,17 +309,41 @@ test("@full freezes editing controls while Preview is active", async ({ page }) 
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("rgm:scene:v1") ?? "{}").selectedId)).toBe("panel");
   await page.getByRole("button", { name: "Preview" }).click();
   await page.evaluate(() => { (window as unknown as { __storageWrites: number }).__storageWrites = 0; });
+  const panel = page.locator('[data-node-id="panel"]');
+  const previewLeft = await panel.evaluate((node) => getComputedStyle(node).left);
   await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Redo" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "New" })).toBeDisabled();
   await expect(page.locator('input[type="file"][aria-label="Import JSON"]')).toBeDisabled();
   await expect(page.locator('aside[aria-disabled="true"]')).toHaveCount(1);
   await expect(page.getByRole("group", { name: "Motion" })).toHaveCount(0);
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Delete");
+  await page.keyboard.press("Control+d");
+  await page.keyboard.press("Control+z");
+  await page.evaluate(() => {
+    const frame = [...document.querySelectorAll("button")].find((button) => button.textContent?.includes("Frame"));
+    (frame as HTMLButtonElement | undefined)?.click();
+    (document.querySelector('button[aria-label="New"]') as HTMLButtonElement).click();
+  });
+  await page.getByRole("button", { name: "Mobile" }).click();
+  await expect(page.getByRole("button", { name: "Mobile" })).toHaveAttribute("aria-pressed", "true");
+  expect(await panel.evaluate((node) => getComputedStyle(node).left)).toBe(previewLeft);
+  await expect(page.locator('[data-node-id]')).toHaveCount(2);
+  const exportPath = testInfo.outputPath("preview-frozen.json");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export JSON" }).click();
+  const download = await downloadPromise;
+  await download.saveAs(exportPath);
+  expect(JSON.parse(await readFile(exportPath, "utf8")).scene.map((node: { id: string }) => node.id)).toEqual(["root", "panel"]);
   await expect.poll(() => page.locator('[data-node-id="panel"]').getAttribute("data-motion-phase")).toBe("open");
   expect(await page.evaluate(() => (window as unknown as { __storageWrites: number }).__storageWrites)).toBe(0);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("rgm:scene:v1") ?? "{}").selectedId)).toBe("panel");
   await page.getByRole("button", { name: "Stop preview" }).click();
   await expect(page.getByRole("button", { name: "New" })).toBeEnabled();
+  await selectHierarchyNode(page, "Panel");
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => panel.evaluate((node) => getComputedStyle(node).left)).not.toBe(previewLeft);
 });
 
 test("@full discards an import that resolves after Preview starts", async ({ page }) => {
@@ -344,9 +388,13 @@ test("@full interrupts visibility actions safely and gates hover by motion state
   await importScene(page, [
     fixtureNode("root", "MotionRoot", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
     target,
+    fixtureNode("plain-target", "PlainTarget", "root"),
     fixtureNode("hover", "Hover", "root", { cls: "TextButton", text: "Hover", motion: { preset: "scale", durationMs: 700, hover: true } }),
     { ...fixtureNode("hide", "Hide", "root", { cls: "TextButton", text: "Hide" }), action: { type: "hide", targetId: "target" } },
     { ...fixtureNode("show", "Show", "root", { cls: "TextButton", text: "Show" }), action: { type: "show", targetId: "target" } },
+    { ...fixtureNode("toggle", "Toggle", "root", { cls: "TextButton", text: "Toggle" }), action: { type: "toggle", targetId: "plain-target" } },
+    { ...fixtureNode("remote", "Remote", "root", { cls: "TextButton", text: "Remote" }), action: { type: "remoteEvent", eventName: "PreviewEvent", argument: "" } },
+    { ...fixtureNode("hide-gui", "HideGui", "root", { cls: "TextButton", text: "HideGui" }), action: { type: "hideGui" } },
   ]);
   await page.getByRole("button", { name: "Preview" }).click();
   const animated = page.locator('[data-node-id="target"]');
@@ -364,6 +412,120 @@ test("@full interrupts visibility actions safely and gates hover by motion state
   await expect(animated).toHaveAttribute("data-motion-phase", "open");
   await expect(animated).toBeVisible();
   expect(Number(await animated.getAttribute("data-motion-token"))).toBeGreaterThan(closingToken);
+  await page.locator('[data-node-id="toggle"]').dispatchEvent("pointerdown");
+  await expect(page.locator('[data-node-id="plain-target"]')).toHaveCount(0);
+  await page.locator('[data-node-id="toggle"]').dispatchEvent("pointerdown");
+  await expect(page.locator('[data-node-id="plain-target"]')).toBeVisible();
+  await page.locator('[data-node-id="remote"]').dispatchEvent("pointerdown");
+  await expect(page.getByRole("status")).toContainText("RemoteEvent actions run in Roblox Studio");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBe(1);
+  await page.locator('[data-node-id="hide-gui"]').dispatchEvent("pointerdown");
+  await expect(page.locator('[data-node-id="root"]')).toHaveCount(0);
+});
+
+test("@full fades a subtree from its root opacity and preserves configured timing", async ({ page }) => {
+  await importScene(page, [
+    fixtureNode("root", "Root", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("fade", "Fade", "root", { motion: { preset: "fade", durationMs: 700 } }),
+    fixtureNode("child", "Child", "fade"),
+  ]);
+  const fade = page.locator('[data-node-id="fade"]');
+  await page.evaluate(() => {
+    const target = document.querySelector('[data-node-id="fade"]')!;
+    const records: { phase: string; opacity: string }[] = [];
+    new MutationObserver(() => {
+      const phase = target.getAttribute("data-motion-phase");
+      if (phase) records.push({ phase, opacity: getComputedStyle(target).opacity });
+    }).observe(target, { attributes: true });
+    Object.assign(window, { __fadeRecords: records });
+    (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
+  });
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __fadeRecords: { phase: string }[] }).__fadeRecords.map((record) => record.phase))).toContain("closed");
+  const closed = await page.evaluate(() => (window as unknown as { __fadeRecords: { phase: string; opacity: string }[] }).__fadeRecords.find((record) => record.phase === "closed"));
+  expect(closed?.opacity).toBe("0");
+  await expect(fade).toHaveCSS("transition-property", "opacity");
+  await expect(fade).toHaveCSS("transition-duration", "0.7s");
+  await expect.poll(() => fade.getAttribute("data-motion-phase")).toBe("open");
+  await expect(fade).toHaveCSS("opacity", "1");
+  await expect(page.locator('[data-node-id="child"]')).toBeVisible();
+});
+
+test("@full subscribes reduced motion only for the active Preview session", async ({ page }) => {
+  await page.addInitScript(() => {
+    const native = window.matchMedia.bind(window);
+    Object.assign(window, { __mediaAdds: 0, __mediaRemoves: 0 });
+    window.matchMedia = (query) => {
+      const result = native(query);
+      const add = result.addEventListener.bind(result);
+      const remove = result.removeEventListener.bind(result);
+      result.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
+        (window as unknown as { __mediaAdds: number }).__mediaAdds++;
+        return add(type as "change", listener, options);
+      }) as typeof result.addEventListener;
+      result.removeEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) => {
+        (window as unknown as { __mediaRemoves: number }).__mediaRemoves++;
+        return remove(type as "change", listener, options);
+      }) as typeof result.removeEventListener;
+      return result;
+    };
+  });
+  await importScene(page, [fixtureNode("root", "Root", null, { cls: "ScreenGui" })]);
+  expect(await page.evaluate(() => (window as unknown as { __mediaAdds: number }).__mediaAdds)).toBe(0);
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __mediaAdds: number }).__mediaAdds)).toBe(1);
+  await page.getByRole("button", { name: "Stop preview" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __mediaRemoves: number }).__mediaRemoves)).toBe(1);
+});
+
+test("@full gates hover eligibility and composes rotated Slide in screen direction", async ({ page }) => {
+  await importScene(page, [
+    fixtureNode("root", "Root", null, { cls: "ScreenGui", size: { x: 1, y: 1 }, transparency: 1, zindex: 0 }),
+    fixtureNode("plain", "Plain", "root", { cls: "TextButton", text: "Plain", motion: { preset: "scale", durationMs: 700 } }),
+    fixtureNode("hover", "Hover", "root", { cls: "TextButton", text: "Hover", motion: { preset: "fade", durationMs: 700, hover: true } }),
+    fixtureNode("rotated", "Rotated", "root", { rotation: 90, anchor: { x: 0.5, y: 0.5 }, motion: { preset: "slide", durationMs: 700, slideDirection: "right" } }),
+    fixtureNode("fade-flow", "FadeFlow", "root", { motion: { preset: "fade", durationMs: 700 } }),
+    fixtureNode("flow-list", "FlowList", "fade-flow", { layout: "list" }),
+    fixtureNode("flow-child", "FlowChild", "flow-list", { motion: { preset: "slide", durationMs: 700, slideDirection: "right" } }),
+  ]);
+  const plain = page.locator('[data-node-id="plain"]');
+  const hover = page.locator('[data-node-id="hover"]');
+  const rotated = page.locator('[data-node-id="rotated"]');
+  const flowChild = page.locator('[data-node-id="flow-child"]');
+  const canonicalX = await rotated.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).m41);
+  const canonicalCenter = await flowChild.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+  });
+  await page.evaluate(() => {
+    const target = document.querySelector('[data-node-id="rotated"]')!;
+    const flow = document.querySelector('[data-node-id="flow-child"]')!;
+    const records: { phase: string; x: number }[] = [];
+    new MutationObserver(() => {
+      const phase = target.getAttribute("data-motion-phase");
+      if (phase) records.push({ phase, x: new DOMMatrix(getComputedStyle(target).transform).m41 });
+    }).observe(target, { attributes: true });
+    const flowRecords: { phase: string; x: number; y: number }[] = [];
+    new MutationObserver(() => {
+      const phase = flow.getAttribute("data-motion-phase");
+      const rect = flow.getBoundingClientRect();
+      if (phase) flowRecords.push({ phase, x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+    }).observe(flow, { attributes: true });
+    Object.assign(window, { __rotatedRecords: records, __flowRecords: flowRecords });
+    (document.querySelector('button[aria-label="Preview"]') as HTMLButtonElement).click();
+  });
+  await expect.poll(() => plain.getAttribute("data-motion-phase")).toBe("open");
+  await plain.dispatchEvent("pointerover");
+  await expect.poll(() => plain.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBe(1);
+  await expect.poll(() => hover.getAttribute("data-motion-phase")).toBe("open");
+  await hover.focus();
+  await expect(hover).toHaveCSS("transition-property", "opacity, transform");
+  await expect(hover).toHaveCSS("transition-duration", "0.7s");
+  await expect.poll(() => hover.evaluate((node) => new DOMMatrix(getComputedStyle(node).transform).a)).toBeCloseTo(1.03, 2);
+  const initialX = await page.evaluate(() => (window as unknown as { __rotatedRecords: { phase: string; x: number }[] }).__rotatedRecords.find((record) => record.phase === "closed")!.x);
+  expect(initialX - canonicalX).toBeCloseTo(24, 4);
+  await expect(flowChild).toHaveAttribute("data-effective-motion", "scale");
+  const flowClosed = await page.evaluate(() => (window as unknown as { __flowRecords: { phase: string; x: number; y: number }[] }).__flowRecords.find((record) => record.phase === "closed")!);
+  expect(flowClosed.x).toBeCloseTo(canonicalCenter.x, 4);
+  expect(flowClosed.y).toBeCloseTo(canonicalCenter.y, 4);
 });

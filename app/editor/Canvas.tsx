@@ -175,7 +175,11 @@ function NodeView({
       : hexToRgba(node.color, 1 - node.transparency);
   const geometryStyle = canvasGeometryStyle(node);
   const resolved = previewVisibility ? resolvedMotion.get(node.id) : undefined;
-  const motionStyle = previewMotionStyle(geometryStyle.transform, resolved, controller, reducedMotion);
+  const canonicalTransform = isFlow
+    ? node.rotation ? `rotate(${node.rotation}deg)` : undefined
+    : geometryStyle.transform;
+  const hoverEnabled = node.cls === "TextButton" && resolved?.hover === true && !!controller;
+  const motionStyle = previewMotionStyle(canonicalTransform, resolved, controller, reducedMotion, hoverEnabled);
   const flowStyle =
     containerLayout === "grid"
       ? { width: "100%", height: "100%" }
@@ -192,10 +196,10 @@ function NodeView({
       data-motion-token={controller?.token}
       data-motion-initial-closed={controller?.phase === "closed" && controller.token === 0 ? "true" : undefined}
       tabIndex={previewVisibility && node.cls === "TextButton" ? 0 : undefined}
-      onPointerEnter={() => controller && onHoverInput(node.id, "pointer", true)}
-      onPointerLeave={() => controller && onHoverInput(node.id, "pointer", false)}
-      onFocus={() => controller && onHoverInput(node.id, "focus", true)}
-      onBlur={() => controller && onHoverInput(node.id, "focus", false)}
+      onPointerEnter={hoverEnabled ? () => onHoverInput(node.id, "pointer", true) : undefined}
+      onPointerLeave={hoverEnabled ? () => onHoverInput(node.id, "pointer", false) : undefined}
+      onFocus={hoverEnabled ? () => onHoverInput(node.id, "focus", true) : undefined}
+      onBlur={hoverEnabled ? () => onHoverInput(node.id, "focus", false) : undefined}
       onTransitionEnd={(event) => {
         if (!controller || event.currentTarget !== event.target || !resolved?.effectivePreset) return;
         const property = resolved.effectivePreset === "fade" ? "opacity" : "transform";
@@ -238,7 +242,9 @@ function NodeView({
           : undefined,
         containerType: "inline-size",
         zIndex: node.zindex,
-        opacity: !previewVisibility && node.initialVisible === false ? 0.45 : 1,
+        opacity: previewVisibility && resolved?.effectivePreset === "fade"
+          ? motionStyle.opacity
+          : !previewVisibility && node.initialVisible === false ? 0.45 : 1,
         cursor: previewVisibility && node.cls === "TextButton" ? "pointer" : undefined,
         pointerEvents: startsHidden && !selected ? "none" : undefined,
       }}
@@ -351,23 +357,27 @@ function previewMotionStyle(
   resolved: ResolvedMotion | undefined,
   controller: PreviewMotionController | undefined,
   reducedMotion: boolean,
+  hoverEnabled: boolean,
 ): React.CSSProperties {
   if (!resolved || !controller) return {};
   const closed = controller.phase === "closed" || controller.phase === "closing";
   const transforms = canonicalTransform ? [canonicalTransform] : [];
   if (resolved.effectivePreset === "slide" && closed) {
     const offset = motionClosedOffset(resolved.slideDirection);
-    transforms.push(`translate(${offset.x}px, ${offset.y}px)`);
+    transforms.unshift(`translate(${offset.x}px, ${offset.y}px)`);
   }
   const visibilityScale = resolved.effectivePreset === "scale" && closed ? 0.92 : 1;
-  const hoverScale = previewHoverScale(controller, reducedMotion);
+  const hoverScale = hoverEnabled ? previewHoverScale(controller, reducedMotion) : 1;
   if (visibilityScale * hoverScale !== 1) transforms.push(`scale(${visibilityScale * hoverScale})`);
   const duration = previewTransitionDurationMs(controller, resolved.durationMs, reducedMotion);
-  const property = resolved.effectivePreset === "fade" ? "opacity" : "transform";
+  const properties = new Set<string>();
+  if (resolved.effectivePreset === "fade") properties.add("opacity");
+  else if (resolved.effectivePreset) properties.add("transform");
+  if (hoverEnabled) properties.add("transform");
   return {
     transform: transforms.length ? transforms.join(" ") : "none",
     opacity: resolved.effectivePreset === "fade" && closed ? 0 : 1,
-    transitionProperty: property,
+    transitionProperty: [...properties].join(", "),
     transitionDuration: `${duration}ms`,
     transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
   };
