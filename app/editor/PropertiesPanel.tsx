@@ -25,6 +25,8 @@ import { RemoteEventActionFields } from "./RemoteEventActionFields";
 import { TeleportActionFields } from "./TeleportActionFields";
 import { ImageAssetField } from "./ImageAssetField";
 import { LayoutProperties } from "./LayoutProperties";
+import { MotionProperties } from "./MotionProperties";
+import { isMotionClass } from "./motion";
 
 type Props = {
   node: SceneNode | null;
@@ -469,6 +471,14 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                 />
               </Row>
             </Group>
+          )}
+
+          {isMotionClass(node.cls) && (
+            <MotionProperties
+              node={node}
+              scene={scene}
+              onChange={(patch) => onChange(node.id, patch)}
+            />
           )}
 
           {node.cls === "TextButton" && (
