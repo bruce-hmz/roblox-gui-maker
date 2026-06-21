@@ -628,6 +628,36 @@ describe("scene action state", () => {
     expect(cloneAction).not.toBe(sourceAction);
   });
 
+  it("deep-clones motion in a duplicated subtree", () => {
+    const source = node({
+      id: "panel",
+      motion: {
+        preset: "slide",
+        durationMs: 320,
+        slideDirection: "left",
+      },
+    });
+    const child = node({
+      id: "button",
+      cls: "TextButton",
+      parentId: source.id,
+      motion: { preset: "fade", hover: true },
+    });
+
+    const result = duplicateSubtree([source, child], source.id);
+    const clone = result?.nodes.find((item) => item.id === result.newId);
+    if (!clone?.motion) throw new Error("Expected duplicated motion");
+    clone.motion.durationMs = 700;
+    clone.motion.slideDirection = "down";
+
+    expect(result?.nodes).toHaveLength(2);
+    expect(source.motion).toEqual({
+      preset: "slide",
+      durationMs: 320,
+      slideDirection: "left",
+    });
+  });
+
   it("deep-clones stroke data when duplicating a node", () => {
     const source = node({
       stroke: { color: "#123456", transparency: 0.5, thickness: 3 },

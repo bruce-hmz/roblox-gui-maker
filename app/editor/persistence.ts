@@ -5,9 +5,10 @@ import { sanitizeRemoteEventAction } from "./remote-events";
 import { sanitizeTeleportAction } from "./teleports";
 import { FONTS } from "./scene";
 import { normalizeRobloxAssetId } from "./image-assets";
+import { sanitizeMotion } from "./motion";
 
 const PROJECT_FORMAT = "roblox-gui-maker";
-const PROJECT_VERSION = 1;
+const PROJECT_VERSION = 2;
 
 // Decorators are properties on saved nodes, never standalone scene objects.
 const VALID_CLS: ReadonlySet<RobloxClass> = new Set<RobloxClass>([
@@ -26,7 +27,7 @@ const isFiniteNum = (value: unknown): value is number =>
 const isHex = (value: unknown): value is string =>
   typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
 
-function sanitizeNode(raw: unknown): SceneNode | null {
+function sanitizeNode(raw: unknown, allowMotion: boolean): SceneNode | null {
   if (!raw || typeof raw !== "object") return null;
   const source = raw as Record<string, unknown>;
   if (typeof source.id !== "string" || !source.id) return null;
@@ -68,6 +69,11 @@ function sanitizeNode(raw: unknown): SceneNode | null {
     ...sanitizeResponsiveGeometry(source),
     ...sanitizeLayoutFields(source, source.cls as RobloxClass),
   };
+
+  if (allowMotion) {
+    const motion = sanitizeMotion(source.motion, source.cls as RobloxClass);
+    if (motion) node.motion = { ...motion };
+  }
 
   if (typeof source.text === "string") node.text = source.text;
   if (
@@ -176,10 +182,13 @@ function repairParents(scene: SceneNode[]): void {
   }
 }
 
-export function sanitizeScene(raw: unknown): SceneNode[] | null {
+export function sanitizeScene(
+  raw: unknown,
+  { allowMotion = true }: { allowMotion?: boolean } = {}
+): SceneNode[] | null {
   if (!Array.isArray(raw)) return null;
   const scene = raw
-    .map(sanitizeNode)
+    .map((node) => sanitizeNode(node, allowMotion))
     .filter((node): node is SceneNode => node !== null);
   if (scene.length === 0) return null;
   repairParents(scene);
@@ -204,13 +213,15 @@ export function parseSceneDocument(text: string): SceneNode[] {
   }
 
   const document = parsed as Record<string, unknown>;
-  if (document.version !== PROJECT_VERSION) {
+  if (document.version !== 1 && document.version !== PROJECT_VERSION) {
     throw new Error(
       `Project version ${String(document.version)} is not supported.`
     );
   }
 
-  const scene = sanitizeScene(document.scene);
+  const scene = sanitizeScene(document.scene, {
+    allowMotion: document.version === PROJECT_VERSION,
+  });
   if (!scene) {
     throw new Error("The project contains no valid GUI elements.");
   }

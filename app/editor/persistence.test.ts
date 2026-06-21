@@ -21,6 +21,19 @@ const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
   ...overrides,
 });
 
+function parseWithVersion1Gate(text: string): SceneNode[] {
+  const document = JSON.parse(text) as {
+    version?: unknown;
+    scene?: unknown;
+  };
+  if (document.version !== 1) {
+    throw new Error(`Project version ${String(document.version)} is not supported.`);
+  }
+  const scene = sanitizeScene(document.scene, { allowMotion: false });
+  if (!scene) throw new Error("The project contains no valid GUI elements.");
+  return scene;
+}
+
 describe("sanitizeScene", () => {
   it("sanitizes layout values while preserving valid scrolling canvas sizing", () => {
     const scene = sanitizeScene([
@@ -288,10 +301,58 @@ describe("sanitizeScene", () => {
     expect(sanitizeScene([])).toBeNull();
     expect(sanitizeScene([null, { id: "invalid", cls: "Bogus" }])).toBeNull();
   });
+
+  it("sanitizes optional motion fields without removing valid nodes", () => {
+    const scene = sanitizeScene([
+      {
+        ...node({ id: "partial", cls: "TextButton" }),
+        motion: {
+          preset: "slide",
+          durationMs: 319.6,
+          slideDirection: "diagonal",
+          hover: true,
+          extra: "drop me",
+        },
+      },
+      {
+        ...node({ id: "invalid-motion", cls: "Frame" }),
+        motion: { preset: "spin", durationMs: "fast", hover: false },
+      },
+    ]);
+
+    expect(scene).toHaveLength(2);
+    expect(scene?.[0].motion).toEqual({
+      preset: "slide",
+      durationMs: 320,
+      hover: true,
+    });
+    expect(scene?.[1].motion).toBeUndefined();
+  });
+
+  it("gates motion and hover by Roblox class", () => {
+    const scene = sanitizeScene([
+      {
+        ...node({ id: "screen", cls: "ScreenGui" }),
+        motion: { preset: "fade", hover: true },
+      },
+      {
+        ...node({ id: "frame", cls: "Frame" }),
+        motion: { preset: "fade", hover: true },
+      },
+      {
+        ...node({ id: "button", cls: "TextButton" }),
+        motion: { hover: true },
+      },
+    ]);
+
+    expect(scene?.[0].motion).toBeUndefined();
+    expect(scene?.[1].motion).toEqual({ preset: "fade" });
+    expect(scene?.[2].motion).toEqual({ hover: true });
+  });
 });
 
 describe("scene project documents", () => {
-  it("round-trips every approved layout field in document version 1", () => {
+  it("round-trips every approved layout field in document version 2", () => {
     const scene: SceneNode[] = [
       node({
         cls: "ScrollingFrame",
@@ -315,7 +376,7 @@ describe("scene project documents", () => {
 
     const serialized = serializeSceneDocument(scene);
 
-    expect(JSON.parse(serialized).version).toBe(1);
+    expect(JSON.parse(serialized).version).toBe(2);
     expect(parseSceneDocument(serialized)).toEqual(scene);
   });
 
@@ -336,11 +397,11 @@ describe("scene project documents", () => {
 
     const serialized = serializeSceneDocument(scene);
 
-    expect(JSON.parse(serialized).version).toBe(1);
+    expect(JSON.parse(serialized).version).toBe(2);
     expect(parseSceneDocument(serialized)).toEqual(scene);
   });
 
-  it("round-trips a Teleport action without changing document version 1", () => {
+  it("round-trips a Teleport action in document version 2", () => {
     const scene: SceneNode[] = [
       node({
         id: "teleport-button",
@@ -351,11 +412,11 @@ describe("scene project documents", () => {
 
     const serialized = serializeSceneDocument(scene);
 
-    expect(JSON.parse(serialized).version).toBe(1);
+    expect(JSON.parse(serialized).version).toBe(2);
     expect(parseSceneDocument(serialized)).toEqual(scene);
   });
 
-  it("round-trips a RemoteEvent action without changing document version 1", () => {
+  it("round-trips a RemoteEvent action in document version 2", () => {
     const scene: SceneNode[] = [
       node({
         id: "shop-button",
@@ -370,7 +431,7 @@ describe("scene project documents", () => {
 
     const serialized = serializeSceneDocument(scene);
 
-    expect(JSON.parse(serialized).version).toBe(1);
+    expect(JSON.parse(serialized).version).toBe(2);
     expect(parseSceneDocument(serialized)).toEqual(scene);
   });
 
@@ -400,10 +461,60 @@ describe("scene project documents", () => {
 
     expect(JSON.parse(serialized)).toMatchObject({
       format: "roblox-gui-maker",
-      version: 1,
+      version: 2,
       scene,
     });
     expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
+  it("parses a normal version 1 document without changing its scene", () => {
+    const scene = [node({ id: "legacy", cls: "TextLabel", text: "Legacy" })];
+    const serialized = JSON.stringify({
+      format: "roblox-gui-maker",
+      version: 1,
+      scene,
+    });
+
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
+  it("ignores forged motion in version 1 documents", () => {
+    const serialized = JSON.stringify({
+      format: "roblox-gui-maker",
+      version: 1,
+      scene: [{ ...node({ cls: "TextButton" }), motion: { preset: "fade" } }],
+    });
+
+    expect(parseSceneDocument(serialized)[0].motion).toBeUndefined();
+  });
+
+  it("round-trips motion in document version 2", () => {
+    const scene = [
+      node({
+        cls: "TextButton",
+        motion: {
+          preset: "slide",
+          durationMs: 320,
+          slideDirection: "down",
+          hover: true,
+        },
+      }),
+    ];
+
+    const serialized = serializeSceneDocument(scene);
+
+    expect(JSON.parse(serialized).version).toBe(2);
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
+  it("prevents a version 1 reader from silently downgrading version 2 motion", () => {
+    const serialized = serializeSceneDocument([
+      node({ cls: "TextButton", motion: { preset: "fade" } }),
+    ]);
+
+    expect(() => parseWithVersion1Gate(serialized)).toThrowError(
+      "Project version 2 is not supported."
+    );
   });
 
   it.each([
@@ -417,10 +528,10 @@ describe("scene project documents", () => {
       "unsupported version",
       JSON.stringify({
         format: "roblox-gui-maker",
-        version: 2,
+        version: 3,
         scene: [node()],
       }),
-      "Project version 2 is not supported.",
+      "Project version 3 is not supported.",
     ],
     [
       "empty scene",

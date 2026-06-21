@@ -43,6 +43,7 @@ const cloneScene = (s: SceneNode[]): SceneNode[] =>
     ...(n.maxSize ? { maxSize: { ...n.maxSize } } : {}),
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
     ...(n.action ? { action: { ...n.action } } : {}),
+    ...(n.motion ? { motion: { ...n.motion } } : {}),
   }));
 const scenesEqual = (left: SceneNode[], right: SceneNode[]) =>
   JSON.stringify(left) === JSON.stringify(right);

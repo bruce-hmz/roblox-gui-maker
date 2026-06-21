@@ -147,6 +147,7 @@ export function duplicateSubtree(
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
     ...(n.stroke ? { stroke: { ...n.stroke } } : {}),
     ...(n.action ? { action: { ...n.action } } : {}),
+    ...(n.motion ? { motion: { ...n.motion } } : {}),
     id: idMap.get(n.id)!,
     parentId: n.parentId ? idMap.get(n.parentId) ?? n.parentId : n.parentId,
     zindex: maxZ + 1,
