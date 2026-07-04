@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
 import { GUIDES, getGuide } from "../guides-data";
-import { getTemplate } from "../../editor/templates";
+import { getTemplate, TEMPLATES } from "../../editor/templates";
+import { USE_CASES } from "../../for/usecases";
 
 export function generateStaticParams() {
   return GUIDES.map((g) => ({ slug: g.slug }));
@@ -44,6 +45,14 @@ export default async function GuidePage({
   const g = getGuide(slug);
   if (!g) notFound();
   const tpl = g.relatedTemplate ? getTemplate(g.relatedTemplate) : undefined;
+  // Cross-links to other detail pages so a guide isn't a leaf node. Template
+  // detail pages reinforce the guide's relevance; use-case pages cover the
+  // "which screen type is this for" intent. Both are detail↔detail links,
+  // which spread PageRank between the page types Google isn't indexing yet.
+  const otherTemplates = TEMPLATES.filter((t) => t.slug !== g.relatedTemplate).slice(0, 3);
+  const useCases = g.relatedTemplate
+    ? USE_CASES.filter((u) => u.template === g.relatedTemplate)
+    : [];
 
   // FAQ JSON-LD — helps Google/AI surfaces pick up the Q&A.
   const faqSchema = {
@@ -131,6 +140,57 @@ export default async function GuidePage({
             </section>
           ))}
         </div>
+
+        {/* Cross-links to detail pages: keeps guides from being leaf nodes and
+            lets PageRank flow to template + use-case detail pages. */}
+        {tpl && (
+          <section className="mt-12">
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Use this in your game
+            </h2>
+            <div className="flex flex-col gap-2">
+              <Link
+                href={`/templates/${tpl.slug}`}
+                className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+              >
+                <p className="text-sm font-semibold text-ink">
+                  View the {tpl.title.replace("Roblox ", "").replace(" GUI", "")} template →
+                </p>
+                <p className="text-xs text-ink-mute mt-1">{tpl.description}</p>
+              </Link>
+              {useCases.map((u) => (
+                <Link
+                  key={u.slug}
+                  href={`/for/${u.slug}`}
+                  className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+                >
+                  <p className="text-sm font-semibold text-ink">{u.title}</p>
+                  <p className="text-xs text-ink-mute mt-1 line-clamp-2">{u.blurb}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!tpl && otherTemplates.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Templates to start from
+            </h2>
+            <div className="flex flex-col gap-2">
+              {otherTemplates.map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/templates/${t.slug}`}
+                  className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+                >
+                  <p className="text-sm font-semibold text-ink">{t.title}</p>
+                  <p className="text-xs text-ink-mute mt-1 line-clamp-2">{t.description}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {g.faq.length > 0 && (
           <section className="mt-12">

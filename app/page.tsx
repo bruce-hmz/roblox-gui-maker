@@ -7,6 +7,7 @@ import { ScenePreview } from "./editor/ScenePreview";
 import { KITS } from "./editor/kits";
 import { TEMPLATES, getTemplate } from "./editor/templates";
 import { USE_CASES } from "./for/usecases";
+import { GUIDES } from "./guides/guides-data";
 
 export const metadata: Metadata = {
   title: "Free Online Roblox GUI Maker | Visual UI Builder",
@@ -388,6 +389,44 @@ export default function Home() {
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* guides strip — direct home→detail links so every guide is one
+            click from the root. Reduces click depth for crawlers and spreads
+            PageRank from the homepage out to guide detail pages. */}
+        <section className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-semibold">
+                Guides &amp; tutorials
+              </h2>
+              <p className="text-sm text-ink-dim mt-1 max-w-md">
+                Step-by-step written tutorials for every common Roblox GUI —
+                main menu, shop, inventory, loading screen, and more. Each pairs
+                with a template you can open in the editor.
+              </p>
+            </div>
+            <Link href="/guides" className="text-sm text-focus hover:underline font-medium">
+              All guides →
+            </Link>
+          </div>
+          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {GUIDES.map((g) => (
+              <li key={g.slug}>
+                <Link
+                  href={`/guides/${g.slug}`}
+                  className="block rounded-xl border border-line bg-panel hover:border-focus p-4 transition h-full"
+                >
+                  <p className="text-xs text-focus font-semibold uppercase tracking-wider mb-1">
+                    {g.category}
+                  </p>
+                  <p className="text-sm font-medium text-ink leading-snug">
+                    {g.title}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* SEO body */}

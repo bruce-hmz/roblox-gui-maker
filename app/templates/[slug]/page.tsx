@@ -6,6 +6,7 @@ import { SiteFooter } from "../../components/SiteFooter";
 import { ScenePreview } from "../../editor/ScenePreview";
 import { TEMPLATES, getTemplate } from "../../editor/templates";
 import { guidesForTemplate } from "../../guides/guides-data";
+import { USE_CASES } from "../../for/usecases";
 
 export function generateStaticParams() {
   return TEMPLATES.map((t) => ({ slug: t.slug }));
@@ -46,6 +47,10 @@ export default async function TemplatePage({
   if (!t) notFound();
   const related = TEMPLATES.filter((x) => x.slug !== slug).slice(0, 3);
   const guides = guidesForTemplate(slug);
+  // Use cases that map to this template (reverse lookup by USE_CASES.template).
+  // Adds a detail↔detail cross-link so template and use-case pages reinforce
+  // each other's relevance instead of each standing alone.
+  const useCases = USE_CASES.filter((u) => u.template === slug);
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -111,15 +116,73 @@ export default async function TemplatePage({
         {guides.length > 0 && (
           <section className="mt-10">
             <h2 className="text-xl font-semibold mb-3">How to build this</h2>
+            {/* Inline the first related guide's intro + first two sections so the
+                template page carries self-contained tutorial prose (~600 words)
+                instead of only links out. Raises content depth on a page type
+                that was otherwise thin (tagline + boilerplate). */}
+            {(() => {
+              const g = guides[0];
+              return (
+                <article className="max-w-2xl">
+                  <p className="text-ink-dim leading-relaxed mb-4">{g.intro}</p>
+                  {g.sections.slice(0, 2).map((s, i) => (
+                    <div key={i} className="mb-4">
+                      <h3 className="font-semibold text-ink mb-1.5">{s.heading}</h3>
+                      {s.paragraphs?.map((p, j) => (
+                        <p key={j} className="text-ink-dim leading-relaxed mb-2 text-[15px]">
+                          {p}
+                        </p>
+                      ))}
+                      {s.tip && (
+                        <p className="text-sm text-ink-mute">
+                          <span className="font-semibold text-focus">Tip: </span>
+                          {s.tip}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  <Link
+                    href={`/guides/${g.slug}`}
+                    className="inline-block text-sm text-focus hover:underline font-medium"
+                  >
+                    Read the full {g.title} guide →
+                  </Link>
+                </article>
+              );
+            })()}
+
+            {/* Remaining related guides as links. */}
+            {guides.length > 1 && (
+              <div className="flex flex-col gap-2 mt-6">
+                {guides.slice(1).map((g) => (
+                  <Link
+                    key={g.slug}
+                    href={`/guides/${g.slug}`}
+                    className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+                  >
+                    <p className="text-sm font-semibold text-ink">{g.title}</p>
+                    <p className="text-xs text-ink-mute mt-1 line-clamp-2">{g.description}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {useCases.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold mb-3">
+              Build it for your screen type
+            </h2>
             <div className="flex flex-col gap-2">
-              {guides.map((g) => (
+              {useCases.map((u) => (
                 <Link
-                  key={g.slug}
-                  href={`/guides/${g.slug}`}
+                  key={u.slug}
+                  href={`/for/${u.slug}`}
                   className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
                 >
-                  <p className="text-sm font-semibold text-ink">{g.title}</p>
-                  <p className="text-xs text-ink-mute mt-1 line-clamp-2">{g.description}</p>
+                  <p className="text-sm font-semibold text-ink">{u.title}</p>
+                  <p className="text-xs text-ink-mute mt-1 line-clamp-2">{u.blurb}</p>
                 </Link>
               ))}
             </div>

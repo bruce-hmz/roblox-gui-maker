@@ -51,7 +51,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
       JSON.parse(value) as { "@type": string; [key: string]: unknown }
   );
   const webAppSchema = structuredData.find(
-    (value) => value["@type"] === "WebApplication"
+    (value) => value["@type"] === "SoftwareApplication"
   );
   expect(JSON.stringify(webAppSchema)).toContain(
     "Browser-local ZIP project export"
