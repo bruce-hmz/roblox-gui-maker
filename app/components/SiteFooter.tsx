@@ -55,11 +55,26 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
         </div>
         <div>
           <p className="text-ink-dim font-medium mb-2">{zh ? "关于" : "About"}</p>
-          <p className="text-ink-mute">
+          <p className="text-ink-mute mb-3">
             {zh
               ? "一个独立的非官方工具,与 Roblox Corporation 无关、也未获其认可。“Roblox”是 Roblox Corporation 的商标。"
               : "An independent, unofficial tool. Not affiliated with or endorsed by Roblox Corporation. “Roblox” is a trademark of Roblox Corporation."}
           </p>
+          <p className="text-ink-dim font-medium mb-2">
+            {zh ? "反馈" : "Feedback"}
+          </p>
+          <ul className="space-y-1.5 text-ink-mute">
+            <li>
+              <a
+                className="hover:text-ink"
+                href="https://github.com/firstdraft-work/roblox-gui-maker/issues/new"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {zh ? "报告 Bug / 提建议" : "Report a bug / Request a feature"}
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
       <div className="max-w-6xl mx-auto px-6 pb-6 flex justify-center items-center gap-4 flex-wrap">
