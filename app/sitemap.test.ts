@@ -18,6 +18,9 @@ describe("sitemap", () => {
       "/guides",
       "/for",
       "/about",
+      "/privacy",
+      "/terms",
+      "/trust",
     ];
     const expectedUrls = [
       ...fixed.map((path) => `${base}${path}`),

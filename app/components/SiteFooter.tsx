@@ -75,6 +75,26 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
               </a>
             </li>
           </ul>
+          <p className="text-ink-dim font-medium mb-2 mt-4">
+            {zh ? "法律与信任" : "Legal & trust"}
+          </p>
+          <ul className="space-y-1.5 text-ink-mute">
+            <li>
+              <Link className="hover:text-ink" href="/privacy">
+                {zh ? "隐私政策" : "Privacy Policy"}
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-ink" href="/terms">
+                {zh ? "服务条款" : "Terms of Service"}
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-ink" href="/trust">
+                {zh ? "安全 / 信任" : "Is it safe?"}
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
       <div className="max-w-6xl mx-auto px-6 pb-6 flex justify-center items-center gap-4 flex-wrap">
