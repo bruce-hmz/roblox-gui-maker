@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteNav } from "./components/SiteNav";
 import { SiteFooter } from "./components/SiteFooter";
+import { HeroDemo } from "./components/HeroDemo";
 import { KitCard } from "./components/KitCard";
 import { ScenePreview } from "./editor/ScenePreview";
 import { KITS } from "./editor/kits";
@@ -151,6 +152,10 @@ const faqSchema = {
   })),
 };
 
+// The hero demo builds this scene up node-by-node. main-menu is the canonical
+// first template; fall back to the first template if its slug ever changes.
+const HERO_SCENE = getTemplate("main-menu")?.scene ?? TEMPLATES[0].scene;
+
 export default function Home() {
   return (
     <>
@@ -199,9 +204,7 @@ export default function Home() {
 
         {/* hero preview */}
         <section className="max-w-4xl mx-auto px-6 pb-4">
-          <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40">
-            <ScenePreview scene={TEMPLATES[0].scene} />
-          </div>
+          <HeroDemo buildOrder={HERO_SCENE} />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
             {PRODUCT_PROOFS.map((proof) => (
               <article
