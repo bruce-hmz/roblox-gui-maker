@@ -814,6 +814,98 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
       { slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" },
     ],
   },
+  "roblox-gui-code-structure": {
+    title: "看懂 Roblox GUI 代码:Instance.new、UDim2 与 Parenting",
+    description:
+      "干净的 Roblox GUI Luau 是怎么组织的:每个元素都是一个 Instance.new,用 UDim2 的 Scale 定位,通过 Parenting 组成一棵树,再加上让它跑起来的属性和按钮处理。附可直接复制的 Luau。",
+    category: "入门",
+    intro:
+      "每个 Roblox GUI 本质上就是 Luau:一棵用 Instance.new 搭起来、用 UDim2 定位、通过父子关系和事件处理连起来的 Instance 树。让你不敢改的烂代码和能直接上线的干净代码,差别就在几条一致的习惯上。本指南讲清楚可上线的 Roblox GUI Luau 是怎么组织的 —— 也就是可视化编辑器导出的那种结构 —— 让你看得懂、改得动、也能自己写。",
+    sections: [
+      {
+        heading: "1. 「干净」的 Roblox GUI 代码长什么样",
+        paragraphs: [
+          "干净的 GUI 代码可读、可预期、改起来安全。三条习惯就能做到:每个元素都用 Instance.new 创建;用基于 Scale(0–1,相对父级)的 UDim2 给它尺寸和位置;最后再设 Parent —— 设完其它属性之后。这三条也正是可视化编辑器导出的 Luau 所遵循的,所以它读起来像手写代码,而不是生成的乱炖。",
+          "收益是实打实的:每个 Frame 都用同样方式创建时,扫一眼脚本就能看出这棵树;位置都基于 Scale 时,UI 在任何屏幕尺寸下都成立;Parenting 有意识时,布局和层级顺序自然就对了。",
+        ],
+        tip: "如果一段生成或复制的脚本把 Parent 设在其它属性之前,把它挪到最后 —— Roblox 在 Instance 有了 Parent 的那一刻就开始同步它,所以先设好属性能避免一帧的默认值。",
+      },
+      {
+        heading: "2. 每个 GUI 元素都是一个 Instance(Instance.new)",
+        paragraphs: [
+          "Frame、TextLabel、TextButton、TextBox、ImageLabel、ScrollingFrame,以及 UICorner、UIGradient 这些装饰器,都是 Instance。每个都用 Instance.new(className) 创建,然后按名字设它的属性 —— 和你在 Roblox Studio 属性面板里看到的名字一模一样。",
+          "给每个 Instance 起名字。一个叫 Play 的按钮在代码和 Explorer 里都搜得到;留着默认名 TextButton 的就搜不到。当树很深时,名字也成了你推理时用的「变量」。",
+        ],
+      },
+      {
+        heading: "3. 用 UDim2 定位和 sizing:Scale 与 Offset",
+        paragraphs: [
+          "UDim2 是 Roblox 用来放置和度量 UI 的类型。一个 UDim2 接受四个数:UDim2.new(scaleX, offsetX, scaleY, offsetY)。Scale 部分是相对父级的比例(0.5 = 父级宽度的一半);Offset 部分是像素。该随屏幕伸缩的用 Scale,只有固定细节(圆角、内边距)才用 Offset。",
+          "fromScale 和 fromOffset 是常用快捷方式:UDim2.fromScale(0.4, 0.6) 表示父级的 40% × 60%,像素偏移为零。用 Scale 搭建,同一个 GUI 才会在手机和桌面上都正确。",
+        ],
+        tip: "AnchorPoint 改变位置以什么为基准。设 AnchorPoint = (0.5, 0.5) 加 Position = fromScale(0.5, 0.5),元素就在父级里完美居中,任何屏幕都成立。",
+      },
+      {
+        heading: "4. Parenting:决定布局和顺序的那棵树",
+        paragraphs: [
+          "Parent 是定义 GUI 结构的那一个属性。设 panel.Parent = gui,面板就成了 ScreenGui 的子级;设 button.Parent = panel,按钮就继承面板的坐标系。整个界面是一棵以 ScreenGui 为根的树,Roblox 会把它复制进每个玩家的 PlayerGui。",
+          "ZIndex 控制同级重叠时谁画在上面,它是相对同一父级下的兄弟而言的。把每个元素挂到概念上「拥有它」的容器下 —— 菜单面板拥有它的按钮 —— 这棵树本身就成了布局的文档。",
+        ],
+      },
+      {
+        heading: "5. 几乎每个元素都会设的那几个属性",
+        paragraphs: [
+          "一小撮属性覆盖了 GUI 的大部分需要:BackgroundColor3(一个 Color3.fromRGB)、BackgroundTransparency(0 = 实心,1 = 不可见)、ZIndex、Visible 管的是「盒子」。文字元素再加 Text、Font、TextSize、TextColor3。给只显示文字的标签设 BackgroundTransparency = 1,免得它默认的灰底透出来。",
+          "Color3.fromRGB 接受 0–255 的值,和任何取色器里看到的数字一样。保持一个不大的、一致的颜色色板,而不是每个元素一个独立十六进制值 —— 这种一致性才让一个屏幕看起来「是设计过的」。",
+        ],
+        tip: "Enum.Font.GothamBold、GothamMedium、GothamBlack 覆盖了大多数现代 Roblox UI。标题选一个粗体、正文选一个中等粗细,到处复用。",
+      },
+      {
+        heading: "6. 用一个干净的 Activated 处理器接按钮",
+        paragraphs: [
+          "一个 TextButton 在它的 Activated 事件触发时做事。用 button.Activated:Connect(function() ... end) 接一个函数,函数体保持小 —— 通常是切换另一个 frame 的 Visible,或触发一个 RemoteEvent。给目标 frame 起清楚的名字,处理器读起来就像英语。",
+          "想要 show/hide 显得更精致,用 TweenService 做动画而不是硬切。无论哪种,处理器的职责是改变一处状态,而不是把游戏逻辑埋进 UI。",
+        ],
+      },
+      {
+        heading: "7. 烂的 GUI 代码:要避开的反模式",
+        paragraphs: [
+          "大多数难维护的 Roblox GUI 脚本都有同样的味道:只用了像素位置(到处 UDim2.fromOffset),在别的屏幕上就崩;属性顺序乱七八糟,Parent 夹在中间;Instance 不命名,留着 Frame1、Frame2;还有把同样五行样板拷了十遍。",
+          "修复是机械的:改用基于 Scale 的 UDim2、给一切命名、最后再 Parent、把重复的 Instance 搭建抽成一个 helper —— 或者更简单:用可视化工具搭好整个东西,再读它的产出。干净代码不靠聪明,靠每次都用同一种方式做同一件事。",
+        ],
+        tip: "如果你第十次复制粘贴一段 Instance.new 代码块,这就是信号:要么包成一个函数,要么可视化搭建再导出。",
+      },
+      {
+        heading: "8. 这段脚本在 Roblox Studio 里放哪",
+        paragraphs: [
+          "把客户端 GUI 代码放在 StarterGui 下(ScreenGui 里)或 StarterPlayerScripts 下的 LocalScript 里。必须权威的代码 —— 购买、奖励、权限 —— 放在 ServerScriptService 下的 Script 里,通过 RemoteEvent 触达。",
+          "可视化编辑器两者都导出:一个搭建 GUI 的客户端 LocalScript,加上一个可选的服务端 Script,里面已经把 RemoteEvent 处理器和校验边界分好了。粘到对应位置,界面就按预览那样工作。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Instance.new 在 Roblox 里做什么?",
+        a: "Instance.new(className) 创建一个 Roblox 类的新 Instance —— Frame、TextButton、UICorner、ScreenGui 等等。它返回这个对象,你可以设它的属性并把它挂进树里。",
+      },
+      {
+        q: "Roblox GUI 代码里的 UDim2 是什么?",
+        a: "UDim2 是表示二维位置和尺寸的数据类型。UDim2.new(scaleX, offsetX, scaleY, offsetY) 把相对父级的 Scale(0–1)和像素 Offset 合在一起,让同一个值既能响应式、又能精确到像素。",
+      },
+      {
+        q: "Parent 该设在其它属性之前还是之后?",
+        a: "之后。Roblox 在 Instance 有了 Parent 的那一刻就开始同步它,所以先把 Name、Size、Position、颜色设好,最后再赋 Parent,能避免一帧默认值闪过。",
+      },
+      {
+        q: "这跟在 Studio 编辑器里搭 GUI 有什么不同?",
+        a: "Studio 的属性面板和代码,最终都是同样的 Instance。直接写或生成 Luau,让结构显式、可复制粘贴、可版本化 —— 还能让你用一段脚本重建整个 GUI。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "roblox-gui-script-generator", title: "读懂生成的 Roblox GUI 脚本" },
+    ],
+  },
 };
 
 // Overlays the Chinese prose onto the English Guide, keeping the English Luau

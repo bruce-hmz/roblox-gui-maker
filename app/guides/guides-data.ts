@@ -1211,6 +1211,145 @@ panel.AnchorPoint = Vector2.new(0.5, 0.5)`,
       },
     ],
   },
+  {
+    slug: "roblox-gui-code-structure",
+    title: "Roblox GUI Code Explained: Instance.new, UDim2 & Parenting",
+    description:
+      "How clean Roblox GUI Luau is structured: every element is an Instance.new, positioned with UDim2 scale, parented into a tree, with the properties and button handlers that make it run. With copy-paste Luau.",
+    category: "Getting Started",
+    relatedTemplate: "main-menu",
+    intro:
+      "Under the hood every Roblox GUI is just Luau: a tree of instances built with Instance.new, positioned with UDim2, and wired together through parenting and event handlers. The difference between messy GUI code you dread editing and clean code you can ship is a small set of consistent patterns. This guide walks through how production-ready Roblox GUI Luau is structured — the same structure the visual editor exports — so you can read it, change it, and write your own.",
+    sections: [
+      {
+        heading: "1. What “clean” Roblox GUI code looks like",
+        paragraphs: [
+          "Clean GUI code is readable, predictable, and safe to change. Three habits get you there: build every element with Instance.new, give it a UDim2 size and position based on scale (0–1) of its parent, and set its Parent last — after its properties. Those three rules are also exactly what the exported Luau from the visual editor follows, which is why it reads like hand-written code rather than generated soup.",
+          "The payoff is real: when every Frame is created the same way you can scan a script and instantly see the tree; when positions are scale-based the UI survives any screen size; and when parenting is deliberate, layout and z-order just work.",
+        ],
+        code: `local button = Instance.new("TextButton")
+button.Name = "Play"
+button.Size = UDim2.fromScale(0.4, 0.12)
+button.Position = UDim2.fromScale(0.3, 0.6)
+button.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+button.Text = "PLAY"
+button.Parent = panel -- parent last`,
+        tip: "If a generated or copied script sets Parent before the other properties, reorder it. Roblox starts replicating an instance the moment it is parented, so setting properties first avoids a frame of stale defaults.",
+      },
+      {
+        heading: "2. Every GUI element is an Instance (Instance.new)",
+        paragraphs: [
+          "Frame, TextLabel, TextButton, TextBox, ImageLabel, ScrollingFrame, and decorators like UICorner and UIGradient are all Instances. You create each one with Instance.new(className), then set its properties by name — the same names you see in Roblox Studio's Properties window.",
+          "Name every instance. A button called Play is searchable in code and in the Explorer; a button left as TextButton is not. Names also become the handles you reason about when the tree gets deep.",
+        ],
+        code: `local gui = Instance.new("ScreenGui")
+gui.Name = "MainMenu"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.Size = UDim2.fromScale(0.4, 0.6)
+panel.Position = UDim2.fromScale(0.3, 0.2)
+panel.BackgroundColor3 = Color3.fromRGB(21, 23, 31)`,
+      },
+      {
+        heading: "3. Position and size with UDim2: scale vs offset",
+        paragraphs: [
+          "UDim2 is how Roblox places and sizes UI. A UDim2 takes four numbers: UDim2.new(scaleX, offsetX, scaleY, offsetY). The scale part is a fraction of the parent (0.5 = half the parent's width); the offset part is pixels. Use scale for anything that should stretch with the screen, and offset only for fixed details like corner radius or padding.",
+          "fromScale and fromOffset are the common shortcuts: UDim2.fromScale(0.4, 0.6) means 40% × 60% of the parent with zero pixel offset. Building in scale is what makes the same GUI look right on a phone and a desktop.",
+        ],
+        code: `-- 40% wide, 60% tall, anchored to the panel's coordinate space
+panel.Size = UDim2.fromScale(0.4, 0.6)
+panel.Position = UDim2.fromScale(0.3, 0.2)
+
+-- a 12-pixel corner radius (offset, because radius is a fixed detail)
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = panel`,
+        tip: "AnchorPoint changes what a position is measured from. With AnchorPoint = (0.5, 0.5) and Position = UDim2.fromScale(0.5, 0.5), an element is perfectly centered in its parent on every screen.",
+      },
+      {
+        heading: "4. Parenting: the tree that decides layout and order",
+        paragraphs: [
+          "Parent is the single property that defines your GUI's structure. Set panel.Parent = gui and the panel becomes a child of the ScreenGui; set button.Parent = panel and the button inherits the panel's coordinate space. The whole interface is a tree rooted at the ScreenGui that Roblox copies into each player's PlayerGui.",
+          "ZIndex controls which sibling renders on top when they overlap, and it is relative to siblings under the same parent. Parent everything into the container that owns it conceptually — a menu panel owns its buttons — and the tree becomes documentation of your layout.",
+        ],
+        code: `gui.Parent = player:WaitForChild("PlayerGui")
+panel.Parent = gui
+
+local play = Instance.new("TextButton")
+play.Name = "Play"
+play.Size = UDim2.fromScale(1, 0.14) -- 1.0 = the panel's full width
+play.Parent = panel`,
+      },
+      {
+        heading: "5. The properties you will set on almost every element",
+        paragraphs: [
+          "A handful of properties cover most of what a GUI needs. BackgroundColor3 (a Color3.fromRGB), BackgroundTransparency (0 = solid, 1 = invisible), ZIndex, and Visible cover the box. Text elements add Text, Font, TextSize, and TextColor3. Set BackgroundTransparency = 1 on a label that should show only text, so its default gray box does not show through.",
+          "Color3.fromRGB takes 0–255 values, the same numbers you see in any color picker. Keep a small palette of consistent colors rather than a unique hex per element — that consistency is what makes a screen feel designed.",
+        ],
+        code: `local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.fromScale(1, 0.2)
+title.BackgroundTransparency = 1
+title.Text = "GAME TITLE"
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 30
+title.TextColor3 = Color3.fromRGB(153, 203, 255)
+title.Parent = panel`,
+        tip: "Enum.Font.GothamBold, GothamMedium, and GothamBlack cover most modern Roblox UI. Pick one bold weight for headings and one medium weight for body, and reuse them everywhere.",
+      },
+      {
+        heading: "6. Wiring a button with a clean Activated handler",
+        paragraphs: [
+          "A TextButton does something when its Activated event fires. Connect a function with button.Activated:Connect(function() ... end) and keep the body small — usually toggling another frame's Visible or firing a RemoteEvent. Name the target frame clearly so the handler reads like English.",
+          "For show/hide that should feel polished, animate it with TweenService instead of snapping. Either way, the handler's job is to change one piece of state, not to bury game logic in the UI.",
+        ],
+        code: `settingsButton.Activated:Connect(function()
+\tsettingsPanel.Visible = not settingsPanel.Visible
+end)`,
+      },
+      {
+        heading: "7. Messy GUI code: the anti-patterns to avoid",
+        paragraphs: [
+          "Most hard-to-maintain Roblox GUI scripts share the same smells: pixel-only positions that break on other screens (UDim2.fromOffset everywhere), properties set in a random order with Parent in the middle, unnamed instances left as Frame1 and Frame2, and the same five lines of boilerplate copy-pasted for every button.",
+          "The fix is mechanical: move to scale-based UDim2, name everything, parent last, and extract repeated instance-setup into a helper — or, easier, build the whole thing visually and read the result. Clean code is not about cleverness; it is about doing the same thing the same way every time.",
+        ],
+        tip: "If you are copy-pasting an Instance.new block for the tenth time, that is the signal to either wrap it in a function or build it visually and export.",
+      },
+      {
+        heading: "8. Where this script lives in Roblox Studio",
+        paragraphs: [
+          "Put client GUI code in a LocalScript under StarterGui (inside the ScreenGui) or under StarterPlayerScripts. Code that must be authoritative — purchases, rewards, permissions — goes in a Script under ServerScriptService, reached through a RemoteEvent.",
+          "The visual editor exports both: a client LocalScript that builds the GUI, and an optional server Script with the RemoteEvent handlers and validation boundaries already separated. Paste them into the right places and the interface works as previewed.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "What does Instance.new do in Roblox?",
+        a: "Instance.new(className) creates a new instance of a Roblox class — Frame, TextButton, UICorner, ScreenGui, and so on. It returns the object so you can set its properties and parent it into the tree.",
+      },
+      {
+        q: "What is UDim2 in Roblox GUI code?",
+        a: "UDim2 is the data type for 2D position and size. UDim2.new(scaleX, offsetX, scaleY, offsetY) combines a parent-relative scale (0–1) with a pixel offset, so the same value can be responsive and pixel-precise at once.",
+      },
+      {
+        q: "Should I set Parent before or after the other properties?",
+        a: "After. Roblox starts replicating an instance the moment it has a Parent, so set its Name, Size, Position, and colors first, then assign Parent last to avoid a frame of default values showing.",
+      },
+      {
+        q: "How is this different from building the GUI in Studio's editor?",
+        a: "Studio's Properties panel and code end up as the same Instances. Writing or generating the Luau directly keeps the structure explicit, copy-pasteable, and versionable — and lets you recreate an entire GUI from one script.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI Script Generator" },
+    ],
+  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {
