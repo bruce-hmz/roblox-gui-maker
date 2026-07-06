@@ -97,6 +97,30 @@ export const TEMPLATES_ZH: TemplateZh[] = [
     description:
       "一个紧凑的任务 HUD:可编辑目标、进度、奖励,以及可预览的详情开关。在你的游戏代码里接上实时任务数据与完成奖励。",
   },
+  {
+    slug: "health-bar",
+    title: "Roblox 血条 GUI",
+    category: "HUD",
+    tagline: "血条、蓝条与经验条加金币计数",
+    description:
+      "一个玩家 HUD:绿色血条、蓝色蓝条和更细的经验条——每条都是胶囊底框加可由游戏状态驱动的填充——外加一个金币计数。放进 ScreenGui,在 Roblox Studio 脚本里更新填充比例即可。",
+  },
+  {
+    slug: "notification-toast",
+    title: "Roblox 通知 GUI",
+    category: "HUD",
+    tagline: "堆叠的彩色提示通知",
+    description:
+      "一组彩色提示通知——成功、信息、警告、错误——用 UIListLayout 堆叠,新通知会接到最后一条下面。每张卡片都可编辑;从服务端触发 RemoteEvent 即可推送实时通知。",
+  },
+  {
+    slug: "chat",
+    title: "Roblox 聊天 GUI",
+    category: "HUD",
+    tagline: "可滚动的消息记录加输入与发送",
+    description:
+      "一个自定义聊天面板:带彩色发送者名字的 ScrollingFrame 消息记录,外加 TextBox 和接到 RemoteEvent 的发送按钮。可用来替换默认 Roblox 聊天,或在 Studio 里加一个队伍频道。",
+  },
 ];
 
 export function getTemplateZh(slug: string): TemplateZh | undefined {

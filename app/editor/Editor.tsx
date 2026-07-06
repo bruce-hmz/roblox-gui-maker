@@ -29,6 +29,7 @@ import {
 } from "./scene";
 import { generateServerLuau } from "./server-luau";
 import { createProjectPackage } from "./project-package";
+import { trackEvent } from "../lib/track";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -82,7 +83,13 @@ function detachTemplateUrl() {
   );
 }
 
-export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
+export function Editor({
+  initialScene,
+  templateSlug,
+}: {
+  initialScene?: SceneNode[];
+  templateSlug?: string;
+}) {
   const start = initialScene ?? SAMPLE_SCENE;
   const [device, setDevice] = useState<DeviceKind>("desktop");
   const [scene, setScene] = useState<SceneNode[]>(start);
@@ -277,6 +284,13 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Template funnel: fire once when the editor opens with a loaded template
+  // (page.tsx passes templateSlug only when ?template=<slug> resolved to a real
+  // scene, so this never fires for blank or restored sessions).
+  useEffect(() => {
+    if (templateSlug) trackEvent("open_template", { template: templateSlug });
+  }, [templateSlug]);
+
   // Autosave (debounced) so refresh doesn't lose work.
   useEffect(() => {
     const id = setTimeout(() => {
@@ -381,6 +395,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     try {
       await navigator.clipboard.writeText(code);
       if (request !== copyRequest.current) return;
+      trackEvent("export_code", { method: "copy", output });
       if (copyTimer.current) clearTimeout(copyTimer.current);
       setCopied(output);
       copyTimer.current = setTimeout(() => {
@@ -405,6 +420,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     const link = document.createElement("a");
     link.href = url;
     link.download = output === "client" ? "roblox-gui.lua" : "roblox-gui.server.lua";
+    trackEvent("export_code", { method: output === "client" ? "lua" : "server_lua", output });
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -418,6 +434,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     const link = document.createElement("a");
     link.href = url;
     link.download = sceneDocumentFilename(scene);
+    trackEvent("download_project", { format: "json" });
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -432,6 +449,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     const link = document.createElement("a");
     link.href = url;
     link.download = projectPackage.filename;
+    trackEvent("download_project", { format: "zip" });
     link.click();
     URL.revokeObjectURL(url);
   }

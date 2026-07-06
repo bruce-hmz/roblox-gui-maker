@@ -23,5 +23,9 @@ export default async function EditorPage({
     const palette = getTheme(theme);
     if (palette) initialScene = applyTheme(initialScene, palette);
   }
-  return <Editor initialScene={initialScene} />;
+  // templateSlug is set only when ?template=<slug> resolved to a real scene
+  // (with or without a theme applied), so the editor's open_template event
+  // fires for genuine template sessions — never for blank or restored ones.
+  const templateSlug = initialScene && template ? template : undefined;
+  return <Editor initialScene={initialScene} templateSlug={templateSlug} />;
 }

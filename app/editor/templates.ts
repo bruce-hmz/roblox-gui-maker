@@ -679,6 +679,63 @@ const questTracker = (() => {
   ];
 })();
 
+const healthHud = (() => {
+  const root = mk("ScreenGui", { name: "Hud", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 1, cornerRadius: 0 });
+  const panel = mk("Frame", { name: "StatsPanel", parentId: root.id, pos: { x: 0.02, y: 0.04 }, size: { x: 0.26, y: 0.17 }, color: "#15171f", cornerRadius: 12, layout: "list", padding: 8 });
+  const hpRow = mk("Frame", { name: "HpRow", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.28 }, color: "#000000", transparency: 1 });
+  const hpLabel = mk("TextLabel", { name: "HpLabel", parentId: hpRow.id, pos: { x: 0.02, y: 0.2 }, size: { x: 0.16, y: 0.6 }, color: "#000000", transparency: 1, text: "HP", font: "GothamBold", textSize: 12, textColor: "#6ee7b7" });
+  const hpBarBg = mk("Frame", { name: "HpBarBg", parentId: hpRow.id, pos: { x: 0.2, y: 0.35 }, size: { x: 0.78, y: 0.3 }, color: "#232a36", cornerRadius: 999 });
+  const hpBarFill = mk("Frame", { name: "HpBarFill", parentId: hpBarBg.id, pos: { x: 0, y: 0 }, size: { x: 0.72, y: 1 }, color: "#34d399", cornerRadius: 999 });
+  const mpRow = mk("Frame", { name: "MpRow", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.28 }, color: "#000000", transparency: 1 });
+  const mpLabel = mk("TextLabel", { name: "MpLabel", parentId: mpRow.id, pos: { x: 0.02, y: 0.2 }, size: { x: 0.16, y: 0.6 }, color: "#000000", transparency: 1, text: "MP", font: "GothamBold", textSize: 12, textColor: "#7dd3fc" });
+  const mpBarBg = mk("Frame", { name: "MpBarBg", parentId: mpRow.id, pos: { x: 0.2, y: 0.35 }, size: { x: 0.78, y: 0.3 }, color: "#232a36", cornerRadius: 999 });
+  const mpBarFill = mk("Frame", { name: "MpBarFill", parentId: mpBarBg.id, pos: { x: 0, y: 0 }, size: { x: 0.45, y: 1 }, color: "#38bdf8", cornerRadius: 999 });
+  const xpRow = mk("Frame", { name: "XpRow", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.2 }, color: "#000000", transparency: 1 });
+  const xpLabel = mk("TextLabel", { name: "XpLabel", parentId: xpRow.id, pos: { x: 0.02, y: 0.15 }, size: { x: 0.16, y: 0.6 }, color: "#000000", transparency: 1, text: "XP", font: "GothamBold", textSize: 11, textColor: "#fde68a" });
+  const xpBarBg = mk("Frame", { name: "XpBarBg", parentId: xpRow.id, pos: { x: 0.2, y: 0.3 }, size: { x: 0.78, y: 0.22 }, color: "#232a36", cornerRadius: 999 });
+  const xpBarFill = mk("Frame", { name: "XpBarFill", parentId: xpBarBg.id, pos: { x: 0, y: 0 }, size: { x: 0.3, y: 1 }, color: "#fbbf24", cornerRadius: 999 });
+  const coins = mk("Frame", { name: "Coins", parentId: root.id, pos: { x: 0.72, y: 0.04 }, size: { x: 0.26, y: 0.07 }, color: "#15171f", cornerRadius: 999 });
+  const coinText = mk("TextLabel", { name: "CoinAmount", parentId: coins.id, pos: { x: 0.05, y: 0.15 }, size: { x: 0.9, y: 0.7 }, color: "#000000", transparency: 1, text: "🪙 12,450", font: "GothamBold", textSize: 15, textColor: "#fde68a" });
+  return [root, panel, hpRow, hpLabel, hpBarBg, hpBarFill, mpRow, mpLabel, mpBarBg, mpBarFill, xpRow, xpLabel, xpBarBg, xpBarFill, coins, coinText];
+})();
+
+const notifications = (() => {
+  const root = mk("ScreenGui", { name: "Notifications", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 1, cornerRadius: 0 });
+  const stack = mk("Frame", { name: "Stack", parentId: root.id, pos: { x: 0.6, y: 0.3 }, size: { x: 0.38, y: 0.66 }, color: "#000000", transparency: 1, layout: "list", padding: 10 });
+  const defs = [
+    { key: "Success", bg: "#18302a", accent: "#34d399", titleColor: "#6ee7b7", title: "✓ Purchase Complete", msg: "VIP Pass activated" },
+    { key: "Info", bg: "#1a2c40", accent: "#38bdf8", titleColor: "#7dd3fc", title: "ℹ New Event Live", msg: "Double coins weekend started" },
+    { key: "Warning", bg: "#3a2f12", accent: "#fbbf24", titleColor: "#fde68a", title: "⚠ Inventory Almost Full", msg: "Only 3 slots remaining" },
+    { key: "Error", bg: "#3a1f1f", accent: "#ef4444", titleColor: "#fca5a5", title: "✕ Connection Lost", msg: "Reconnecting to server..." },
+  ];
+  const toasts = defs.map((d) => {
+    const card = mk("Frame", { name: `Toast${d.key}`, parentId: stack.id, pos: FLOW, size: { x: 1, y: 0.15 }, color: d.bg, cornerRadius: 10, layout: "list", padding: 6, stroke: { color: d.accent, transparency: 0.35, thickness: 1.5 } });
+    const t = mk("TextLabel", { name: "Title", parentId: card.id, pos: FLOW, size: { x: 1, y: 0.45 }, color: "#000000", transparency: 1, text: d.title, font: "GothamBold", textSize: 13, textColor: d.titleColor });
+    const m = mk("TextLabel", { name: "Message", parentId: card.id, pos: FLOW, size: { x: 1, y: 0.45 }, color: "#000000", transparency: 1, text: d.msg, font: "GothamMedium", textSize: 11, textColor: "#c8d3df" });
+    return [card, t, m];
+  });
+  return [root, stack, ...toasts.flat()];
+})();
+
+const chat = (() => {
+  const root = mk("ScreenGui", { name: "Chat", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 1, cornerRadius: 0 });
+  const panel = mk("Frame", { name: "ChatPanel", parentId: root.id, pos: { x: 0.02, y: 0.42 }, size: { x: 0.36, y: 0.54 }, color: "#15171f", cornerRadius: 14, layout: "list", padding: 10 });
+  const title = mk("TextLabel", { name: "ChatTitle", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.08 }, color: "#000000", transparency: 1, text: "💬 TEAM CHAT", font: "GothamBold", textSize: 14, textColor: "#99cbff" });
+  const log = mk("ScrollingFrame", { name: "ChatLog", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.3 }, color: "#0e0f16", cornerRadius: 10, layout: "list", padding: 6 });
+  const messages = [
+    { who: "Alex", text: "gg everyone!", color: "#99cbff" },
+    { who: "Mia", text: "anyone want to trade?", color: "#fbbf24" },
+    { who: "Kai", text: "boss spawns in 2 min", color: "#6ee7b7" },
+    { who: "Zoe", text: "nice run", color: "#fca5a5" },
+    { who: "Alex", text: "brb, getting coffee", color: "#99cbff" },
+  ];
+  const msgEls = messages.map((m, i) => mk("TextLabel", { name: `Msg${i}`, parentId: log.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#000000", transparency: 1, text: `${m.who}: ${m.text}`, font: "GothamMedium", textSize: 12, textColor: m.color }));
+  const inputRow = mk("Frame", { name: "InputRow", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.12 }, color: "#000000", transparency: 1 });
+  const input = mk("TextBox", { name: "ChatInput", parentId: inputRow.id, pos: { x: 0, y: 0.1 }, size: { x: 0.7, y: 0.8 }, color: "#202735", cornerRadius: 8, text: "Type a message...", font: "GothamMedium", textSize: 13, textColor: "#89919d" });
+  const send = mk("TextButton", { name: "SendChat", parentId: inputRow.id, pos: { x: 0.73, y: 0.1 }, size: { x: 0.27, y: 0.8 }, color: "#00a2ff", cornerRadius: 8, text: "SEND", font: "GothamBold", textSize: 13, textColor: "#001d34", action: { type: "remoteEvent", eventName: "SendChatMessage", argument: "say" } });
+  return [root, panel, title, log, ...msgEls, inputRow, input, send];
+})();
+
 // Richness treatment: give every filled surface a subtle multi-stop gradient
 // (lighter top + darker bottom of its own color) for depth, plus a faint edge
 // stroke on top-level panels (modern card definition) and a lighter self-colored
@@ -802,6 +859,33 @@ const RAW_TEMPLATES: Template[] = [
     description:
       "A compact quest HUD with editable objective, progress, reward, and a previewable details toggle. Connect live quest data and completion rewards in your game code.",
     scene: questTracker,
+  },
+  {
+    slug: "health-bar",
+    title: "Roblox Health Bar GUI",
+    category: "HUD",
+    tagline: "Health, mana and XP bars with a coin counter",
+    description:
+      "A player HUD with a green health bar, a blue mana bar, and a thinner XP bar — each a pill background with a fill you drive from game state — plus a coin counter. Drop it into a ScreenGui and update the fills from your Roblox Studio scripts.",
+    scene: healthHud,
+  },
+  {
+    slug: "notification-toast",
+    title: "Roblox Notification GUI",
+    category: "HUD",
+    tagline: "Stacked, color-coded toast alerts",
+    description:
+      "A stack of color-coded toast notifications — success, info, warning, and error — arranged with a UIListLayout so new alerts push in below the last. Each card is fully editable; fire a RemoteEvent from the server to surface live alerts.",
+    scene: notifications,
+  },
+  {
+    slug: "chat",
+    title: "Roblox Chat GUI",
+    category: "HUD",
+    tagline: "Scrolling message log with input and send",
+    description:
+      "A custom chat panel: a ScrollingFrame message log with colored sender names, plus a TextBox and a Send button wired to a RemoteEvent. Use it to replace the default Roblox chat or add a team channel in Studio.",
+    scene: chat,
   },
 ];
 
