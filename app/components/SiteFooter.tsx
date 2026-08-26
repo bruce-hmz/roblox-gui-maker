@@ -67,7 +67,7 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
             <li>
               <a
                 className="hover:text-ink"
-                href="https://github.com/firstdraft-work/roblox-gui-maker/issues/new"
+                href="https://github.com/bruce-hmz/roblox-gui-maker/issues/new"
                 target="_blank"
                 rel="noopener noreferrer"
               >

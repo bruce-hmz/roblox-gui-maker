@@ -144,7 +144,7 @@ export default function TermsPage() {
             updated&rdquo; date above will reflect any change. For questions,
             open an issue on{" "}
             <a
-              href="https://github.com/firstdraft-work/roblox-gui-maker/issues/new"
+              href="https://github.com/bruce-hmz/roblox-gui-maker/issues/new"
               target="_blank"
               rel="noopener noreferrer"
               className="text-focus hover:underline"

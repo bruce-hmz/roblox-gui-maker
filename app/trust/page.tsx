@@ -64,7 +64,7 @@ export default function TrustPage() {
             yourself: the tool has no login form, no place to paste a cookie, and
             the source code is{" "}
             <a
-              href="https://github.com/firstdraft-work/roblox-gui-maker"
+              href="https://github.com/bruce-hmz/roblox-gui-maker"
               target="_blank"
               rel="noopener noreferrer"
               className="text-focus hover:underline"
@@ -174,7 +174,7 @@ export default function TrustPage() {
             If you see behavior you do not understand or that contradicts this
             page, do not use the tool and{" "}
             <a
-              href="https://github.com/firstdraft-work/roblox-gui-maker/issues/new"
+              href="https://github.com/bruce-hmz/roblox-gui-maker/issues/new"
               target="_blank"
               rel="noopener noreferrer"
               className="text-focus hover:underline"
