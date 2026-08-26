@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Check, Copy, Download } from "lucide-react";
 
 export type CodeOutput = "client" | "server";
@@ -119,6 +120,33 @@ export function CodePanel({
           </button>
         </div>
       </div>
+      {/* Post-copy next steps: turns the export moment into a content
+          touchpoint instead of a dead end (also the editor's only
+          keyword-anchored link to the homepage). */}
+      {copied !== null && (
+        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-line bg-panel-raised px-4 py-1.5 text-[11px] text-ink-mute">
+          <span className="font-semibold text-success">
+            {copied === "client" ? "Client" : "Server"} code copied —
+          </span>
+          <span>
+            {copied === "client"
+              ? "paste into a LocalScript under StarterGui"
+              : "paste into a Script under ServerScriptService"}
+          </span>
+          <Link
+            href="/guides/how-to-script-a-roblox-gui"
+            className="font-medium text-focus hover:underline"
+          >
+            New to GUI scripting? Read the guide →
+          </Link>
+          <Link
+            href="/"
+            className="ml-auto font-medium text-ink-dim hover:text-ink hover:underline"
+          >
+            Roblox GUI maker
+          </Link>
+        </div>
+      )}
       {(["client", "server"] as const).map((output) => {
         const code = output === "client" ? clientCode : serverCode;
         const active = activeOutput === output;

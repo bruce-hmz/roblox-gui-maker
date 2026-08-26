@@ -287,6 +287,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         a: "ScreenGui 默认在重生时重置。在 ScreenGui 上设 ResetOnSpawn = false 让它常驻。",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "如何用按键打开 Roblox GUI" },
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+    ],
   },
 
   "how-to-make-a-roblox-shop-gui": {
@@ -326,6 +330,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         q: "物品怎么排成网格?",
         a: "给 ScrollingFrame 挂一个 UIGridLayout。设 CellSize 和 CellPadding;每个子 Frame 就会自动排成行列。",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
     ],
   },
 
@@ -367,6 +375,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         a: "用 TweenService 把填充 Frame 的 Size 从 UDim2.fromScale(0,1) 补间到 UDim2.fromScale(1,1),然后在 tween.Completed 里 Destroy 这个 GUI。",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI 脚本生成器" },
+    ],
   },
 
   "how-to-use-uilistlayout-in-roblox": {
@@ -404,6 +416,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         q: "为什么我的子元素之间没有间距?",
         a: "把布局的 Padding 设为一个 UDim 值,比如 UDim.new(0, 10)。不设的话,子元素会紧贴。",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-inventory-gui", title: "如何制作 Roblox 背包 GUI" },
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
     ],
   },
 
@@ -443,6 +459,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         a: "你用了 UserId 以外的东西当键。永远用 tostring(player.UserId) 当键,这样每个玩家正好对应一条记录。",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+      { slug: "roblox-gui-code-structure", title: "看懂 Roblox GUI 代码:Instance.new、UDim2 与 Parenting" },
+    ],
   },
 
   "how-to-animate-roblox-guis-with-tweenservice": {
@@ -479,6 +499,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         a: "在 TweenInfo 里设 Reverses = true 和 RepeatCount = -1,补间就会来回不停地跑。",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+      { slug: "how-to-design-polished-roblox-ui", title: "如何设计精致的 Roblox UI(渐变、描边与层次感)" },
+    ],
   },
 
   "how-to-make-a-draggable-roblox-gui": {
@@ -512,6 +536,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         q: "这在手机上能用吗?",
         a: "能 —— 在 InputBegan 和 InputEnded 里把 Enum.UserInputType.Touch 当成 MouseButton1 一样处理,在 InputChanged 里处理 Touch。",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "如何用按键打开 Roblox GUI" },
+      { slug: "how-to-make-a-responsive-roblox-gui", title: "如何制作响应式的 Roblox GUI" },
     ],
   },
 
@@ -552,6 +580,10 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         q: "怎么在小屏上缩小整个 GUI?",
         a: "给 ScreenGui 挂一个 UIScale 并设它的 Scale 属性(比如 0.8),一起缩小所有后代 —— 适合在手机上塞下密集的 HUD。",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" },
     ],
   },
 
@@ -904,6 +936,148 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
     relatedGuides: [
       { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
       { slug: "roblox-gui-script-generator", title: "读懂生成的 Roblox GUI 脚本" },
+    ],
+  },
+
+  "how-to-script-a-roblox-gui": {
+    title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)",
+    description:
+      "面向新手的 Roblox GUI 脚本入门:LocalScript 放在哪、连接 TextButton 点击、切换可见性、用 TweenService 做动画 —— 附可直接粘贴的 Luau 代码。",
+    category: "脚本",
+    intro:
+      "搭好 Frame 只是 Roblox GUI 的一半,另一半是脚本:让关闭按钮真的关闭、让商店能开能关、让面板滑入而不是突然弹出。本指南覆盖几乎每个 GUI 脚本都要用到的四块内容:StarterGui 下的 LocalScript、连接按钮、可见性开关,以及 TweenService 动画。每段代码都是完整可直接粘贴的。",
+    sections: [
+      {
+        heading: "1. GUI 脚本放哪:StarterGui 下的 LocalScript",
+        paragraphs: [
+          "每个玩家各自看到的 GUI 属于客户端。把一个 LocalScript 放进 StarterGui(或直接放进 ScreenGui),玩家加入时 Roblox 会把它克隆进每个人的 PlayerGui。普通的 Script(服务端脚本)在 PlayerGui 里不会运行。",
+          "如果 GUI 是在 Studio 里搭的,脚本可以通过 player 对象访问它;如果你改用代码创建 GUI,脚本也可以自己 Instance.new 出每个实例 —— 本编辑器导出的代码用的就是这种做法。",
+        ],
+        tip: "给菜单、商店这类 GUI 设 ResetOnSpawn = false,否则玩家每次重生 GUI 都会消失重建。",
+      },
+      {
+        heading: "2. 连接按钮点击(所有按钮背后的同一个模式)",
+        paragraphs: [
+          "每个可交互元素的接线方式都一样:拿到实例引用,把一个函数连接到它的 Activated 事件(鼠标和触摸都适用),在函数里做具体的事。选 Activated 而不是 MouseButton1Click,是因为它同时支持手机点按。",
+        ],
+        tip: "点击没反应时,先在连接的函数里加个 print。控制台没输出说明路径或事件名错了 —— 十有八九是 WaitForChild 里的 Name 打错了。",
+      },
+      {
+        heading: "3. 用一个按钮开关 GUI",
+        paragraphs: [
+          "商店和设置面板通常由 HUD 按钮打开、右上角的 X 关闭。干净的做法是翻转 ScreenGui.Enabled —— 为 false 时 Roblox 直接不再渲染整棵树,隐藏是白送的。",
+        ],
+      },
+      {
+        heading: "4. 用 TweenService 给面板加动画",
+        paragraphs: [
+          "淡入或滑入的 GUI 观感立刻上一个档次,而 TweenService 几行就能做到:创建一个 Tween,给它目标属性表、时长和缓动样式,然后 :Play()。位置补间可以直接插值 UDim2。",
+        ],
+        tip: "要淡入淡出而不是滑动,就补间 NumberValue 再映射到 CanvasGroup 的 GroupTransparency —— 逐个补间 TextTransparency 是绕远路。",
+      },
+      {
+        heading: "5. 客户端和服务端的唯一铁律",
+        paragraphs: [
+          "点击发生在客户端,但游戏必须强制执行的一切 —— 货币、购买、发放物品、权限 —— 发生在服务端。模式是:LocalScript 触发 RemoteEvent,ServerScriptService 里的 Script 监听、校验、然后应用结果。",
+          "如果这个变化纯粹是视觉上的(打开面板、高亮一个标签),它可以永远留在客户端。",
+        ],
+      },
+      {
+        heading: "6. 在这里写脚本,或在那里写脚本",
+        paragraphs: [
+          "可视化编辑器生成的正是这种形状的代码:一个在 ScreenGui 下搭层级、为可见性动作接好 Activated 处理器的 LocalScript,加上一个处理 Fire RemoteEvent 动作的可选服务端 Script。可视化搭好布局、导出,再对照本指南读生成的 Luau —— 结构会一节一节对上。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "为什么我的 GUI 按钮点了没反应?",
+        a: "三个常见原因:脚本用了普通 Script 而不是 LocalScript(Script 在 PlayerGui 里不运行)、WaitForChild 的路径和按钮实际的 Name 不一致,或连接建立时实例还不存在。在处理器里加个 print 就能分辨是哪种。",
+      },
+      {
+        q: "该用 MouseButton1Click 还是 Activated?",
+        a: "用 Activated。它对鼠标点击和触摸点按都会触发,而 MouseButton1Click 面向鼠标。两者都在 GuiButton(TextButton、ImageButton)上。",
+      },
+      {
+        q: "怎么让玩家按键关闭 GUI?",
+        a: "连接 UserInputService.InputBegan,判断 input.KeyCode,翻转 ScreenGui.Enabled —— 配套教程《如何用按键打开 Roblox GUI》有完整代码,包括 gameProcessedEvent 防抖。",
+      },
+      {
+        q: "LocalScript 能用代码创建整个 GUI 吗?",
+        a: "能 —— Instance.new 每个元素、设属性、自底向上设父级。本编辑器导出的 Luau 正是这么做的,这让 GUI 可以由一个文件完整重建。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "如何用按键打开 Roblox GUI" },
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "如何用 TweenService 给 Roblox GUI 加动画" },
+    ],
+  },
+
+  "how-to-open-a-gui-with-a-key-in-roblox": {
+    title: "如何用按键打开 Roblox GUI",
+    description:
+      "把 M、B 这类按键绑定到 Roblox GUI 的开关:UserInputService.InputBegan 切换、gameProcessedEvent 防止聊天时误触,以及用 ContextActionService 支持手柄。",
+    category: "脚本",
+    intro:
+      "按 M 开地图、按 B 开背包、按 Tab 开排行榜 —— 按键开关是 Roblox 里被问得最多的 GUI 问题之一。机制本身只是一个 UserInputService 事件,但有两个细节让所有人踩坑:玩家在 TextBox 里打字时事件照样触发,以及开关可能同时写到了客户端和服务端。本指南给出做对的完整模式,外加对手柄友好的变体。",
+    sections: [
+      {
+        heading: "1. 核心:UserInputService.InputBegan",
+        paragraphs: [
+          "UserInputService 在客户端对每次按键、点按和按钮按下触发 InputBegan。在 LocalScript 里监听它,把 input.KeyCode 和你想要的键比较,然后翻转 ScreenGui 的 Enabled 属性。机制就这么多。",
+        ],
+        tip: "gameProcessed 为 true 表示 Roblox 已经消费了这个输入 —— 玩家正在聊天框或 TextBox 里打字。开头就 return,菜单才不会打到一半弹出来。",
+      },
+      {
+        heading: "2. 哪些按键适合绑定",
+        paragraphs: [
+          "避开 Roblox 和常见游戏已经占用的键:W A S D 和方向键(移动)、斜杠(聊天)、Escape(Roblox 菜单)、回车。M、B、I、G、K 这些字母,以及 Tab 和 Q,是常用且无冲突的选择。F 键和回车常与平台 UI 冲突。",
+          "Enum.KeyCode 列出了所有可绑定的按键和手柄按钮 —— 同一段 InputBegan 代码也可以绑 Enum.KeyCode.ButtonX 来覆盖手柄玩家。",
+        ],
+      },
+      {
+        heading: "3. 带过渡地显示和隐藏",
+        paragraphs: [
+          "直接翻转 Enabled 是瞬间生效的。想要菜单淡入或滑入,就保持 GUI 启用、改为补间一个属性 —— CanvasGroup 的 GroupTransparency 做淡入淡出,面板的 Position 做滑动 —— 关闭补间结束后再禁用它。",
+        ],
+      },
+      {
+        heading: "4. 手柄和手机玩家",
+        paragraphs: [
+          "键盘不是唯一的输入。要让一个绑定同时覆盖键盘和手柄、还自带手机上的屏幕按钮,用 ContextActionService:它把一个动作名映射到多个按键码,传入标题后会在手机上自动显示触摸按钮,GUI 关闭时还能解绑。",
+        ],
+        tip: "BindAction 的第三个参数(这里的 true)是 createTouchButton —— 开启后手机上会出现一个带文字的圆形按钮,触发同一个处理函数。",
+      },
+      {
+        heading: "5. 开关留在客户端",
+        paragraphs: [
+          "打开自己的菜单是视觉变化,所以它属于 LocalScript —— 不需要 RemoteEvent。需要跨到服务端的只有后果:如果按这个键会买东西或领奖励,那么 GUI 里的按钮照常触发 RemoteEvent、由服务端校验,和其它按钮完全一样。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "为什么在聊天框打字时 GUI 也会打开?",
+        a: "你漏了 gameProcessedEvent 防护。UserInputService 传给处理函数的第二个参数,在 Roblox 已消费该输入(聊天、TextBox)时为 true。每个处理器开头都写上:if gameProcessed then return end。",
+      },
+      {
+        q: "怎么在服务端检测按键?",
+        a: "做不到 —— 输入只存在于客户端。在 LocalScript 里检测,若服务端需要响应就触发 RemoteEvent。永远不要信任客户端上报的奖励或权限;在服务端校验。",
+      },
+      {
+        q: "UserInputService 和 ContextActionService 有什么区别?",
+        a: "UserInputService 上报原始输入 —— 一个事件,你自己过滤按键。ContextActionService 把命名动作绑定到多个输入,能创建手机触摸按钮,支持优先级和重绑定。单个按键两者都行;跨平台菜单更适合 ContextActionService。",
+      },
+      {
+        q: "能让玩家自定义按键吗?",
+        a: "能 —— 存下玩家选的 Enum.KeyCode,比较时用它而不是硬编码。捕获选择的方法:玩家点击“重新绑定”按钮后,监听下一次 InputBegan 并保存 input.KeyCode。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "如何制作 Roblox 主菜单 GUI" },
+      { slug: "how-to-make-a-draggable-roblox-gui", title: "如何制作可拖拽的 Roblox GUI" },
     ],
   },
 };

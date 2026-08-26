@@ -99,19 +99,53 @@ export function GuideDetailView({ slug }: { slug: string }) {
         {g.relatedGuides && g.relatedGuides.length > 0 && (
           <section className="mt-12">
             <h2 className="mb-4 text-xl font-semibold text-ink">相关教程</h2>
-            <div className="flex flex-col gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {g.relatedGuides.map((link) => (
                 <Link
                   key={link.slug}
                   href={`/zh/guides/${link.slug}`}
-                  className="rounded-xl border border-line bg-panel px-5 py-4 font-semibold text-ink transition hover:border-focus"
+                  className="rounded-xl border border-line bg-panel p-4 transition hover:border-focus"
                 >
-                  {link.title} →
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-focus">
+                    教程
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-ink">
+                    {link.title} →
+                  </p>
                 </Link>
               ))}
             </div>
           </section>
         )}
+
+        {/* 收尾 CTA:本页唯一指向首页的关键词锚文本内链,把权重导向核心词。 */}
+        <section className="mt-12 rounded-2xl border border-line bg-panel p-6">
+          <h2 className="text-xl font-semibold text-ink mb-2">
+            不想手写这些样板代码?
+          </h2>
+          <p className="text-ink-dim leading-relaxed mb-4">
+            本篇教程里的每一项 —— 层级结构、布局助手、按钮连线 —— 都内置在免费的{" "}
+            <Link href="/zh" className="text-focus hover:underline font-medium">
+              Roblox GUI 制作器
+            </Link>{" "}
+            里。拖拽搭建、直接调 Roblox 真实属性,然后导出可直接粘贴进 Studio 的
+            Luau 代码。
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/editor"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:brightness-110"
+            >
+              打开编辑器 →
+            </Link>
+            <Link
+              href="/zh/templates"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-dim transition hover:text-ink"
+            >
+              浏览模板
+            </Link>
+          </div>
+        </section>
       </div>
     </>
   );

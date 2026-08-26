@@ -211,19 +211,55 @@ export default async function GuidePage({
             <h2 className="mb-4 text-xl font-semibold text-ink">
               Related guides
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {g.relatedGuides.map((link) => (
                 <Link
                   key={link.slug}
                   href={`/guides/${link.slug}`}
-                  className="rounded-xl border border-line bg-panel px-5 py-4 font-semibold text-ink transition hover:border-focus"
+                  className="rounded-xl border border-line bg-panel p-4 transition hover:border-focus"
                 >
-                  {link.title} →
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-focus">
+                    Guide
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-ink">
+                    {link.title} →
+                  </p>
                 </Link>
               ))}
             </div>
           </section>
         )}
+
+        {/* Closing CTA: the only keyword-anchored internal link to the
+            homepage on this page, so link equity funnels to the head term. */}
+        <section className="mt-12 rounded-2xl border border-line bg-panel p-6">
+          <h2 className="text-xl font-semibold text-ink mb-2">
+            Skip the boilerplate
+          </h2>
+          <p className="text-ink-dim leading-relaxed mb-4">
+            Everything in this guide — the hierarchy, the layout helpers, the
+            button wiring — is built into the free{" "}
+            <Link href="/" className="text-focus hover:underline font-medium">
+              Roblox GUI maker
+            </Link>
+            . Drag, drop, tweak real Roblox properties, then export clean Luau
+            you can paste straight into Studio.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/editor"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:brightness-110"
+            >
+              Open the editor →
+            </Link>
+            <Link
+              href="/templates"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-dim transition hover:text-ink"
+            >
+              Browse templates
+            </Link>
+          </div>
+        </section>
       </main>
       <SiteFooter />
     </>

@@ -509,7 +509,7 @@ export function Editor({
             href="/"
             className="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink-dim"
           >
-            Back home
+            Roblox GUI Maker home
           </Link>
         </div>
       </main>

@@ -450,6 +450,10 @@ end)`,
         a: "By default a ScreenGui resets on spawn. Set ResetOnSpawn = false on the ScreenGui to keep it persistent.",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "How to Open a GUI with a Key Press in Roblox" },
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
+    ],
   },
   {
     slug: "how-to-make-a-roblox-shop-gui",
@@ -537,6 +541,10 @@ end)`,
         a: "Parent a UIGridLayout to the ScrollingFrame. Set CellSize and CellPadding; every child Frame then auto-positions into rows and columns.",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
+      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+    ],
   },
   {
     slug: "how-to-make-a-roblox-loading-screen-gui",
@@ -616,6 +624,10 @@ end)`,
         a: "Tween the fill Frame's Size from UDim2.fromScale(0,1) to UDim2.fromScale(1,1) with TweenService, then Destroy the GUI in tween.Completed.",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI Script Generator" },
+    ],
   },
   {
     slug: "how-to-use-uilistlayout-in-roblox",
@@ -665,6 +677,10 @@ secondButton.LayoutOrder = 2`,
         q: "Why aren't my children spacing apart?",
         a: "Set the layout's Padding to a UDim value like UDim.new(0, 10). Without it, children touch edge to edge.",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-inventory-gui", title: "How to Make a Roblox Inventory GUI" },
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
     ],
   },
   {
@@ -742,6 +758,10 @@ end`,
         a: "You're using something other than UserId as the key. Always key by tostring(player.UserId) so each player maps to exactly one entry.",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
+      { slug: "roblox-gui-code-structure", title: "Roblox GUI Code Explained: Instance.new, UDim2 & Parenting" },
+    ],
   },
   {
     slug: "how-to-animate-roblox-guis-with-tweenservice",
@@ -798,6 +818,10 @@ slide:Play()`,
         q: "How do I make an animation loop forever?",
         a: "Set TweenInfo with Reverses = true and RepeatCount = -1, so the tween runs back and forth indefinitely.",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
+      { slug: "how-to-design-polished-roblox-ui", title: "How to Design Polished Roblox UI (Gradients, Strokes & Depth)" },
     ],
   },
   {
@@ -862,6 +886,10 @@ end)`,
         a: "Yes — handle Enum.UserInputType.Touch the same way as MouseButton1 in InputBegan and InputEnded, and Touch in InputChanged.",
       },
     ],
+    relatedGuides: [
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "How to Open a GUI with a Key Press in Roblox" },
+      { slug: "how-to-make-a-responsive-roblox-gui", title: "How to Make a Responsive Roblox GUI" },
+    ],
   },
   {
     slug: "how-to-make-a-responsive-roblox-gui",
@@ -914,6 +942,10 @@ cap.Parent = label`,
         q: "How do I shrink a whole GUI on small screens?",
         a: "Parent a UIScale to the ScreenGui and set its Scale property (e.g., 0.8) to shrink every descendant together — useful for fitting dense HUDs on phones.",
       },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
     ],
   },
   {
@@ -1348,6 +1380,215 @@ end)`,
       { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
       { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
       { slug: "roblox-gui-script-generator", title: "Roblox GUI Script Generator" },
+    ],
+  },
+  {
+    slug: "how-to-script-a-roblox-gui",
+    title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)",
+    description:
+      "GUI scripting in Roblox explained for beginners: where LocalScripts live, connecting TextButton clicks, toggling visibility, and animating panels with TweenService — with copy-paste Luau.",
+    category: "Scripting",
+    relatedTemplate: "settings",
+    intro:
+      "Building the frames is half of a Roblox GUI — the other half is scripting: making the close button actually close, the shop toggle open and shut, and the panel slide in instead of popping. This guide covers the four pieces of Luau that almost every GUI script needs: a LocalScript under StarterGui, a connected button, a visibility toggle, and a TweenService animation. Every snippet is complete and paste-ready.",
+    sections: [
+      {
+        heading: "1. Where GUI scripts go: LocalScript under StarterGui",
+        paragraphs: [
+          "A GUI that each player sees for themselves is client-side. Put a LocalScript inside StarterGui (or inside the ScreenGui itself) and Roblox clones it into every player's PlayerGui when they join. Regular Scripts — the server kind — do not run inside PlayerGui.",
+          "If your GUI was built in Studio, the script can reach it through the player object. If you are creating the GUI from code instead, the script can build every Instance itself — the approach the exported code from this editor uses.",
+        ],
+        code: `-- LocalScript under StarterGui
+local player = game:GetService("Players").LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SettingsGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui`,
+        tip: "Set ResetOnSpawn = false on any menu or shop GUI, or it will disappear and rebuild every time the player respawns.",
+      },
+      {
+        heading: "2. Connect a button click (the pattern behind every button)",
+        paragraphs: [
+          "Every interactive GUI element is wired the same way: get a reference to the instance, connect a function to its Activated event (works for mouse and touch), and do the work inside that function. Activated is preferred over MouseButton1Click because it also fires on mobile taps.",
+        ],
+        code: `local button = screenGui:WaitForChild("Panel"):WaitForChild("CloseButton")
+
+button.Activated:Connect(function()
+    screenGui.Enabled = false
+end)`,
+        tip: "If nothing happens when you click, print something inside the connect function. No output in the console means the path or the event name is wrong — nine times out of ten it is a typo'd Name in WaitForChild.",
+      },
+      {
+        heading: "3. Toggle a GUI open and closed with one button",
+        paragraphs: [
+          "Shops and settings panels usually open from a HUD button and close from an X. The clean way is to flip ScreenGui.Enabled — when it is false, Roblox stops rendering the whole tree, so you get hiding for free.",
+        ],
+        code: `local toggleButton = playerGui:WaitForChild("Hud"):WaitForChild("OpenShop")
+local shopGui = playerGui:WaitForChild("ShopGui")
+
+toggleButton.Activated:Connect(function()
+    shopGui.Enabled = not shopGui.Enabled
+end)`,
+      },
+      {
+        heading: "4. Animate the panel with TweenService",
+        paragraphs: [
+          "A GUI that fades or slides in feels dramatically more polished, and TweenService does it in a few lines. Create a Tween with a target property table, a time, and an easing style, then :Play() it. Position tweens interpolate UDim2 values directly.",
+        ],
+        code: `local TweenService = game:GetService("TweenService")
+
+local panel = screenGui:WaitForChild("Panel")
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.6) -- start slightly low
+
+local open = TweenService:Create(
+    panel,
+    TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    { Position = UDim2.fromScale(0.5, 0.5) }
+)
+
+open:Play()`,
+        tip: "For a fade instead of a slide, tween a NumberValue and map it to GroupTransparency on a CanvasGroup — tweening TextTransparency per label is the slow path.",
+      },
+      {
+        heading: "5. The one rule about client and server",
+        paragraphs: [
+          "Clicks happen on the client, but anything the game must enforce — currency, purchases, item grants, permissions — happens on the server. The pattern: the LocalScript fires a RemoteEvent, and a Script in ServerScriptService listens, validates, and applies the result.",
+          "If you can describe the change as purely visual (opening a panel, highlighting a tab), it can stay client-side forever.",
+        ],
+      },
+      {
+        heading: "6. Script it here, or script it there",
+        paragraphs: [
+          "The visual editor generates exactly this shape of code: a LocalScript that builds the hierarchy under a ScreenGui and wires Activated handlers for visibility actions, plus an optional server Script for Fire RemoteEvent actions. Build the layout visually, export, and read the generated Luau alongside this guide — the structure will match section for section.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Why won't my GUI button do anything when I click it?",
+        a: "Three usual causes: the script is a regular Script instead of a LocalScript (Scripts don't run in PlayerGui), the WaitForChild path doesn't match the actual Name of the button, or the connection was made before the instance existed. Add a print inside the handler to see which one it is.",
+      },
+      {
+        q: "Should I use MouseButton1Click or Activated?",
+        a: "Activated. It fires for mouse clicks and touch taps alike, while MouseButton1Click is mouse-oriented. Both live on GuiButton (TextButton, ImageButton).",
+      },
+      {
+        q: "How do I close a GUI when the player presses a key?",
+        a: "Connect UserInputService.InputBegan, check input.KeyCode, and flip ScreenGui.Enabled — the companion guide 'How to Open a GUI with a Key Press in Roblox' covers it with full code, including the gameProcessedEvent guard.",
+      },
+      {
+        q: "Can a LocalScript create the whole GUI from code?",
+        a: "Yes — Instance.new every element, set properties, and parent bottom-up. That is exactly what the Luau exported from this editor does, which keeps the GUI reproducible from one file.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "How to Open a GUI with a Key Press in Roblox" },
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "How to Animate Roblox GUIs with TweenService" },
+    ],
+  },
+  {
+    slug: "how-to-open-a-gui-with-a-key-in-roblox",
+    title: "How to Open a GUI with a Key Press in Roblox",
+    description:
+      "Bind a key like M or B to open a Roblox GUI: UserInputService.InputBegin toggling, the gameProcessedEvent guard against double-fires, and gamepad support with ContextActionService.",
+    category: "Scripting",
+    relatedTemplate: "main-menu",
+    intro:
+      "Press M for a map, B for a backpack, Tab for a leaderboard — key-press toggles are one of the most-asked GUI questions in Roblox. The mechanism is a single UserInputService event, but two details trip everyone up: the event also fires while the player is typing in a TextBox, and the toggle can end up on both client and server. This guide shows the full pattern done right, plus the gamepad-friendly variant.",
+    sections: [
+      {
+        heading: "1. The core: UserInputService.InputBegan",
+        paragraphs: [
+          "UserInputService fires InputBegan for every key, tap, and button press on the client. Listen for it in a LocalScript, compare input.KeyCode to the key you want, and toggle the ScreenGui's Enabled property. That is the whole mechanism.",
+        ],
+        code: `-- LocalScript under StarterGui
+local UserInputService = game:GetService("UserInputService")
+
+local player = game:GetService("Players").LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local menuGui = playerGui:WaitForChild("MenuGui")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.M then
+        menuGui.Enabled = not menuGui.Enabled
+    end
+end)`,
+        tip: "gameProcessed is true when Roblox already consumed the input — the player is typing in a chat box or TextBox. Returning early there is what stops your menu from opening mid-sentence.",
+      },
+      {
+        heading: "2. Which keys are safe to bind",
+        paragraphs: [
+          "Avoid keys Roblox or common games already own: W A S D and the arrows (movement), slash (chat), Escape (Roblox menu), and Enter. Letters like M, B, I, G, and K, plus Tab and Q, are popular and conflict-free choices. F-keys and Return often collide with platform UI.",
+          "Enum.KeyCode lists every bindable key and gamepad button — you can also bind Enum.KeyCode.ButtonX for controller users with the same InputBegan code.",
+        ],
+      },
+      {
+        heading: "3. Show and hide with a transition",
+        paragraphs: [
+          "Flipping Enabled is instant. If you want the menu to fade or slide, keep the GUI enabled and tween a property instead — a CanvasGroup's GroupTransparency for fades, or the panel's Position for a slide — then disable it after the close tween finishes.",
+        ],
+        code: `local TweenService = game:GetService("TweenService")
+
+local function openMenu()
+    menuGui.Enabled = true
+    local panel = menuGui:WaitForChild("Panel")
+    TweenService:Create(
+        panel,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        { GroupTransparency = 0 }
+    ):Play()
+end`,
+      },
+      {
+        heading: "4. Gamepad and mobile players",
+        paragraphs: [
+          "Keyboards are not the only input. For a bind that works across keyboard and controller with a free on-screen button, use ContextActionService: it maps one action name to several key codes, shows a mobile touch button automatically when you give it a title, and lets you unbind when the GUI closes.",
+        ],
+        code: `local ContextActionService = game:GetService("ContextActionService")
+
+local function handleOpen(actionName, inputState, input)
+    if inputState ~= Enum.UserInputState.Begin then return end
+    menuGui.Enabled = not menuGui.Enabled
+end
+
+ContextActionService:BindAction("OpenMenu", handleOpen, true, Enum.KeyCode.M, Enum.KeyCode.ButtonSelect)
+ContextActionService:SetTitle("OpenMenu", "Menu")`,
+        tip: "The third argument to BindAction (true here) is createTouchButton — on phones Roblox shows a labeled round button that triggers the same handler.",
+      },
+      {
+        heading: "5. Keep the toggle client-side",
+        paragraphs: [
+          "Opening your own menu is a visual change, so it belongs in a LocalScript — no RemoteEvent needed. What crosses to the server is only the consequence: if pressing the key buys something or claims a reward, that button inside the GUI fires a RemoteEvent and the server validates it, exactly like any other button.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Why does my GUI open when I type the letter in chat?",
+        a: "You are missing the gameProcessedEvent guard. The second parameter UserInputService passes your handler is true when Roblox already used the input (chat, TextBox). Start every handler with: if gameProcessed then return end.",
+      },
+      {
+        q: "How do I detect a key press on the server?",
+        a: "You don't — input only exists on the client. Detect it in a LocalScript and, if the server must react, fire a RemoteEvent. Never trust the client for rewards or permissions; validate there.",
+      },
+      {
+        q: "What is the difference between UserInputService and ContextActionService?",
+        a: "UserInputService reports raw input — one event, you filter the keys. ContextActionService binds named actions to several inputs at once, can create a mobile touch button, and supports priorities and re-binding. For a single key either works; for cross-platform menus ContextActionService is the better fit.",
+      },
+      {
+        q: "Can I let players choose their own keybind?",
+        a: "Yes — store the chosen Enum.KeyCode and compare against it instead of hardcoding. To capture the choice, listen for the next InputBegan after the player clicks a 'rebind' button and save input.KeyCode.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
+      { slug: "how-to-make-a-draggable-roblox-gui", title: "How to Make a Draggable Roblox GUI" },
     ],
   },
 ];
