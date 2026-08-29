@@ -4,6 +4,7 @@ import { TEMPLATES } from "./editor/templates";
 import { GUIDES } from "./guides/guides-data";
 import { USE_CASES } from "./for/usecases";
 import { KITS } from "./editor/kits";
+import { SPOKES } from "./avatar/spokes";
 
 const BASE = "https://robloxguimaker.app";
 
@@ -99,6 +100,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       files: ["app/avatar/data.ts", "app/avatar/page.tsx"],
       zh: "/zh/avatar",
     }),
+    ...SPOKES.map((s) =>
+      entry(`/avatar/${s.slug}`, {
+        files: ["app/avatar/spokes.ts", "app/avatar/data.ts"],
+        zh: `/zh/avatar/${s.slug}`,
+      })
+    ),
     // Legal / trust pages are English-only for now — no /zh routes exist, so
     // no zh alternate is declared (avoids the soft-404 hreflang leak).
     entry("/privacy", { files: ["app/privacy/page.tsx"] }),

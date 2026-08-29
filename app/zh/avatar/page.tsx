@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ZhShell } from "../_components/ZhShell";
 import { AvatarGallery } from "../../avatar/AvatarGallery";
+import { SPOKES } from "../../avatar/spokes";
+import { looksForSpoke, lookTotalRs } from "../../avatar/data";
 
 export const metadata: Metadata = {
   title: "Roblox 形象搭配灵感 —— 免费与平价穿搭(真实物品 ID)",
@@ -98,10 +101,33 @@ export default function ZhAvatarPage() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
           Roblox 形象搭配灵感 —— 免费与平价穿搭
         </h1>
-        <p className="text-lg text-ink-dim mb-10 leading-relaxed max-w-3xl">
-          八套精选搭配,全部由真实商店单品组成 —— 两套完全免费,最贵的一套也不过
+        <p className="text-lg text-ink-dim mb-8 leading-relaxed max-w-3xl">
+          二十套精选搭配,全部由真实商店单品组成 —— 两套完全免费,最贵的一套也不过
           205 Robux。每件单品都带 ID:复制、打开商店、几分钟穿到你的形象上。
         </p>
+
+        {/* 风格长尾页入口:放在画廊上方,让爬虫和快速浏览的人都能早点看到内链。 */}
+        <section className="mb-12" aria-label="按风格浏览搭配">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {SPOKES.map((s) => {
+              const spokeLooks = looksForSpoke(s.slug);
+              const min = Math.min(...spokeLooks.map(lookTotalRs));
+              return (
+                <Link
+                  key={s.slug}
+                  href={`/zh/avatar/${s.slug}`}
+                  className="rounded-xl border border-line bg-panel p-4 transition hover:border-focus"
+                >
+                  <p className="text-sm font-semibold text-ink">{s.h1.zh}</p>
+                  <p className="text-xs text-ink-mute mt-1">
+                    {spokeLooks.length} 套 ·{" "}
+                    {min === 0 ? "含免费" : `低至 R$ ${min}`}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         <AvatarGallery zh />
 

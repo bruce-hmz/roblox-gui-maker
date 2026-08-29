@@ -19,6 +19,10 @@ describe("sitemap", () => {
       "/for",
       "/about",
       "/avatar",
+      "/avatar/preppy",
+      "/avatar/matching",
+      "/avatar/cheap",
+      "/avatar/y2k",
       "/privacy",
       "/terms",
       "/trust",
@@ -67,6 +71,10 @@ describe("sitemap", () => {
       `${base}/showcase`,
       `${base}/about`,
       `${base}/avatar`,
+      `${base}/avatar/preppy`,
+      `${base}/avatar/matching`,
+      `${base}/avatar/cheap`,
+      `${base}/avatar/y2k`,
     ];
     expect(withZh.map((entry) => entry.url).sort()).toEqual(
       expectedEnUrls.slice().sort()

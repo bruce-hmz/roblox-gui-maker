@@ -3,6 +3,8 @@ import Link from "next/link";
 import { SiteNav } from "../components/SiteNav";
 import { SiteFooter } from "../components/SiteFooter";
 import { AvatarGallery } from "./AvatarGallery";
+import { SPOKES } from "./spokes";
+import { looksForSpoke, lookTotalRs } from "./data";
 
 export const metadata: Metadata = {
   title: "Roblox Avatar Ideas — Free & Budget Outfits with Real Item IDs",
@@ -100,11 +102,35 @@ export default function AvatarPage() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
           Roblox Avatar Ideas — Free &amp; Budget Outfit Looks
         </h1>
-        <p className="text-lg text-ink-dim mb-10 leading-relaxed max-w-3xl">
-          Eight curated outfits built from real catalog items — two cost nothing at
-          all, none goes over R$ 205. Every item shows its ID: copy it, open it in
-          the Roblox catalog, and equip it on your avatar in minutes.
+        <p className="text-lg text-ink-dim mb-8 leading-relaxed max-w-3xl">
+          Twenty curated outfits built from real catalog items — two cost nothing at
+          all, and the priciest stops at R$ 205. Every item shows its ID: copy it,
+          open it in the Roblox catalog, and equip it on your avatar in minutes.
         </p>
+
+        {/* Spoke grid: the long-tail style pages. Kept above the gallery so
+            crawlers and skimmers both hit the internal links early. */}
+        <section className="mb-12" aria-label="Browse avatar looks by style">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {SPOKES.map((s) => {
+              const spokeLooks = looksForSpoke(s.slug);
+              const min = Math.min(...spokeLooks.map(lookTotalRs));
+              return (
+                <Link
+                  key={s.slug}
+                  href={`/avatar/${s.slug}`}
+                  className="rounded-xl border border-line bg-panel p-4 transition hover:border-focus"
+                >
+                  <p className="text-sm font-semibold text-ink">{s.h1.en}</p>
+                  <p className="text-xs text-ink-mute mt-1">
+                    {spokeLooks.length} looks ·{" "}
+                    {min === 0 ? "includes free" : `from R$ ${min}`}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         <AvatarGallery />
 

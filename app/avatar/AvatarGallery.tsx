@@ -27,6 +27,7 @@ const TYPE_LABELS: Record<AvatarItem["type"], { en: string; zh: string }> = {
   top: { en: "Top", zh: "上装" },
   bottom: { en: "Bottom", zh: "下装" },
   shoes: { en: "Shoes", zh: "鞋子" },
+  extra: { en: "Extra", zh: "配饰" },
 };
 
 function ItemThumbnail({ item }: { item: AvatarItem }) {
@@ -147,20 +148,29 @@ function LookCard({ look, zh }: { look: AvatarLook; zh: boolean }) {
   );
 }
 
-export function AvatarGallery({ zh = false }: { zh?: boolean }) {
+export function AvatarGallery({
+  zh = false,
+  looks = AVATAR_LOOKS,
+  trackLookSet = "hub",
+}: {
+  zh?: boolean;
+  /** Subset of looks to show (spoke pages pass their own); defaults to all. */
+  looks?: AvatarLook[];
+  trackLookSet?: string;
+}) {
   const [filter, setFilter] = useState<"all" | "free" | AvatarStyle>("all");
 
-  const styles = Array.from(new Set(AVATAR_LOOKS.map((l) => l.style)));
-  const looks =
+  const styles = Array.from(new Set(looks.map((l) => l.style)));
+  const visible =
     filter === "all"
-      ? AVATAR_LOOKS
+      ? looks
       : filter === "free"
-        ? AVATAR_LOOKS.filter((l) => lookTotalRs(l) === 0)
-        : AVATAR_LOOKS.filter((l) => l.style === filter);
+        ? looks.filter((l) => lookTotalRs(l) === 0)
+        : looks.filter((l) => l.style === filter);
 
   function pick(next: typeof filter) {
     setFilter(next);
-    trackEvent("avatar_filter", { style: next });
+    trackEvent("avatar_filter", { style: next, set: trackLookSet });
   }
 
   const chip = (active: boolean) =>
@@ -184,7 +194,7 @@ export function AvatarGallery({ zh = false }: { zh?: boolean }) {
         ))}
       </div>
       <div className="grid gap-5 md:grid-cols-2">
-        {looks.map((look) => (
+        {visible.map((look) => (
           <LookCard key={look.slug} look={look} zh={zh} />
         ))}
       </div>
