@@ -95,6 +95,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       zh: "/zh/for",
     }),
     entry("/about", { files: ["app/about/page.tsx"], zh: "/zh/about" }),
+    entry("/avatar", {
+      files: ["app/avatar/data.ts", "app/avatar/page.tsx"],
+      zh: "/zh/avatar",
+    }),
     // Legal / trust pages are English-only for now — no /zh routes exist, so
     // no zh alternate is declared (avoids the soft-404 hreflang leak).
     entry("/privacy", { files: ["app/privacy/page.tsx"] }),

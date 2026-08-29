@@ -18,6 +18,7 @@ describe("sitemap", () => {
       "/guides",
       "/for",
       "/about",
+      "/avatar",
       "/privacy",
       "/terms",
       "/trust",
@@ -65,6 +66,7 @@ describe("sitemap", () => {
       ...KITS.map((k) => `${base}/kits/${k.slug}`),
       `${base}/showcase`,
       `${base}/about`,
+      `${base}/avatar`,
     ];
     expect(withZh.map((entry) => entry.url).sort()).toEqual(
       expectedEnUrls.slice().sort()

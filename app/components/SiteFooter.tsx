@@ -51,6 +51,11 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
                 {zh ? "用例" : "Use cases"}
               </Link>
             </li>
+            <li>
+              <Link className="hover:text-ink" href={zh ? "/zh/avatar" : "/avatar"}>
+                {zh ? "形象穿搭灵感" : "Avatar outfit ideas"}
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
