@@ -32,7 +32,13 @@ export async function generateMetadata({
       title: g.title,
       description: g.description,
     },
-    alternates: { canonical: `/guides/${slug}` },
+    alternates: {
+      canonical: `/guides/${slug}`,
+      languages: {
+        en: `https://robloxguimaker.app/guides/${slug}`,
+        zh: `https://robloxguimaker.app/zh/guides/${slug}`,
+      },
+    },
   };
 }
 

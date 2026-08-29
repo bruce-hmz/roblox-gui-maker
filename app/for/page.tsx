@@ -20,7 +20,13 @@ export const metadata: Metadata = {
     description:
       "Roblox GUI Maker for main menus, shop menus, inventory screens, simulator HUDs, settings, loading screens, leaderboards and admin panels.",
   },
-  alternates: { canonical: "/for" },
+  alternates: {
+    canonical: "/for",
+    languages: {
+      en: "https://robloxguimaker.app/for",
+      zh: "https://robloxguimaker.app/zh/for",
+    },
+  },
 };
 
 export default function UseCasesPage() {

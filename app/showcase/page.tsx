@@ -21,7 +21,13 @@ export const metadata: Metadata = {
     description:
       "Browse real Roblox GUI examples — main menus, shops, HUDs, game pass stores, daily rewards and more. Free, exportable Luau.",
   },
-  alternates: { canonical: "/showcase" },
+  alternates: {
+    canonical: "/showcase",
+    languages: {
+      en: "https://robloxguimaker.app/showcase",
+      zh: "https://robloxguimaker.app/zh/showcase",
+    },
+  },
 };
 
 // The most polished, game-ready screen — shown large as the anchor piece.

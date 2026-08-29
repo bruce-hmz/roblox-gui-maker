@@ -20,7 +20,13 @@ export const metadata: Metadata = {
     description:
       "Written guides for building Roblox GUIs: main menus, shops, loading screens, and more.",
   },
-  alternates: { canonical: "/guides" },
+  alternates: {
+    canonical: "/guides",
+    languages: {
+      en: "https://robloxguimaker.app/guides",
+      zh: "https://robloxguimaker.app/zh/guides",
+    },
+  },
 };
 
 export default function GuidesPage() {

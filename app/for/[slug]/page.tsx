@@ -33,7 +33,13 @@ export async function generateMetadata({
       title: u.title,
       description: u.blurb,
     },
-    alternates: { canonical: `/for/${slug}` },
+    alternates: {
+      canonical: `/for/${slug}`,
+      languages: {
+        en: `https://robloxguimaker.app/for/${slug}`,
+        zh: `https://robloxguimaker.app/zh/for/${slug}`,
+      },
+    },
   };
 }
 

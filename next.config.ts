@@ -35,7 +35,26 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // Favicon-set assets are served by file-convention route handlers that
+    // default to max-age=0; these are effectively immutable (content changes
+    // bust the ?v query on the icon links), so cache them at the edge+browser.
+    const iconCache = "public, max-age=604800, stale-while-revalidate=86400";
     return [
+      {
+        source: "/:path(favicon.ico|icon.png|apple-icon.png)",
+        headers: [{ key: "Cache-Control", value: iconCache }],
+      },
+      {
+        source: "/:path(android-chrome-192x192.png|android-chrome-512x512.png)",
+        headers: [{ key: "Cache-Control", value: iconCache }],
+      },
+      // logo.png has no version query (nav/footer/img src), cache shorter.
+      {
+        source: "/logo.png",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400" },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [

@@ -20,7 +20,13 @@ export const metadata: Metadata = {
     description:
       "Cohesive, themed Roblox UI sets in one look. Free, exportable Luau.",
   },
-  alternates: { canonical: "/kits" },
+  alternates: {
+    canonical: "/kits",
+    languages: {
+      en: "https://robloxguimaker.app/kits",
+      zh: "https://robloxguimaker.app/zh/kits",
+    },
+  },
 };
 
 export default function KitsPage() {

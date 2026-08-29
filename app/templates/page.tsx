@@ -21,7 +21,13 @@ export const metadata: Metadata = {
     description:
       "Free Roblox GUI templates for menus, shops, settings, inventory, loading screens and leaderboards.",
   },
-  alternates: { canonical: "/templates" },
+  alternates: {
+    canonical: "/templates",
+    languages: {
+      en: "https://robloxguimaker.app/templates",
+      zh: "https://robloxguimaker.app/zh/templates",
+    },
+  },
 };
 
 export default function TemplatesPage() {

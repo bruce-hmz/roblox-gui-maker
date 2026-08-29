@@ -33,7 +33,13 @@ export async function generateMetadata({
       title: `${t.title} — Free Roblox GUI Template`,
       description: t.description,
     },
-    alternates: { canonical: `/templates/${slug}` },
+    alternates: {
+      canonical: `/templates/${slug}`,
+      languages: {
+        en: `https://robloxguimaker.app/templates/${slug}`,
+        zh: `https://robloxguimaker.app/zh/templates/${slug}`,
+      },
+    },
   };
 }
 

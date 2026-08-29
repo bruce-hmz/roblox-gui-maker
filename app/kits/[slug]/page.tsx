@@ -22,7 +22,13 @@ export async function generateMetadata({
   return {
     title: `${kit.name} — Free Roblox Game UI Kit | Roblox GUI Maker`,
     description: kit.description,
-    alternates: { canonical: `/kits/${slug}` },
+    alternates: {
+      canonical: `/kits/${slug}`,
+      languages: {
+        en: `https://robloxguimaker.app/kits/${slug}`,
+        zh: `https://robloxguimaker.app/zh/kits/${slug}`,
+      },
+    },
     openGraph: {
       title: `${kit.name} — Free Roblox Game UI Kit`,
       description: kit.description,

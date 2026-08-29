@@ -19,7 +19,13 @@ export const metadata: Metadata = {
     description:
       "Roblox GUI Maker is a free, browser-based visual builder for Roblox game GUIs.",
   },
-  alternates: { canonical: "/about" },
+  alternates: {
+    canonical: "/about",
+    languages: {
+      en: "https://robloxguimaker.app/about",
+      zh: "https://robloxguimaker.app/zh/about",
+    },
+  },
 };
 
 const FEATURES = [
