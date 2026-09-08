@@ -14,8 +14,12 @@ export type GenerateInput = {
 };
 
 // Raw parsed JSON of the model's answer (still unvalidated — parseGuiDesignSpec
-// is the authority).
-export type GenerateOutput = { raw: unknown; latencyMs: number };
+// is the authority). usage is the provider's token accounting when available.
+export type GenerateOutput = {
+  raw: unknown;
+  latencyMs: number;
+  usage?: { inputTokens: number; outputTokens: number };
+};
 
 export class ProviderError extends Error {
   code: "timeout" | "http" | "invalid_json" | "not_configured";
@@ -124,9 +128,22 @@ export function createGlmProvider(deps: GlmDeps): GuiGenerationProvider {
           if (retry.ok) {
             const payload = (await retry.json()) as {
               choices?: { message?: { content?: string } }[];
+              usage?: { prompt_tokens?: number; completion_tokens?: number };
             };
             const text = payload.choices?.[0]?.message?.content ?? "";
-            return { raw: extractJsonObject(text), latencyMs: Date.now() - started };
+            const usage =
+              typeof payload.usage?.prompt_tokens === "number" &&
+              typeof payload.usage?.completion_tokens === "number"
+                ? {
+                    inputTokens: payload.usage.prompt_tokens,
+                    outputTokens: payload.usage.completion_tokens,
+                  }
+                : undefined;
+            return {
+              raw: extractJsonObject(text),
+              latencyMs: Date.now() - started,
+              ...(usage ? { usage } : {}),
+            };
           }
         }
         throw new ProviderError(
@@ -137,9 +154,22 @@ export function createGlmProvider(deps: GlmDeps): GuiGenerationProvider {
 
       const payload = (await response.json()) as {
         choices?: { message?: { content?: string } }[];
+        usage?: { prompt_tokens?: number; completion_tokens?: number };
       };
       const text = payload.choices?.[0]?.message?.content ?? "";
-      return { raw: extractJsonObject(text), latencyMs: Date.now() - started };
+      const usage =
+        typeof payload.usage?.prompt_tokens === "number" &&
+        typeof payload.usage?.completion_tokens === "number"
+          ? {
+              inputTokens: payload.usage.prompt_tokens,
+              outputTokens: payload.usage.completion_tokens,
+            }
+          : undefined;
+      return {
+        raw: extractJsonObject(text),
+        latencyMs: Date.now() - started,
+        ...(usage ? { usage } : {}),
+      };
     },
   };
 }

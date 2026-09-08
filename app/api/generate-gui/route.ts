@@ -114,8 +114,9 @@ export async function POST(request: Request): Promise<Response> {
 
   // Fallback ladder level 3: the closest hand-built template, classified from
   // the prompt itself. Returned as a normal 200 so the user still lands in a
-  // working editor scene.
-  const templateFallback = (): Response => {
+  // working editor scene. `reason` separates provider transport failures
+  // (transient) from specs the validator could not repair (architecture).
+  const templateFallback = (reason: "provider_error" | "invalid_spec"): Response => {
     const screenType = classifyScreenType(prompt);
     const template = getTemplate(TEMPLATE_BY_SCREEN[screenType] ?? "main-menu");
     if (template) {
@@ -124,6 +125,7 @@ export async function POST(request: Request): Promise<Response> {
         meta: {
           screenType,
           fallbackUsed: "template" as const,
+          fallbackReason: reason,
           warnings: [],
           latencyMs: Date.now() - startedAt,
         },
@@ -156,7 +158,7 @@ export async function POST(request: Request): Promise<Response> {
       }
     }
 
-    if (!parsed.ok) return templateFallback();
+    if (!parsed.ok) return templateFallback("invalid_spec");
 
     const composed = composeScene(parsed.spec);
     const scene = sanitizeScene(JSON.parse(JSON.stringify(composed)));
@@ -166,7 +168,8 @@ export async function POST(request: Request): Promise<Response> {
       scene.length > COMPOSED_NODE_LIMIT ||
       !scene.some((n: SceneNode) => n.cls === "ScreenGui" && !n.parentId)
     ) {
-      return templateFallback();
+      // A valid spec composed into an invalid scene — treat as spec failure.
+      return templateFallback("invalid_spec");
     }
 
     return json({
@@ -176,12 +179,15 @@ export async function POST(request: Request): Promise<Response> {
         fallbackUsed: false as const,
         warnings: parsed.warnings.slice(0, 5),
         latencyMs: generated.latencyMs,
+        ...(generated.usage
+          ? { tokenUsage: generated.usage }
+          : {}),
       },
     });
   } catch (error) {
     if (error instanceof ProviderError && error.code === "not_configured") {
       return json({ error: "ai_unavailable", message: UNAVAILABLE_MESSAGE }, 503);
     }
-    return templateFallback();
+    return templateFallback("provider_error");
   }
 }

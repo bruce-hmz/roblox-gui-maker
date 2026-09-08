@@ -15,4 +15,5 @@ export type PromptFixture = {
 export const PROMPT_FIXTURES: PromptFixture[] =
   fixtures.fixtures as PromptFixture[];
 
-export const EVAL_EXTRA_PROMPTS: string[] = fixtures.evalExtra;
+export const EVAL_EXTRA_PROMPTS: PromptFixture[] =
+  fixtures.evalExtra as PromptFixture[];
