@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { collectConsoleErrors } from "./helpers";
 
 type StructuredData = {
   "@type": string;
@@ -10,10 +11,7 @@ test("@smoke @full exposes distinct core SEO topic pages", async ({
   page,
   request,
 }) => {
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
-  });
+  const consoleErrors = collectConsoleErrors(page);
 
   await page.goto("/templates");
   await expect(page).toHaveTitle(

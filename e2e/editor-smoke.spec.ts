@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { collectConsoleErrors } from "./helpers";
 
 test("@smoke keeps initially hidden layers off the canvas until selected", async ({
   page,
@@ -18,21 +19,21 @@ test("@smoke keeps initially hidden layers off the canvas until selected", async
 });
 
 test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
-  });
+  const consoleErrors = collectConsoleErrors(page);
 
   await page.goto("/");
   await expect(page).toHaveTitle(
-    "Free Online Roblox GUI Maker | Visual UI Builder"
+    "Free Roblox GUI Maker with AI | Visual Editor & Luau Export"
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    /responsive designs, preview interactions, and export Luau, JSON, and ZIP/
+    /real editable GUI|No login required/
   );
   await expect(
-    page.getByRole("heading", { level: 1, name: "Roblox GUI Maker" })
+    page.getByRole("heading", { level: 1, name: "Free Roblox GUI Maker with AI" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Generate GUI" })
   ).toBeVisible();
   for (const heading of [
     "Responsive Layout",
@@ -59,10 +60,17 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
   expect(JSON.stringify(webAppSchema)).toContain(
     "Server handlers for RemoteEvent and Teleport actions"
   );
+  expect(JSON.stringify(webAppSchema)).toContain(
+    "AI-generated GUI starting points"
+  );
   const faq = page.getByRole("region", {
     name: "Frequently asked questions",
   });
-  await expect(faq.locator("summary")).toHaveCount(6);
+  await expect(faq.locator("summary")).toHaveCount(7);
+  await faq
+    .getByText("How is this different from AI image generators?")
+    .click();
+  await expect(faq.getByText(/actual ScreenGui, Frame, and TextButton instances/)).toBeVisible();
   await faq.getByText("Does the editor generate game logic?").click();
   await expect(
     faq.getByText(
@@ -77,7 +85,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
       acceptedAnswer: { text: string };
     }>;
   };
-  expect(faqSchema.mainEntity).toHaveLength(6);
+  expect(faqSchema.mainEntity).toHaveLength(7);
   expect(
     faqSchema.mainEntity?.find(
       (item) => item.name === "Is Roblox GUI Maker free to use?"
