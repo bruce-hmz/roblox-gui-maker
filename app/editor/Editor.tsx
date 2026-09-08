@@ -29,6 +29,7 @@ import {
 } from "./scene";
 import { generateServerLuau } from "./server-luau";
 import { createProjectPackage } from "./project-package";
+import { AI_HANDOFF_KEY, type AiHandoff } from "../lib/ai-handoff";
 import { trackEvent } from "../lib/track";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
@@ -72,10 +73,19 @@ function loadSaved(): Saved | null {
   }
 }
 
-function detachTemplateUrl() {
+// Strip funnel params (?template / ?example / ?generated) after the scene is
+// in hand so a refresh restores the autosaved scene instead of reloading the
+// entry scene.
+function stripFunnelParams() {
   const currentUrl = new URL(window.location.href);
-  if (!currentUrl.searchParams.has("template")) return;
-  currentUrl.searchParams.delete("template");
+  let changed = false;
+  for (const param of ["template", "example", "generated"]) {
+    if (currentUrl.searchParams.has(param)) {
+      currentUrl.searchParams.delete(param);
+      changed = true;
+    }
+  }
+  if (!changed) return;
   window.history.replaceState(
     window.history.state,
     "",
@@ -83,12 +93,16 @@ function detachTemplateUrl() {
   );
 }
 
+type AiInfo = { prompt: string; screenType: string };
+
 export function Editor({
   initialScene,
   templateSlug,
+  exampleSlug,
 }: {
   initialScene?: SceneNode[];
   templateSlug?: string;
+  exampleSlug?: string;
 }) {
   const start = initialScene ?? SAMPLE_SCENE;
   const [device, setDevice] = useState<DeviceKind>("desktop");
@@ -98,6 +112,12 @@ export function Editor({
   const [importError, setImportError] = useState<string | null>(null);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
+  // AI funnel: the bar shown when the scene arrived from /api/generate-gui.
+  const [aiInfo, setAiInfo] = useState<AiInfo | null>(null);
+  const [aiRegenerating, setAiRegenerating] = useState(false);
+  const [aiRegenerateError, setAiRegenerateError] = useState<string | null>(null);
+  const aiInfoRef = useRef<AiInfo | null>(null);
+  const aiFirstEditFired = useRef(false);
   const sceneRef = useRef(scene);
   const importRequest = useRef(0);
   const copyRequest = useRef(0);
@@ -149,7 +169,13 @@ export function Editor({
       // 350ms debounce) so a redo before the timer fires can't restore stale state.
       const h = history.current;
       if (h.index < h.stack.length - 1) h.stack = h.stack.slice(0, h.index + 1);
-      detachTemplateUrl();
+      stripFunnelParams();
+      if (aiInfoRef.current && !aiFirstEditFired.current) {
+        aiFirstEditFired.current = true;
+        trackEvent("ai_scene_first_edit", {
+          screenType: aiInfoRef.current.screenType,
+        });
+      }
       sceneRef.current = next;
       setScene(next);
       if (immediate) {
@@ -284,12 +310,48 @@ export function Editor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // AI funnel: consume the homepage handoff (sessionStorage) when arriving
+  // via /editor?generated=1. Runs after the localStorage-restore effect so an
+  // AI scene always wins over a stale autosave.
+  useEffect(() => {
+    if (initialScene) return;
+    if (new URLSearchParams(window.location.search).get("generated") !== "1") return;
+    stripFunnelParams();
+    try {
+      const raw = window.sessionStorage.getItem(AI_HANDOFF_KEY);
+      if (!raw) return;
+      const handoff = JSON.parse(raw) as AiHandoff;
+      const scene = sanitizeScene(handoff.scene);
+      window.sessionStorage.removeItem(AI_HANDOFF_KEY);
+      if (!scene) return;
+      sceneRef.current = scene;
+      setScene(scene);
+      setSelectedId(null);
+      history.current = { stack: [cloneScene(scene)], index: 0 };
+      const info: AiInfo = { prompt: handoff.prompt, screenType: handoff.meta.screenType };
+      aiInfoRef.current = info;
+      setAiInfo(info);
+      trackEvent("ai_scene_loaded", {
+        screenType: handoff.meta.screenType,
+        fallbackUsed: handoff.meta.fallbackUsed === "template",
+      });
+    } catch {
+      // malformed handoff — fall through to the normal blank/restored state
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Template funnel: fire once when the editor opens with a loaded template
   // (page.tsx passes templateSlug only when ?template=<slug> resolved to a real
   // scene, so this never fires for blank or restored sessions).
   useEffect(() => {
     if (templateSlug) trackEvent("open_template", { template: templateSlug });
   }, [templateSlug]);
+
+  // Example funnel: fixed AI examples loaded without an LLM call.
+  useEffect(() => {
+    if (exampleSlug) trackEvent("open_example", { example: exampleSlug });
+  }, [exampleSlug]);
 
   // Autosave (debounced) so refresh doesn't lose work.
   useEffect(() => {
@@ -314,8 +376,65 @@ export function Editor({
     setSelectedId("play");
     setPreviewNotice(null);
     history.current = { stack: [cloneScene(SAMPLE_SCENE)], index: 0 };
-    detachTemplateUrl();
+    aiInfoRef.current = null;
+    setAiInfo(null);
+    aiFirstEditFired.current = false;
+    stripFunnelParams();
     force();
+  }
+
+  // AI funnel helpers -----------------------------------------------------------
+
+  // Track exports that came from an AI session with an ai_export event on top
+  // of the existing export_code / download_project events.
+  function trackAiExport(method: string) {
+    if (!aiInfoRef.current) return;
+    trackEvent("ai_export", {
+      method,
+      screenType: aiInfoRef.current.screenType,
+    });
+  }
+
+  async function regenerateAiScene() {
+    const info = aiInfoRef.current;
+    if (!info || aiRegenerating) return;
+    setAiRegenerating(true);
+    setAiRegenerateError(null);
+    try {
+      const response = await fetch("/api/generate-gui", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: info.prompt, locale: "en" }),
+      });
+      const data = (await response.json().catch(() => null)) as {
+        scene?: unknown;
+        meta?: AiHandoff["meta"];
+        error?: string;
+      } | null;
+      const scene = data?.scene ? sanitizeScene(data.scene) : null;
+      if (!response.ok || !scene || !data?.meta) throw new Error("regenerate failed");
+      trackEvent("ai_generate_success", {
+        screenType: data.meta.screenType,
+        fallbackUsed: data.meta.fallbackUsed === "template",
+        latencyMs: data.meta.latencyMs,
+        regenerate: true,
+      });
+      sceneRef.current = scene;
+      setScene(scene);
+      setSelectedId(null);
+      setPreviewVisibility(null);
+      setPreviewNotice(null);
+      history.current = { stack: [cloneScene(scene)], index: 0 };
+      const next: AiInfo = { prompt: info.prompt, screenType: data.meta.screenType };
+      aiInfoRef.current = next;
+      setAiInfo(next);
+      force();
+    } catch {
+      trackEvent("ai_generate_failure", { reason: "regenerate" });
+      setAiRegenerateError("Regeneration failed — your current GUI is unchanged.");
+    } finally {
+      setAiRegenerating(false);
+    }
   }
 
   // keyboard shortcuts (⌘/Ctrl + Z/Y/D, Delete, Esc, arrows)
@@ -396,6 +515,7 @@ export function Editor({
       await navigator.clipboard.writeText(code);
       if (request !== copyRequest.current) return;
       trackEvent("export_code", { method: "copy", output });
+      trackAiExport(output === "client" ? "copy_client" : "copy_server");
       if (copyTimer.current) clearTimeout(copyTimer.current);
       setCopied(output);
       copyTimer.current = setTimeout(() => {
@@ -421,6 +541,7 @@ export function Editor({
     link.href = url;
     link.download = output === "client" ? "roblox-gui.lua" : "roblox-gui.server.lua";
     trackEvent("export_code", { method: output === "client" ? "lua" : "server_lua", output });
+    trackAiExport(output === "client" ? "download_lua" : "download_server_lua");
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -435,6 +556,7 @@ export function Editor({
     link.href = url;
     link.download = sceneDocumentFilename(scene);
     trackEvent("download_project", { format: "json" });
+    trackAiExport("download_json");
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -450,6 +572,7 @@ export function Editor({
     link.href = url;
     link.download = projectPackage.filename;
     trackEvent("download_project", { format: "zip" });
+    trackAiExport("download_zip");
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -530,6 +653,40 @@ export function Editor({
         onExportProject={exportProject}
         importError={importError}
       />
+      {aiInfo && (
+        <div className="flex h-9 shrink-0 items-center gap-3 border-b border-line bg-panel px-4 text-xs select-none">
+          <span className="rounded-full bg-primary/15 px-2.5 py-0.5 font-semibold text-focus">
+            AI-generated · {aiInfo.screenType}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-ink-mute" title={aiInfo.prompt}>
+            &ldquo;{aiInfo.prompt}&rdquo;
+          </span>
+          {aiRegenerateError && (
+            <span role="alert" className="text-danger">
+              {aiRegenerateError}
+            </span>
+          )}
+          <button
+            onClick={() => void regenerateAiScene()}
+            disabled={aiRegenerating}
+            className="rounded-md border border-line px-2.5 py-1 font-medium text-ink-dim transition hover:border-focus hover:text-ink disabled:opacity-50"
+          >
+            {aiRegenerating ? "Regenerating…" : "Regenerate"}
+          </button>
+          <button
+            onClick={() => {
+              aiInfoRef.current = null;
+              aiFirstEditFired.current = false;
+              setAiInfo(null);
+              setAiRegenerateError(null);
+            }}
+            aria-label="Dismiss AI bar"
+            className="grid h-6 w-6 place-items-center rounded-md text-ink-mute transition hover:bg-raised hover:text-ink"
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div className="flex-1 min-h-0 flex">
         <Palette
           onAdd={addNode}
