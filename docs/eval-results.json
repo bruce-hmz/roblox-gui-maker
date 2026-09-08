@@ -1,566 +1,1113 @@
 {
   "summary": {
     "baseUrl": "https://robloxguimaker.app",
-    "ranAt": "2026-09-08T08:34:55.275Z",
+    "ranAt": "2026-09-08T09:12:51.635Z",
     "total": 50,
+    "httpSuccessRate": 1,
     "validScene": 50,
     "validSceneRate": 1,
-    "fallbackCount": 1,
-    "fallbackRate": 0.02,
-    "p50LatencyMs": 3607,
-    "p95LatencyMs": 7478,
-    "avgNodes": 19.6
+    "fallbackCount": 0,
+    "fallbackRate": 0,
+    "fallbackReasons": {
+      "provider_error": 0,
+      "invalid_spec": 0
+    },
+    "avgLatencyMs": 4026,
+    "p50LatencyMs": 3664,
+    "p95LatencyMs": 7320,
+    "maxLatencyMs": 9899,
+    "avgWarnings": 1.88,
+    "http4xx": 0,
+    "http5xx": 0,
+    "classificationAccuracy": 1,
+    "tokenUsage": {
+      "samples": 50,
+      "avgInputTokens": 779.3,
+      "avgOutputTokens": 56
+    },
+    "byScreenType": {
+      "main-menu": {
+        "count": 9,
+        "valid": 9,
+        "fallback": 0,
+        "misclassified": 0,
+        "p95LatencyMs": 7736
+      },
+      "shop": {
+        "count": 9,
+        "valid": 9,
+        "fallback": 0,
+        "misclassified": 0,
+        "p95LatencyMs": 9899
+      },
+      "inventory": {
+        "count": 8,
+        "valid": 8,
+        "fallback": 0,
+        "misclassified": 0,
+        "p95LatencyMs": 4974
+      },
+      "hud": {
+        "count": 10,
+        "valid": 10,
+        "fallback": 0,
+        "misclassified": 0,
+        "p95LatencyMs": 5745
+      },
+      "daily-rewards": {
+        "count": 7,
+        "valid": 7,
+        "fallback": 0,
+        "misclassified": 0,
+        "p95LatencyMs": 5585
+      },
+      "settings": {
+        "count": 7,
+        "valid": 7,
+        "fallback": 0,
+        "misclassified": 0,
+        "p95LatencyMs": 7320
+      }
+    }
   },
   "results": [
     {
       "index": 1,
       "prompt": "Create a horror main menu with Play, Settings and Credits.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 9,
-      "latencyMs": 3982,
-      "providerLatencyMs": 3494
+      "latencyMs": 4779,
+      "providerLatencyMs": 3287,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 59
+      }
     },
     {
       "index": 2,
       "prompt": "Create an anime game title screen with Play, Shop and Settings.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 12,
-      "latencyMs": 3607,
-      "providerLatencyMs": 3351
+      "latencyMs": 3612,
+      "providerLatencyMs": 3117,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 62
+      }
     },
     {
       "index": 3,
       "prompt": "Create a tycoon main menu with a Play button and a Quit button.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
-      "fallbackUsed": "template",
-      "nodes": 9,
-      "latencyMs": 20257,
-      "providerLatencyMs": 20003
+      "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
+      "nodes": 5,
+      "latencyMs": 2424,
+      "providerLatencyMs": 1976,
+      "tokenUsage": {
+        "inputTokens": 782,
+        "outputTokens": 49
+      }
     },
     {
       "index": 4,
       "prompt": "Create a main menu for my RPG dungeon game named Iron Depths.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [],
       "nodes": 8,
-      "latencyMs": 5173,
-      "providerLatencyMs": 4904
+      "latencyMs": 2953,
+      "providerLatencyMs": 2696,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 52
+      }
     },
     {
       "index": 5,
       "prompt": "Create a dark scary title screen with play, shop, settings, credits and quit.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 14,
-      "latencyMs": 3555,
-      "providerLatencyMs": 3287
+      "latencyMs": 7736,
+      "providerLatencyMs": 7270,
+      "tokenUsage": {
+        "inputTokens": 784,
+        "outputTokens": 79
+      }
     },
     {
       "index": 6,
       "prompt": "Create a modern simulator shop with six game passes.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped."
+      ],
       "nodes": 29,
-      "latencyMs": 5221,
-      "providerLatencyMs": 4959
+      "latencyMs": 6729,
+      "providerLatencyMs": 6457,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 123
+      }
     },
     {
       "index": 7,
       "prompt": "Create a game pass store with three passes for my obby.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 17,
-      "latencyMs": 6557,
-      "providerLatencyMs": 6290
+      "latencyMs": 4422,
+      "providerLatencyMs": 3420,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 75
+      }
     },
     {
       "index": 8,
       "prompt": "Create a Robux purchase shop with 4 game passes, dark blue theme.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 21,
-      "latencyMs": 7478,
-      "providerLatencyMs": 7208
+      "latencyMs": 4656,
+      "providerLatencyMs": 4195,
+      "tokenUsage": {
+        "inputTokens": 783,
+        "outputTokens": 106
+      }
     },
     {
       "index": 9,
       "prompt": "Create a pet simulator shop with 6 passes and rounded buttons.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 29,
-      "latencyMs": 8542,
-      "providerLatencyMs": 8266
+      "latencyMs": 5617,
+      "providerLatencyMs": 5169,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 125
+      }
     },
     {
       "index": 10,
       "prompt": "Create an item store with 9 items for my tycoon.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 14,
-      "latencyMs": 3739,
-      "providerLatencyMs": 3440
+      "latencyMs": 2843,
+      "providerLatencyMs": 1831,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 38
+      }
     },
     {
       "index": 11,
       "prompt": "Create an RPG inventory with 20 item slots and item details panel.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 27,
-      "latencyMs": 2577,
-      "providerLatencyMs": 2307
+      "latencyMs": 1968,
+      "providerLatencyMs": 1692,
+      "tokenUsage": {
+        "inputTokens": 781,
+        "outputTokens": 43
+      }
     },
     {
       "index": 12,
       "prompt": "Create a backpack UI with 12 slots for my adventure game.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 16,
-      "latencyMs": 3719,
-      "providerLatencyMs": 3456
+      "latencyMs": 2098,
+      "providerLatencyMs": 1632,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 37
+      }
     },
     {
       "index": 13,
       "prompt": "Create an anime battleground inventory with 16 slots.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 20,
-      "latencyMs": 1640,
-      "providerLatencyMs": 1377
+      "latencyMs": 2613,
+      "providerLatencyMs": 2347,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 37
+      }
     },
     {
       "index": 14,
       "prompt": "Create a hotbar inventory with 8 slots.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [],
       "nodes": 12,
-      "latencyMs": 2649,
-      "providerLatencyMs": 2383
+      "latencyMs": 4974,
+      "providerLatencyMs": 4708,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 24
+      }
     },
     {
       "index": 15,
       "prompt": "Create an inventory screen with 24 slots and a details panel, fantasy style.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 31,
-      "latencyMs": 5591,
-      "providerLatencyMs": 5330
+      "latencyMs": 4049,
+      "providerLatencyMs": 3776,
+      "tokenUsage": {
+        "inputTokens": 783,
+        "outputTokens": 44
+      }
     },
     {
       "index": 16,
       "prompt": "Create an anime battleground HUD with health, stamina, four skills and an ultimate meter.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 22,
-      "latencyMs": 6828,
-      "providerLatencyMs": 6511
+      "latencyMs": 2617,
+      "providerLatencyMs": 2133,
+      "tokenUsage": {
+        "inputTokens": 784,
+        "outputTokens": 67
+      }
     },
     {
       "index": 17,
       "prompt": "Create a simulator HUD with health and coins.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 8,
-      "latencyMs": 2302,
-      "providerLatencyMs": 2042
+      "latencyMs": 3512,
+      "providerLatencyMs": 3253,
+      "tokenUsage": {
+        "inputTokens": 776,
+        "outputTokens": 47
+      }
     },
     {
       "index": 18,
       "prompt": "Create an RPG HUD with health, mana and 6 ability buttons.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 23,
-      "latencyMs": 4435,
-      "providerLatencyMs": 4172
+      "latencyMs": 2816,
+      "providerLatencyMs": 2549,
+      "tokenUsage": {
+        "inputTokens": 781,
+        "outputTokens": 61
+      }
     },
     {
       "index": 19,
       "prompt": "Create a horror HUD with stamina and 2 skills.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 11,
-      "latencyMs": 4004,
-      "providerLatencyMs": 3747
+      "latencyMs": 3411,
+      "providerLatencyMs": 3128,
+      "tokenUsage": {
+        "inputTokens": 778,
+        "outputTokens": 52
+      }
     },
     {
       "index": 20,
       "prompt": "Create a battleground HUD with health, xp, gems and 4 skills.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped.",
+        "stat-bar without a valid stat — dropped."
+      ],
       "nodes": 19,
-      "latencyMs": 4132,
-      "providerLatencyMs": 3869
+      "latencyMs": 3872,
+      "providerLatencyMs": 3610,
+      "tokenUsage": {
+        "inputTokens": 782,
+        "outputTokens": 69
+      }
     },
     {
       "index": 21,
       "prompt": "Create a seven-day daily rewards interface.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 35,
-      "latencyMs": 2219,
-      "providerLatencyMs": 1962
+      "latencyMs": 2308,
+      "providerLatencyMs": 2044,
+      "tokenUsage": {
+        "inputTokens": 775,
+        "outputTokens": 39
+      }
     },
     {
       "index": 22,
       "prompt": "Create a daily rewards calendar with 14 days for my simulator.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 63,
-      "latencyMs": 5831,
-      "providerLatencyMs": 5563
+      "latencyMs": 1749,
+      "providerLatencyMs": 1469,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 39
+      }
     },
     {
       "index": 23,
       "prompt": "Create a login streak reward screen with 7 days.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 35,
-      "latencyMs": 2471,
-      "providerLatencyMs": 2199
+      "latencyMs": 3937,
+      "providerLatencyMs": 3667,
+      "tokenUsage": {
+        "inputTokens": 778,
+        "outputTokens": 39
+      }
     },
     {
       "index": 24,
       "prompt": "Create a 5-day daily rewards popup.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [],
       "nodes": 27,
-      "latencyMs": 2427,
-      "providerLatencyMs": 2150
+      "latencyMs": 2560,
+      "providerLatencyMs": 2287,
+      "tokenUsage": {
+        "inputTokens": 776,
+        "outputTokens": 26
+      }
     },
     {
       "index": 25,
       "prompt": "Create a daily reward calendar for my tycoon with ten days.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 47,
-      "latencyMs": 4641,
-      "providerLatencyMs": 4380
+      "latencyMs": 3711,
+      "providerLatencyMs": 3450,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 40
+      }
     },
     {
       "index": 26,
       "prompt": "Create a game settings panel with music, SFX, graphics and close button.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Block \"menu-buttons\" is not supported for settings — dropped."
+      ],
       "nodes": 13,
-      "latencyMs": 3346,
-      "providerLatencyMs": 3081
+      "latencyMs": 7320,
+      "providerLatencyMs": 7057,
+      "tokenUsage": {
+        "inputTokens": 783,
+        "outputTokens": 47
+      }
     },
     {
       "index": 27,
       "prompt": "Create a settings menu with Music and Sound Effects toggles.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [],
       "nodes": 10,
-      "latencyMs": 2618,
-      "providerLatencyMs": 2344
+      "latencyMs": 3624,
+      "providerLatencyMs": 3288,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 28
+      }
     },
     {
       "index": 28,
       "prompt": "Create an options menu with music, sfx, graphics, particles and camera shake.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 10,
-      "latencyMs": 3606,
-      "providerLatencyMs": 3343
+      "latencyMs": 1997,
+      "providerLatencyMs": 1563,
+      "tokenUsage": {
+        "inputTokens": 784,
+        "outputTokens": 41
+      }
     },
     {
       "index": 29,
       "prompt": "Create a settings panel for my horror game with volume options.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 10,
-      "latencyMs": 2126,
-      "providerLatencyMs": 1864
+      "latencyMs": 3664,
+      "providerLatencyMs": 3381,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 42
+      }
     },
     {
       "index": 30,
       "prompt": "Create a graphics quality settings screen with a close button.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 7,
-      "latencyMs": 2762,
-      "providerLatencyMs": 2489
+      "latencyMs": 3067,
+      "providerLatencyMs": 2817,
+      "tokenUsage": {
+        "inputTokens": 778,
+        "outputTokens": 39
+      }
     },
     {
       "index": 31,
       "prompt": "Create a neon cyberpunk shop with 5 game passes.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 25,
-      "latencyMs": 7071,
-      "providerLatencyMs": 6807
+      "latencyMs": 9899,
+      "providerLatencyMs": 9624,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 100
+      }
     },
     {
       "index": 32,
       "prompt": "Create a cute pet simulator main menu with Play and Shop.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 8,
-      "latencyMs": 3473,
-      "providerLatencyMs": 3194
+      "latencyMs": 3731,
+      "providerLatencyMs": 3466,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 55
+      }
     },
     {
       "index": 33,
       "prompt": "Create a battleground HUD with health, mana, 5 skills and an ultimate.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 24,
-      "latencyMs": 5564,
-      "providerLatencyMs": 5301
+      "latencyMs": 3643,
+      "providerLatencyMs": 3374,
+      "tokenUsage": {
+        "inputTokens": 783,
+        "outputTokens": 65
+      }
     },
     {
       "index": 34,
       "prompt": "Create a tycoon shop with 4 passes.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 21,
-      "latencyMs": 7143,
-      "providerLatencyMs": 6884
+      "latencyMs": 7213,
+      "providerLatencyMs": 6946,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 99
+      }
     },
     {
       "index": 35,
       "prompt": "Create an anime HUD with stamina and 3 skills and coins.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped."
+      ],
       "nodes": 15,
-      "latencyMs": 2289,
-      "providerLatencyMs": 2029
+      "latencyMs": 5571,
+      "providerLatencyMs": 5288,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 63
+      }
     },
     {
       "index": 36,
       "prompt": "Create a horror game settings panel with SFX and music.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 10,
-      "latencyMs": 2070,
-      "providerLatencyMs": 1807
+      "latencyMs": 2448,
+      "providerLatencyMs": 2197,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 41
+      }
     },
     {
       "index": 37,
       "prompt": "Create a 7 day reward calendar for my RNG game.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 35,
-      "latencyMs": 2750,
-      "providerLatencyMs": 2487
+      "latencyMs": 2613,
+      "providerLatencyMs": 2347,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 39
+      }
     },
     {
       "index": 38,
       "prompt": "Create an RPG inventory with 30 slots.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 34,
-      "latencyMs": 2362,
-      "providerLatencyMs": 2106
+      "latencyMs": 2448,
+      "providerLatencyMs": 2188,
+      "tokenUsage": {
+        "inputTokens": 776,
+        "outputTokens": 37
+      }
     },
     {
       "index": 39,
       "prompt": "Create a sci-fi main menu called STAR FORGE.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped."
+      ],
       "nodes": 8,
-      "latencyMs": 4094,
-      "providerLatencyMs": 3799
+      "latencyMs": 5701,
+      "providerLatencyMs": 5423,
+      "tokenUsage": {
+        "inputTokens": 778,
+        "outputTokens": 51
+      }
     },
     {
       "index": 40,
       "prompt": "Create a shop UI with six game passes for a clicker.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 29,
-      "latencyMs": 5978,
-      "providerLatencyMs": 5704
+      "latencyMs": 6135,
+      "providerLatencyMs": 5871,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 124
+      }
     },
     {
       "index": 41,
       "prompt": "Create a fantasy HUD with health, xp and 4 abilities.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 19,
-      "latencyMs": 2969,
-      "providerLatencyMs": 2710
+      "latencyMs": 5745,
+      "providerLatencyMs": 5478,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 62
+      }
     },
     {
       "index": 42,
       "prompt": "Create a daily rewards screen with 10 days.",
+      "expectedScreenType": "daily-rewards",
       "status": 200,
       "valid": true,
       "screenType": "daily-rewards",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 47,
-      "latencyMs": 1733,
-      "providerLatencyMs": 1459
+      "latencyMs": 5585,
+      "providerLatencyMs": 5318,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 39
+      }
     },
     {
       "index": 43,
       "prompt": "Create an inventory with 9 slots and details.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [],
       "nodes": 16,
-      "latencyMs": 1700,
-      "providerLatencyMs": 1442
+      "latencyMs": 2479,
+      "providerLatencyMs": 2211,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 29
+      }
     },
     {
       "index": 44,
       "prompt": "Create a settings panel with graphics quality and a close button.",
+      "expectedScreenType": "settings",
       "status": 200,
       "valid": true,
       "screenType": "settings",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Block \"menu-buttons\" is not supported for settings — dropped."
+      ],
       "nodes": 7,
-      "latencyMs": 3218,
-      "providerLatencyMs": 2960
+      "latencyMs": 3477,
+      "providerLatencyMs": 3198,
+      "tokenUsage": {
+        "inputTokens": 779,
+        "outputTokens": 45
+      }
     },
     {
       "index": 45,
       "prompt": "Create a simulator main menu with Play, Shop, Settings and Credits.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 13,
-      "latencyMs": 3625,
-      "providerLatencyMs": 3355
+      "latencyMs": 3496,
+      "providerLatencyMs": 3226,
+      "tokenUsage": {
+        "inputTokens": 781,
+        "outputTokens": 72
+      }
     },
     {
       "index": 46,
       "prompt": "Create a battleground ultimate HUD with health and stamina.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 13,
-      "latencyMs": 3354,
-      "providerLatencyMs": 3088
+      "latencyMs": 4075,
+      "providerLatencyMs": 3812,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 52
+      }
     },
     {
       "index": 47,
       "prompt": "Create a game pass store with 2 passes.",
+      "expectedScreenType": "shop",
       "status": 200,
       "valid": true,
       "screenType": "shop",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 13,
-      "latencyMs": 4049,
-      "providerLatencyMs": 3790
+      "latencyMs": 3898,
+      "providerLatencyMs": 3628,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 62
+      }
     },
     {
       "index": 48,
       "prompt": "Create a dark inventory with 18 slots.",
+      "expectedScreenType": "inventory",
       "status": 200,
       "valid": true,
       "screenType": "inventory",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [],
       "nodes": 22,
-      "latencyMs": 2473,
-      "providerLatencyMs": 2214
+      "latencyMs": 2249,
+      "providerLatencyMs": 1983,
+      "tokenUsage": {
+        "inputTokens": 776,
+        "outputTokens": 29
+      }
     },
     {
       "index": 49,
       "prompt": "Create a mining tycoon HUD with coins and 3 skills.",
+      "expectedScreenType": "hud",
       "status": 200,
       "valid": true,
       "screenType": "hud",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Invalid title dropped.",
+        "stat-bar without a valid stat — dropped."
+      ],
       "nodes": 8,
-      "latencyMs": 3739,
-      "providerLatencyMs": 3486
+      "latencyMs": 3789,
+      "providerLatencyMs": 3525,
+      "tokenUsage": {
+        "inputTokens": 780,
+        "outputTokens": 52
+      }
     },
     {
       "index": 50,
       "prompt": "Create a scary main menu with Play and Quit.",
+      "expectedScreenType": "main-menu",
       "status": 200,
       "valid": true,
       "screenType": "main-menu",
       "fallbackUsed": false,
+      "fallbackReason": null,
+      "warnings": [
+        "Unknown genre dropped.",
+        "Unknown mood dropped.",
+        "Invalid title dropped."
+      ],
       "nodes": 5,
-      "latencyMs": 2151,
-      "providerLatencyMs": 1870
+      "latencyMs": 5465,
+      "providerLatencyMs": 5208,
+      "tokenUsage": {
+        "inputTokens": 777,
+        "outputTokens": 54
+      }
     }
   ]
 }
