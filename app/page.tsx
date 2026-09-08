@@ -45,6 +45,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
     languages: {
+      "x-default": "https://robloxguimaker.app",
       en: "https://robloxguimaker.app",
       zh: "https://robloxguimaker.app/zh",
     },
