@@ -7,36 +7,40 @@ import sitemap from "./sitemap";
 
 const base = "https://robloxguimaker.app";
 
+// Routes that have a live /zh counterpart (declared per entry in sitemap.ts).
+const zhPaths = [
+  "",
+  "/templates",
+  ...TEMPLATES.map((t) => `/templates/${t.slug}`),
+  "/guides",
+  ...GUIDES.map((g) => `/guides/${g.slug}`),
+  "/for",
+  ...USE_CASES.map((u) => `/for/${u.slug}`),
+  "/kits",
+  ...KITS.map((k) => `/kits/${k.slug}`),
+  "/showcase",
+  "/about",
+  "/avatar",
+  "/avatar/preppy",
+  "/avatar/matching",
+  "/avatar/cheap",
+  "/avatar/y2k",
+];
+
+const enOnlyPaths = ["/editor", "/privacy", "/terms", "/trust"];
+
+const sorted = (values: string[]) => [...values].sort();
+
 describe("sitemap", () => {
-  it("lists every canonical public page exactly once", () => {
-    const fixed = [
-      "",
-      "/editor",
-      "/templates",
-      "/kits",
-      "/showcase",
-      "/guides",
-      "/for",
-      "/about",
-      "/avatar",
-      "/avatar/preppy",
-      "/avatar/matching",
-      "/avatar/cheap",
-      "/avatar/y2k",
-      "/privacy",
-      "/terms",
-      "/trust",
-    ];
-    const expectedUrls = [
-      ...fixed.map((path) => `${base}${path}`),
-      ...TEMPLATES.map((template) => `${base}/templates/${template.slug}`),
-      ...GUIDES.map((guide) => `${base}/guides/${guide.slug}`),
-      ...USE_CASES.map((useCase) => `${base}/for/${useCase.slug}`),
-      ...KITS.map((kit) => `${base}/kits/${kit.slug}`),
-    ];
+  it("lists every canonical public page exactly once, en and zh", () => {
+    const expectedUrls = sorted([
+      ...zhPaths.map((path) => `${base}${path}`),
+      ...zhPaths.map((path) => `${base}/zh${path}`),
+      ...enOnlyPaths.map((path) => `${base}${path}`),
+    ]);
     const urls = sitemap().map((entry) => entry.url);
 
-    expect(urls).toEqual(expectedUrls);
+    expect(sorted(urls)).toEqual(expectedUrls);
     expect(new Set(urls).size).toBe(urls.length);
   });
 
@@ -54,38 +58,29 @@ describe("sitemap", () => {
     }
   });
 
-  it("declares a zh alternate only for pages that have a translated route", () => {
-    const withZh = sitemap().filter((entry) => entry.alternates?.languages?.zh);
-    // Homepage + templates index + every template detail — the /zh routes that
-    // actually resolve after this phase. Set grows as more /zh routes are added.
-    const expectedEnUrls = [
-      base,
-      `${base}/templates`,
-      ...TEMPLATES.map((t) => `${base}/templates/${t.slug}`),
-      `${base}/guides`,
-      ...GUIDES.map((g) => `${base}/guides/${g.slug}`),
-      `${base}/for`,
-      ...USE_CASES.map((u) => `${base}/for/${u.slug}`),
-      `${base}/kits`,
-      ...KITS.map((k) => `${base}/kits/${k.slug}`),
-      `${base}/showcase`,
-      `${base}/about`,
-      `${base}/avatar`,
-      `${base}/avatar/preppy`,
-      `${base}/avatar/matching`,
-      `${base}/avatar/cheap`,
-      `${base}/avatar/y2k`,
-    ];
-    expect(withZh.map((entry) => entry.url).sort()).toEqual(
-      expectedEnUrls.slice().sort()
-    );
-    // Every zh alternate is the /zh-prefixed counterpart of its en URL.
-    for (const entry of withZh) {
-      const path = entry.url.slice(base.length);
-      expect(entry.alternates?.languages?.zh).toBe(`${base}/zh${path}`);
-      expect(entry.alternates?.languages?.en).toBe(entry.url);
-      // x-default falls back to the default-language (en) URL.
-      expect(entry.alternates?.languages?.["x-default"]).toBe(entry.url);
+  it("pairs every zh URL with its en counterpart via hreflang clusters", () => {
+    const entries = sitemap();
+    const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
+
+    for (const path of zhPaths) {
+      const enUrl = `${base}${path}`;
+      const zhUrl = `${base}/zh${path}`;
+      const en = byUrl.get(enUrl);
+      const zh = byUrl.get(zhUrl);
+      expect(en, enUrl).toBeDefined();
+      expect(zh, zhUrl).toBeDefined();
+
+      // Both entries carry the full cluster; x-default falls back to en.
+      for (const entry of [en, zh]) {
+        expect(entry?.alternates?.languages?.en).toBe(enUrl);
+        expect(entry?.alternates?.languages?.zh).toBe(zhUrl);
+        expect(entry?.alternates?.languages?.["x-default"]).toBe(enUrl);
+      }
+    }
+
+    // English-only routes declare no alternates.
+    for (const path of enOnlyPaths) {
+      expect(byUrl.get(`${base}${path}`)?.alternates).toBeUndefined();
     }
   });
 });

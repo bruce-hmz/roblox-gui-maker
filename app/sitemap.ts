@@ -51,19 +51,26 @@ function lastModified(...files: string[]): Date {
 function entry(
   path: string,
   opts: { files: string[]; zh?: string }
-): MetadataRoute.Sitemap[number] {
+): MetadataRoute.Sitemap {
   const url = `${BASE}${path}`;
-  return {
-    url,
-    lastModified: lastModified(...opts.files),
-    ...(opts.zh
-      ? {
-          alternates: {
-            languages: { "x-default": url, en: url, zh: `${BASE}${opts.zh}` },
-          },
-        }
-      : {}),
-  };
+  const modified = lastModified(...opts.files);
+  if (!opts.zh) return [{ url, lastModified: modified }];
+  const zhUrl = `${BASE}${opts.zh}`;
+  // Emit BOTH the en and zh URLs as first-class <loc> entries, each carrying
+  // the full hreflang cluster. zh pages exist and resolve; listing them only
+  // as alternates starved them of their own lastmod signaling.
+  return [
+    {
+      url,
+      lastModified: modified,
+      alternates: { languages: { "x-default": url, en: url, zh: zhUrl } },
+    },
+    {
+      url: zhUrl,
+      lastModified: modified,
+      alternates: { languages: { "x-default": url, en: url, zh: zhUrl } },
+    },
+  ];
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -133,5 +140,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const kits = KITS.map((k) =>
     entry(`/kits/${k.slug}`, { files: ["app/editor/kits.ts"], zh: `/zh/kits/${k.slug}` })
   );
-  return [...fixed, ...templates, ...guides, ...usecases, ...kits];
+  return [...fixed, ...templates, ...guides, ...usecases, ...kits].flat();
 }

@@ -5,7 +5,7 @@ import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
 import { ScenePreview } from "../../editor/ScenePreview";
 import { TEMPLATES, getTemplate } from "../../editor/templates";
-import { guidesForTemplate } from "../../guides/guides-data";
+import { getGuide, guidesForTemplate } from "../../guides/guides-data";
 import { USE_CASES } from "../../for/usecases";
 
 export function generateStaticParams() {
@@ -36,6 +36,7 @@ export async function generateMetadata({
     alternates: {
       canonical: `/templates/${slug}`,
       languages: {
+        "x-default": `https://robloxguimaker.app/templates/${slug}`,
         en: `https://robloxguimaker.app/templates/${slug}`,
         zh: `https://robloxguimaker.app/zh/templates/${slug}`,
       },
@@ -52,7 +53,20 @@ export default async function TemplatePage({
   const t = getTemplate(slug);
   if (!t) notFound();
   const related = TEMPLATES.filter((x) => x.slug !== slug).slice(0, 3);
-  const guides = guidesForTemplate(slug);
+  // Reverse-lookup guides (relatedTemplate) plus the template's explicit
+  // cross-links, deduped — templates no guide mentions still get linked.
+  const guides = (() => {
+    const bySlug = new Map(
+      guidesForTemplate(slug).map((g) => [g.slug, g])
+    );
+    for (const guideSlug of t.relatedGuideSlugs ?? []) {
+      if (!bySlug.has(guideSlug)) {
+        const guide = getGuide(guideSlug);
+        if (guide) bySlug.set(guideSlug, guide);
+      }
+    }
+    return [...bySlug.values()];
+  })();
   // Use cases that map to this template (reverse lookup by USE_CASES.template).
   // Adds a detail↔detail cross-link so template and use-case pages reinforce
   // each other's relevance instead of each standing alone.

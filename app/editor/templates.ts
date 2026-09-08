@@ -15,6 +15,9 @@ export type Template = {
   tagline: string;
   description: string;
   scene: SceneNode[];
+  // Explicit guide cross-links for templates no guide targets via
+  // relatedTemplate (reverse lookup) — keeps every template connected.
+  relatedGuideSlugs?: string[];
 };
 
 let counter = 0;
@@ -867,6 +870,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Health Bar GUI",
     category: "HUD",
     tagline: "Health, mana and XP bars with a coin counter",
+    relatedGuideSlugs: [
+      "how-to-animate-roblox-guis-with-tweenservice",
+      "how-to-make-a-responsive-roblox-gui",
+    ],
     description:
       "A player HUD with a green health bar, a blue mana bar, and a thinner XP bar — each a pill background with a fill you drive from game state — plus a coin counter. Drop it into a ScreenGui and update the fills from your Roblox Studio scripts.",
     scene: healthHud,
