@@ -44,17 +44,19 @@ function checkInvariants(scene: SceneNode[]) {
   }
   // Only whitelisted action types with valid targets.
   for (const node of scene) {
-    if (!node.action) continue;
+    const action = node.action;
+    if (!action) continue;
     expect(["show", "hide", "toggle", "hideGui", "remoteEvent", "teleport"]).toContain(
-      node.action.type
+      action.type
     );
-    if ("targetId" in node.action && node.action.targetId) {
-      expect(ids.has(node.action.targetId)).toBe(true);
-      const target = scene.find((n) => n.id === node.action!.targetId);
+    const targetId = "targetId" in action ? action.targetId : undefined;
+    if (targetId) {
+      expect(ids.has(targetId)).toBe(true);
+      const target = scene.find((n) => n.id === targetId);
       expect(["Frame", "ScrollingFrame"]).toContain(target?.cls);
     }
-    if (node.action.type === "remoteEvent") {
-      expect(node.action.eventName).toMatch(/^[A-Za-z0-9_]+$/);
+    if (action.type === "remoteEvent") {
+      expect(action.eventName).toMatch(/^[A-Za-z0-9_]+$/);
     }
   }
   // Scale-based geometry only (responsive requirement): positions and sizes

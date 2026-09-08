@@ -106,7 +106,7 @@ const WORD_NUMBERS: Record<string, number> = {
   twelve: 12,
 };
 
-function countNear(prompt: string, pattern: RegExp): number | null {
+function countNear(prompt: string, pattern: string): number | null {
   const p = prompt.toLowerCase();
   const wordMatch = p.match(
     new RegExp(`(\\d+|${Object.keys(WORD_NUMBERS).join("|")})[- ]?${pattern}`, "i")

@@ -94,11 +94,9 @@ export function checkAndRecord(
   return { ok: true };
 }
 
-export function guardConfigFromEnv(env: {
-  AI_RATE_HOUR?: string;
-  AI_RATE_DAY?: string;
-  AI_DAILY_BUDGET?: string;
-}): GuardConfig {
+export function guardConfigFromEnv(
+  env: Record<string, string | undefined>
+): GuardConfig {
   const parse = (value: string | undefined, fallback: number) => {
     const n = Number(value);
     return Number.isFinite(n) && n >= 0 ? n : fallback;
