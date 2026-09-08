@@ -4,6 +4,8 @@ import { SiteNav } from "./components/SiteNav";
 import { SiteFooter } from "./components/SiteFooter";
 import { HeroDemo } from "./components/HeroDemo";
 import { KitCard } from "./components/KitCard";
+import { PromptBox } from "./components/PromptBox";
+import { AiExamples } from "./components/AiExamples";
 import { ScenePreview } from "./editor/ScenePreview";
 import { KITS } from "./editor/kits";
 import { TEMPLATES, getTemplate } from "./editor/templates";
@@ -11,13 +13,15 @@ import { USE_CASES } from "./for/usecases";
 import { GUIDES } from "./guides/guides-data";
 
 export const metadata: Metadata = {
-  title: "Free Online Roblox GUI Maker | Visual UI Builder",
+  title: "Free Roblox GUI Maker with AI | Visual Editor & Luau Export",
   description:
-    "Free online Roblox GUI maker. Create responsive designs, preview interactions, and export Luau, JSON, and ZIP for Roblox Studio. No login required.",
+    "Free AI Roblox GUI maker: describe your interface, get a real editable GUI — not a mockup — then tweak it visually and export clean client + server Luau, JSON, or ZIP. No login required.",
   keywords: [
     "Roblox GUI Maker",
+    "AI Roblox GUI Generator",
     "Roblox GUI Generator",
     "Roblox UI Maker",
+    "AI Roblox UI Maker",
     "Roblox UI Generator",
     "Roblox GUI builder",
     "online Roblox GUI editor",
@@ -25,18 +29,18 @@ export const metadata: Metadata = {
     "free Roblox GUI tool",
   ],
   openGraph: {
-    title: "Free Online Roblox GUI Maker | Visual UI Builder",
+    title: "Free Roblox GUI Maker with AI | Visual Editor & Luau Export",
     description:
-      "Create responsive Roblox GUIs, preview interactions, and export Luau, JSON, and complete ZIP projects for Roblox Studio.",
+      "Describe your Roblox UI and get a real, editable interface with working interactions and clean Luau — then edit everything visually. Free, no login.",
     url: "https://robloxguimaker.app",
     siteName: "Roblox GUI Maker",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Online Roblox GUI Maker | Visual UI Builder",
+    title: "Free Roblox GUI Maker with AI | Visual Editor & Luau Export",
     description:
-      "Create responsive Roblox GUIs, preview interactions, and export Luau, JSON, and complete ZIP projects for Roblox Studio.",
+      "Describe your Roblox UI and get a real, editable interface with working interactions and clean Luau — then edit everything visually. Free, no login.",
   },
   alternates: {
     canonical: "/",
@@ -91,6 +95,11 @@ const FAQS = [
       "Yes. The editor is free, requires no account, and keeps project work in your browser unless you download it.",
   },
   {
+    question: "How is this different from AI image generators?",
+    answer:
+      "Image tools give you a picture of a GUI. Describe your interface here and you get a real, editable Roblox GUI — actual ScreenGui, Frame, and TextButton instances you can drag, restyle, preview on desktop, tablet, and mobile, and export as clean client and server Luau. AI generates the starting point; the visual editor keeps you in control.",
+  },
+  {
     question: "What files can I export?",
     answer:
       "You can copy or download client Luau, download optional server Luau, export an editable JSON scene, or download a ZIP containing the project files and instructions.",
@@ -129,6 +138,7 @@ const webAppSchema = {
   browserRequirements: "Requires JavaScript",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   featureList: [
+    "AI-generated GUI starting points from a text prompt (editable, not an image)",
     "Visual drag-and-drop Roblox GUI editor",
     "Responsive geometry with scale, offset, anchors, aspect ratios, and size constraints",
     "Interaction previews for show, hide, toggle, RemoteEvent, and Teleport actions",
@@ -176,20 +186,20 @@ export default function Home() {
         {/* hero */}
         <section className="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
           <p className="text-focus text-sm font-semibold uppercase tracking-wider mb-4">
-            Free · No login · Browser-local exports
+            Free · No login · Editable · Client + Server Luau
           </p>
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-5">
-            Roblox GUI Maker
+            Free Roblox GUI Maker with AI
           </h1>
           <p className="text-lg md:text-xl text-ink-dim max-w-2xl mx-auto mb-8">
-            Design responsive Roblox interfaces visually, preview button
-            behavior, then download clean Luau, editable JSON, or a complete
-            ZIP project for Roblox Studio.
+            Describe your Roblox UI and get a real, editable interface with
+            working interactions and clean Luau — not just a mockup.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <PromptBox locale="en" />
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
             <Link
               href="/editor"
-              className="px-6 py-3 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
+              className="px-6 py-3 rounded-lg font-semibold border border-line hover:bg-raised transition"
             >
               Launch the Editor →
             </Link>
@@ -221,6 +231,13 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        {/* AI examples */}
+        <AiExamples
+          heading="AI examples you can open and edit"
+          subheading="Every example below was generated from its prompt as a real Roblox scene — open one, change anything, export Luau. Free, no account."
+          openLabel="Open in Editor"
+        />
 
         {/* hire vs build */}
         <section className="max-w-5xl mx-auto px-6 py-16">
@@ -474,7 +491,14 @@ export default function Home() {
             opposite: a precise, visual canvas where you stay in control.
             Property names match Roblox exactly (BackgroundColor3,
             BackgroundTransparency, ZIndex), you can nest containers and
-            auto-arrange children with UIListLayout and UIGridLayout, and the
+            auto-arrange children with{" "}
+            <Link
+              href="/guides/how-to-use-uilistlayout-in-roblox"
+              className="text-focus hover:underline"
+            >
+              UIListLayout
+            </Link>{" "}
+            and UIGridLayout, and the
             exported Luau is clean enough to ship as-is — real{" "}
             <code className="text-focus">Instance.new</code> calls,{" "}
             <code className="text-focus">UDim2.new</code> positioning, and

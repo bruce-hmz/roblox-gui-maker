@@ -3,23 +3,25 @@ import Link from "next/link";
 import { ScenePreview } from "../editor/ScenePreview";
 import { getTemplate } from "../editor/templates";
 import { TEMPLATES_ZH } from "../editor/templates.zh";
+import { PromptBox } from "../components/PromptBox";
+import { AiExamples } from "../components/AiExamples";
 import { ZhShell } from "./_components/ZhShell";
 
 export const metadata: Metadata = {
-  title: "免费在线 Roblox GUI 制作器 | 可视化 UI 构建器",
+  title: "免费在线 Roblox GUI 制作器 | AI 生成 + 可视化编辑",
   description:
-    "免费在线 Roblox GUI 制作器。设计响应式界面、预览交互、导出 Luau、JSON 和 ZIP 给 Roblox Studio。免登录。",
+    "免费 AI Roblox GUI 制作器:一句话描述界面,生成真实可编辑的 GUI(不是图片),可视化调整后导出干净的客户端 + 服务端 Luau、JSON 或 ZIP。免登录。",
   openGraph: {
-    title: "免费在线 Roblox GUI 制作器 | 可视化 UI 构建器",
+    title: "免费在线 Roblox GUI 制作器 | AI 生成 + 可视化编辑",
     description:
-      "可视化构建响应式 Roblox 界面,预览交互,导出干净的 Luau、JSON 和完整 ZIP 项目给 Roblox Studio。",
+      "描述你的 Roblox 界面,得到真实可编辑的 GUI 和干净的 Luau —— 再可视化修改每个细节。免费、免登录。",
     url: "https://robloxguimaker.app/zh",
   },
   twitter: {
     card: "summary_large_image",
-    title: "免费在线 Roblox GUI 制作器 | 可视化 UI 构建器",
+    title: "免费在线 Roblox GUI 制作器 | AI 生成 + 可视化编辑",
     description:
-      "可视化构建响应式 Roblox 界面,预览交互,导出干净的 Luau、JSON 和完整 ZIP 项目给 Roblox Studio。",
+      "描述你的 Roblox 界面,得到真实可编辑的 GUI 和干净的 Luau —— 再可视化修改每个细节。免费、免登录。",
   },
   alternates: {
     canonical: "/zh",
@@ -124,19 +126,20 @@ export default function ZhHome() {
       {/* hero */}
       <section className="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
         <p className="text-focus text-sm font-semibold uppercase tracking-wider mb-4">
-          免费 · 免登录 · 导出干净 Luau
+          免费 · 免登录 · 可编辑 · 双端 Luau
         </p>
         <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-5">
-          Roblox GUI Maker
+          免费在线 Roblox GUI 制作器
         </h1>
         <p className="text-lg md:text-xl text-ink-dim max-w-2xl mx-auto mb-8">
-          浏览器内的可视化 Roblox 界面构建器。拖拽设计、调真实属性,然后导出干净的 Luau
-          —— 粘进 Studio 就能跑。比 Studio 自带的 UI 编辑器快,比 AI 生成的更可控。
+          一句话描述你的 Roblox 界面,AI 生成真实可编辑的 GUI
+          —— 带可用的交互和干净的 Luau,不是一张效果图。
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <PromptBox locale="zh" />
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
           <Link
             href="/editor"
-            className="px-6 py-3 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
+            className="px-6 py-3 rounded-lg font-semibold border border-line hover:bg-raised transition"
           >
             打开编辑器 →
           </Link>
@@ -166,6 +169,13 @@ export default function ZhHome() {
           ))}
         </div>
       </section>
+
+      {/* AI examples */}
+      <AiExamples
+        heading="AI 生成示例,打开即可编辑"
+        subheading="下面每个示例都由对应 Prompt 生成,是真实的 Roblox 场景 —— 打开、任意修改、导出 Luau。免费,无需账号。"
+        openLabel="在编辑器中打开"
+      />
 
       {/* how it works */}
       <section className="max-w-5xl mx-auto px-6 py-16">
@@ -234,7 +244,14 @@ export default function ZhHome() {
         <h2 className="text-2xl font-semibold text-ink pt-4">这个工具和别的有什么不同</h2>
         <p>
           很多“AI 做 GUI”的工具吐出来的是占位布局,你还得自己收拾。我们正好相反:一个精确的可视化画布,你完全掌控。属性名和
-          Roblox 完全一致(BackgroundColor3、BackgroundTransparency、ZIndex),可以嵌套容器、用 UIListLayout/UIGridLayout
+          Roblox 完全一致(BackgroundColor3、BackgroundTransparency、ZIndex),可以嵌套容器、用{" "}
+          <Link
+            href="/zh/guides/how-to-use-uilistlayout-in-roblox"
+            className="text-focus hover:underline"
+          >
+            UIListLayout
+          </Link>
+          /UIGridLayout
           自动排列、加圆角和渐变,导出的 Luau 干净到能直接发版 —— 真实的 Instance.new、UDim2.new
           定位,还带按钮的点击事件。
         </p>
