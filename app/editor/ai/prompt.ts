@@ -11,6 +11,7 @@ main-menu:
 shop:
   {"type":"game-pass-grid","passes":[{"name":"VIP PASS","price":"399 R$"}]}   (max 6)
   {"type":"item-grid","count":9}                                              (1-30)
+  Pass names must be SPECIFIC product names (e.g. "VIP PASS", "DOUBLE COINS", "SPEED COIL"), never "Pass 1"/"Offer A". Prices use the R$ format like "399 R$" (Robux).
 inventory:
   {"type":"item-grid","count":20}    (1-30)
   {"type":"item-details"}
