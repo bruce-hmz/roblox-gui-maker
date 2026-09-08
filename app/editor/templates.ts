@@ -741,7 +741,9 @@ const chat = (() => {
 // stroke on top-level panels (modern card definition) and a lighter self-colored
 // stroke on buttons (a soft glow). Existing gradient/stroke are preserved, so
 // bespoke styling (e.g. game-pass-shop's accent strokes) is untouched.
-function enrichScene(scene: SceneNode[]): SceneNode[] {
+// Exported for the AI composer (composer.ts) so generated scenes get the same
+// polish pass as hand-authored templates.
+export function enrichScene(scene: SceneNode[]): SceneNode[] {
   const rootId = scene.find((n) => n.cls === "ScreenGui" && (n.parentId ?? null) === null)?.id;
   return scene.map((n) => {
     if (n.transparency >= 1) return n;
