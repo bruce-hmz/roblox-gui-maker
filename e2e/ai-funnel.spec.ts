@@ -6,6 +6,12 @@ import { collectConsoleErrors } from "./helpers";
 // the P0 product path: homepage prompt → generation → editor scene → edit →
 // device preview → export.
 
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+  }
+}
+
 const ANIME_HUD_PROMPT =
   "Create an anime battleground HUD with health, stamina, four skills and an ultimate meter.";
 
@@ -75,6 +81,80 @@ test("@smoke example deep link loads a fixed scene without the API", async ({
   await expect(
     page.locator('[role="treeitem"]', { hasText: "UltimateFill" })
   ).toBeVisible();
+});
+
+test("@smoke AI onboarding: one-time hint, safe pre-select, honest first_edit", async ({
+  page,
+}) => {
+  // Observe trackEvent without polluting production GA: seed the gtag
+  // dataLayer before the inline GA snippet runs, and block the tag library.
+  await page.addInitScript(() => {
+    window.dataLayer = [];
+  });
+  await page.route("**/googletagmanager.com/**", (route) => route.abort());
+  const countEvent = (name: string) =>
+    page.evaluate(
+      (n) =>
+        (window.dataLayer ?? []).filter(
+          (e) => String((e as unknown[])[1]) === n
+        ).length,
+      name
+    );
+
+  await page.goto("/");
+  await page
+    .getByLabel("Describe your Roblox GUI")
+    .fill(ANIME_HUD_PROMPT);
+  await page.getByRole("button", { name: "Generate GUI" }).click();
+  await page.waitForURL(/\/editor(\?generated=1)?$/);
+
+  // One-time banner explains editability.
+  const banner = page.getByText(
+    "Your GUI is ready — click any element to edit it."
+  );
+  await expect(banner).toBeVisible();
+
+  // A safe node is pre-selected: the properties panel is live and carries the
+  // micro-hint instead of the dead "select an element" empty state.
+  await expect(page.getByText("Try it: change the text or color.")).toBeVisible();
+  await expect(
+    page.getByText("Select an element on the canvas to edit its properties.")
+  ).toBeHidden();
+
+  // Auto-selection and the onboarding UI are not edits, not user selections.
+  expect(await countEvent("ai_scene_first_edit")).toBe(0);
+  expect(await countEvent("ai_editor_node_selected")).toBe(0);
+
+  // A user click in the component tree registers selection diagnostics only.
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.locator('[role="treeitem"]', { hasText: "UltimateFill" }).click();
+  expect(await countEvent("ai_editor_node_selected")).toBe(1);
+  expect(await countEvent("ai_scene_first_edit")).toBe(0);
+
+  // The first real mutation fires first_edit exactly once and retires the hint.
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  expect(await countEvent("ai_scene_first_edit")).toBe(1);
+  await expect(banner).toBeHidden();
+  await expect(page.getByText("Try it: change the text or color.")).toBeHidden();
+
+  // Reload after the edit: no repeated nagging.
+  await page.reload();
+  await expect(banner).toBeHidden();
+  await expect(page.getByText("Try it: change the text or color.")).toBeHidden();
+});
+
+test("@smoke manual and template entries never show the AI onboarding", async ({
+  page,
+}) => {
+  await page.goto("/editor");
+  await expect(
+    page.getByText("Your GUI is ready — click any element to edit it.")
+  ).toBeHidden();
+  await page.goto("/editor?template=main-menu");
+  await expect(
+    page.getByText("Your GUI is ready — click any element to edit it.")
+  ).toBeHidden();
 });
 
 test("@smoke mobile marketing page can prompt without the flow dying", async ({

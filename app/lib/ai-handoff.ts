@@ -12,4 +12,7 @@ export type AiHandoff = {
     warnings?: string[];
     latencyMs: number;
   };
+  // UI locale of the page that started the generation, so the editor's
+  // onboarding copy matches the user's language. Optional for older payloads.
+  locale?: "en" | "zh";
 };

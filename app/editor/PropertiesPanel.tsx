@@ -32,6 +32,9 @@ type Props = {
   onChange: (id: string, patch: Partial<SceneNode>) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
+  // One-time activation nudge (AI onboarding). Rendered only while a node is
+  // selected; Editor clears it after the user's first real edit.
+  hint?: string | null;
 };
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -60,7 +63,14 @@ function createAction(type: string): NodeAction | undefined {
   return undefined;
 }
 
-export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }: Props) {
+export function PropertiesPanel({
+  node,
+  scene,
+  onChange,
+  onDelete,
+  onDuplicate,
+  hint,
+}: Props) {
   const actionTargets = scene.filter(
     (item) => item.cls === "Frame" || item.cls === "ScrollingFrame"
   );
@@ -71,6 +81,11 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
           Properties
         </span>
       </div>
+      {node && hint ? (
+        <div className="mx-3 mt-3 rounded-md border border-focus/40 bg-primary/10 px-2.5 py-1.5 text-[11px] font-medium leading-4 text-focus">
+          {hint}
+        </div>
+      ) : null}
 
       {node ? (
         <div className="flex-1 overflow-y-auto scroll-thin p-3 flex flex-col gap-4">

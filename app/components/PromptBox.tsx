@@ -123,7 +123,12 @@ export function PromptBox({ locale = "en" }: { locale?: "en" | "zh" }) {
         trackEvent("ai_generate_fallback", { screenType: data.meta.screenType });
       }
 
-      const handoff: AiHandoff = { prompt: trimmed, scene: data.scene, meta: data.meta };
+      const handoff: AiHandoff = {
+        prompt: trimmed,
+        scene: data.scene,
+        meta: data.meta,
+        locale,
+      };
       window.sessionStorage.setItem(AI_HANDOFF_KEY, JSON.stringify(handoff));
       router.push("/editor?generated=1");
     } catch {

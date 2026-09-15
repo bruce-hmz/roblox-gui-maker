@@ -31,6 +31,12 @@ import { generateServerLuau } from "./server-luau";
 import { createProjectPackage } from "./project-package";
 import { AI_HANDOFF_KEY, type AiHandoff } from "../lib/ai-handoff";
 import { trackEvent } from "../lib/track";
+import {
+  ONBOARDING_COPY,
+  markOnboardingSeen,
+  onboardingSeen,
+  pickOnboardingNode,
+} from "./onboarding";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -93,7 +99,7 @@ function stripFunnelParams() {
   );
 }
 
-type AiInfo = { prompt: string; screenType: string };
+type AiInfo = { prompt: string; screenType: string; locale: "en" | "zh" };
 
 export function Editor({
   initialScene,
@@ -114,6 +120,9 @@ export function Editor({
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   // AI funnel: the bar shown when the scene arrived from /api/generate-gui.
   const [aiInfo, setAiInfo] = useState<AiInfo | null>(null);
+  // Activation onboarding: one-time "this is editable" strip + properties
+  // micro-hint, retired by the user's first real edit (see mutate).
+  const [aiOnboarding, setAiOnboarding] = useState(false);
   const [aiRegenerating, setAiRegenerating] = useState(false);
   const [aiRegenerateError, setAiRegenerateError] = useState<string | null>(null);
   const aiInfoRef = useRef<AiInfo | null>(null);
@@ -175,6 +184,8 @@ export function Editor({
         trackEvent("ai_scene_first_edit", {
           screenType: aiInfoRef.current.screenType,
         });
+        // The user has started editing — retire the onboarding hint.
+        setAiOnboarding(false);
       }
       sceneRef.current = next;
       setScene(next);
@@ -326,11 +337,21 @@ export function Editor({
       if (!scene) return;
       sceneRef.current = scene;
       setScene(scene);
-      setSelectedId(null);
+      // Pre-select a safe, easy-to-understand node so the properties panel is
+      // immediately live (selection alone never counts as an edit).
+      setSelectedId(pickOnboardingNode(scene)?.id ?? null);
       history.current = { stack: [cloneScene(scene)], index: 0 };
-      const info: AiInfo = { prompt: handoff.prompt, screenType: handoff.meta.screenType };
+      const info: AiInfo = {
+        prompt: handoff.prompt,
+        screenType: handoff.meta.screenType,
+        locale: handoff.locale === "zh" ? "zh" : "en",
+      };
       aiInfoRef.current = info;
       setAiInfo(info);
+      // One-time activation hint per browser session.
+      const showOnboarding = !onboardingSeen();
+      if (showOnboarding) markOnboardingSeen();
+      setAiOnboarding(showOnboarding);
       trackEvent("ai_scene_loaded", {
         screenType: handoff.meta.screenType,
         fallbackUsed: handoff.meta.fallbackUsed === "template",
@@ -379,11 +400,32 @@ export function Editor({
     aiInfoRef.current = null;
     setAiInfo(null);
     aiFirstEditFired.current = false;
+    setAiOnboarding(false);
     stripFunnelParams();
     force();
   }
 
   // AI funnel helpers -----------------------------------------------------------
+
+  // User-initiated selection (canvas click / component tree). Distinct from
+  // the programmatic auto-select in the handoff effect, which must stay
+  // silent so ai_editor_node_selected means a real user action.
+  const handleUserSelect = useCallback(
+    (id: string | null) => {
+      const info = aiInfoRef.current;
+      if (id && info) {
+        const node = sceneRef.current.find((n) => n.id === id);
+        if (node && node.id !== selectedId) {
+          trackEvent("ai_editor_node_selected", {
+            nodeClass: node.cls,
+            screenType: info.screenType,
+          });
+        }
+      }
+      setSelectedId(id);
+    },
+    [selectedId]
+  );
 
   // Track exports that came from an AI session with an ai_export event on top
   // of the existing export_code / download_project events.
@@ -421,11 +463,15 @@ export function Editor({
       });
       sceneRef.current = scene;
       setScene(scene);
-      setSelectedId(null);
+      setSelectedId(pickOnboardingNode(scene)?.id ?? null);
       setPreviewVisibility(null);
       setPreviewNotice(null);
       history.current = { stack: [cloneScene(scene)], index: 0 };
-      const next: AiInfo = { prompt: info.prompt, screenType: data.meta.screenType };
+      const next: AiInfo = {
+        prompt: info.prompt,
+        screenType: data.meta.screenType,
+        locale: info.locale,
+      };
       aiInfoRef.current = next;
       setAiInfo(next);
       force();
@@ -679,9 +725,27 @@ export function Editor({
               aiFirstEditFired.current = false;
               setAiInfo(null);
               setAiRegenerateError(null);
+              setAiOnboarding(false);
             }}
             aria-label="Dismiss AI bar"
             className="grid h-6 w-6 place-items-center rounded-md text-ink-mute transition hover:bg-raised hover:text-ink"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      {aiInfo && aiOnboarding && (
+        <div className="flex h-9 shrink-0 items-center gap-3 border-b border-line bg-primary/10 px-4 text-xs select-none">
+          <span className="shrink-0 font-semibold text-focus">
+            {ONBOARDING_COPY[aiInfo.locale].title}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-ink-dim">
+            {ONBOARDING_COPY[aiInfo.locale].body}
+          </span>
+          <button
+            onClick={() => setAiOnboarding(false)}
+            aria-label={ONBOARDING_COPY[aiInfo.locale].dismissLabel}
+            className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-mute transition hover:bg-raised hover:text-ink"
           >
             ×
           </button>
@@ -693,7 +757,7 @@ export function Editor({
           onApply={applyDecorator}
           scene={scene}
           selectedId={selectedId}
-          onSelect={setSelectedId}
+          onSelect={handleUserSelect}
           onRename={(id, name) => updateNode(id, { name })}
           onMoveInside={moveInside}
           onMoveRelative={moveRelative}
@@ -702,7 +766,7 @@ export function Editor({
           scene={scene}
           selectedId={selectedId}
           device={device}
-          onSelect={setSelectedId}
+          onSelect={handleUserSelect}
           onChange={updateNode}
           previewVisibility={previewVisibility}
           previewNotice={previewNotice}
@@ -724,6 +788,9 @@ export function Editor({
           onChange={updateNode}
           onDelete={deleteNode}
           onDuplicate={duplicateSelected}
+          hint={
+            aiInfo && aiOnboarding ? ONBOARDING_COPY[aiInfo.locale].hint : null
+          }
         />
       </div>
       <CodePanel
