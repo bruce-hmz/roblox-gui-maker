@@ -41,15 +41,19 @@ const SKIP_CLASSES = new Set([
 // A "safe" first node is visible, has real extent, and belongs to a class a
 // beginner immediately understands — text first, because the suggested first
 // edit is a text or color change.
+const TEXT_CLASSES = new Set(["TextLabel", "TextButton", "TextBox"]);
+
 export function pickOnboardingNode(scene: SceneNode[]): SceneNode | null {
-  const candidates = scene.filter(
-    (n) =>
-      !SKIP_CLASSES.has(n.cls) &&
-      n.initialVisible !== false &&
-      n.transparency < 1 &&
-      n.size.x > 0 &&
-      n.size.y > 0
-  );
+  const candidates = scene.filter((n) => {
+    if (SKIP_CLASSES.has(n.cls)) return false;
+    if (n.initialVisible === false) return false;
+    if (n.size.x <= 0 || n.size.y <= 0) return false;
+    // A transparent background is normal for text elements (the text itself,
+    // drawn with textColor, is the visible surface) — HUD-style scenes set it
+    // on every label. For shapes it means the node is genuinely invisible.
+    if (!TEXT_CLASSES.has(n.cls) && n.transparency >= 1) return false;
+    return true;
+  });
   for (const cls of ["TextLabel", "TextButton", "TextBox"] as const) {
     const withText = candidates.find(
       (n) => n.cls === cls && (n.text ?? "").trim().length > 0

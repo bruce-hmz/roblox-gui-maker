@@ -42,17 +42,28 @@ describe("pickOnboardingNode", () => {
     expect(pickOnboardingNode(scene)?.id).toBe("btn");
   });
 
-  it("skips structural, invisible, and zero-extent nodes", () => {
+  it("skips structural, hidden, and zero-extent nodes", () => {
     const scene = [
       node({ id: "root", cls: "ScreenGui" }),
       node({ id: "list", cls: "UIListLayout" }),
       node({ id: "grid", cls: "UIGridLayout" }),
       node({ id: "hidden", cls: "TextLabel", text: "X", initialVisible: false }),
-      node({ id: "ghost", cls: "TextLabel", text: "X", transparency: 1 }),
+      node({ id: "ghostPanel", cls: "Frame", transparency: 1 }),
       node({ id: "flat", cls: "TextLabel", text: "X", size: { x: 0.2, y: 0 } }),
       node({ id: "visible", cls: "TextLabel", text: "OK" }),
     ];
     expect(pickOnboardingNode(scene)?.id).toBe("visible");
+  });
+
+  it("treats a transparent background as normal for text labels (HUD style)", () => {
+    // HUD composers set BackgroundTransparency=1 on every label — the text is
+    // still fully visible, so these are prime onboarding targets.
+    const scene = [
+      node({ id: "root", cls: "ScreenGui" }),
+      node({ id: "panel", cls: "Frame" }),
+      node({ id: "hp", cls: "TextLabel", text: "HP", transparency: 1 }),
+    ];
+    expect(pickOnboardingNode(scene)?.id).toBe("hp");
   });
 
   it("falls back to a Frame when no text elements exist (HUD fills)", () => {
