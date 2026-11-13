@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { KITS } from "../../editor/kits";
 import { getKitZh } from "../../editor/kits.zh";
 import { KitCard } from "../../components/KitCard";
@@ -45,6 +46,23 @@ export default function KitsPage() {
             if (!z) return null;
             return <KitCard key={z.slug} kit={z} locale="zh" />;
           })}
+        </div>
+
+        <div className="mt-10 rounded-2xl border border-line bg-panel p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1 max-w-2xl">
+            <p className="text-sm font-semibold text-ink">
+              想直接把全部 6 套多界面 .rbxmx 拖入 Roblox Studio，并拿齐 48 枚 Gamepass 图标？
+            </p>
+            <p className="text-xs text-ink-dim">
+              单界面可视化编辑与复制 Luau 永久免费。一次性买断 All-Access（USD 19.90，无订阅）即可打包下载全部 6 大品类的完整 .rbxmx 实例树（含屏幕切换器）与配套 512×512 商店徽章。
+            </p>
+          </div>
+          <Link
+            href="/zh/pricing"
+            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-on-primary transition hover:brightness-110"
+          >
+            查看 Studio 成品包方案 →
+          </Link>
         </div>
 
         <section className="mx-auto mt-16 max-w-3xl space-y-4 text-ink-dim leading-relaxed">

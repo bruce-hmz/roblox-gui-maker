@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { KitProDownloadCard } from "../../components/KitProDownloadCard";
 import { ScenePreview } from "../../editor/ScenePreview";
+import {
+  kitGamepassIcons,
+  renderGamepassIconSvg,
+} from "../../editor/gamepass-icons";
 import { kitScene } from "../../editor/kits";
 import { getTheme } from "../../editor/themes";
 import { getKitZh, THEME_ZH } from "../../editor/kits.zh";
@@ -12,6 +17,12 @@ export function KitDetailView({ slug }: { slug: string }) {
   if (!kit) notFound();
   const theme = getTheme(kit.theme);
   const themeName = THEME_ZH[kit.theme] ?? kit.theme;
+  const badgePreviews = kitGamepassIcons(kit.slug).map((icon) => ({
+    id: icon.id,
+    titleTop: icon.titleTop,
+    ...(icon.titleBottom ? { titleBottom: icon.titleBottom } : {}),
+    svgMarkup: renderGamepassIconSvg(icon),
+  }));
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -57,6 +68,14 @@ export function KitDetailView({ slug }: { slug: string }) {
             在编辑器中打开这个 Kit →
           </Link>
         </div>
+
+        <KitProDownloadCard
+          kitSlug={kit.slug}
+          kitName={kit.name}
+          screenCount={kit.screens.length}
+          icons={badgePreviews}
+          locale="zh"
+        />
 
         {/* screens, recolored with the shared theme */}
         <div className="space-y-8">

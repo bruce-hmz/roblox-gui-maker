@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Roblox 形象搭配灵感 —— 免费与平价穿搭(真实物品 ID)",
   description:
     "精选 Roblox 形象穿搭方案,每件单品都是真实商店 ID:零成本开局装、街头风、奶油甜妹、姬发式、正装,复制 ID 几分钟穿到身上。",
+  robots: { index: false, follow: true },
   alternates: {
     canonical: "/zh/avatar",
     languages: {

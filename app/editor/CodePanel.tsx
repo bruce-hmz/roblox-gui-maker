@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Copy, Download } from "lucide-react";
+import { Boxes, Check, Copy, Download } from "lucide-react";
 
 export type CodeOutput = "client" | "server";
 
@@ -13,6 +13,9 @@ type Props = {
   onCopy: (output: CodeOutput) => void;
   onDownload: (output: CodeOutput) => void;
   onDownloadPackage: () => void;
+  onExportRbxmx?: () => void;
+  exportingRbxmx?: boolean;
+  exportError?: string | null;
 };
 
 export function CodePanel({
@@ -22,6 +25,9 @@ export function CodePanel({
   onCopy,
   onDownload,
   onDownloadPackage,
+  onExportRbxmx,
+  exportingRbxmx = false,
+  exportError = null,
 }: Props) {
   const [activeOutput, setActiveOutput] = useState<CodeOutput>("client");
   const activeCode = activeOutput === "client" ? clientCode : serverCode;
@@ -87,6 +93,20 @@ export function CodePanel({
           </span>
         </div>
         <div className="flex items-center gap-1">
+          {onExportRbxmx && (
+            <button
+              type="button"
+              onClick={onExportRbxmx}
+              disabled={exportingRbxmx}
+              className="flex items-center gap-1.5 rounded-md border border-focus/60 bg-raised px-2.5 py-1 text-xs font-semibold text-ink transition hover:border-focus hover:bg-raised-hi disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <Boxes className="w-3.5 h-3.5 text-focus" />
+              {exportingRbxmx ? "Exporting…" : "Export .rbxmx"}
+              <span className="rounded bg-primary/20 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-focus">
+                Pro
+              </span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onDownloadPackage}
@@ -120,6 +140,14 @@ export function CodePanel({
           </button>
         </div>
       </div>
+      {exportError && (
+        <div
+          role="alert"
+          className="flex shrink-0 items-center justify-between border-b border-line bg-danger/10 px-4 py-1 text-[11px] text-danger"
+        >
+          <span>{exportError}</span>
+        </div>
+      )}
       {/* Post-copy next steps: turns the export moment into a content
           touchpoint instead of a dead end (also the editor's only
           keyword-anchored link to the homepage). */}

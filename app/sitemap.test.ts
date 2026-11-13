@@ -18,13 +18,10 @@ const zhPaths = [
   ...USE_CASES.map((u) => `/for/${u.slug}`),
   "/kits",
   ...KITS.map((k) => `/kits/${k.slug}`),
+  "/gamepass-icon-maker",
+  "/pricing",
   "/showcase",
   "/about",
-  "/avatar",
-  "/avatar/preppy",
-  "/avatar/matching",
-  "/avatar/cheap",
-  "/avatar/y2k",
 ];
 
 const enOnlyPaths = ["/editor", "/privacy", "/terms", "/trust"];
@@ -32,7 +29,7 @@ const enOnlyPaths = ["/editor", "/privacy", "/terms", "/trust"];
 const sorted = (values: string[]) => [...values].sort();
 
 describe("sitemap", () => {
-  it("lists every canonical public page exactly once, en and zh", () => {
+  it("lists every canonical public page exactly once, en and zh, and excludes noindex /avatar routes", () => {
     const expectedUrls = sorted([
       ...zhPaths.map((path) => `${base}${path}`),
       ...zhPaths.map((path) => `${base}/zh${path}`),
@@ -42,17 +39,18 @@ describe("sitemap", () => {
 
     expect(sorted(urls)).toEqual(expectedUrls);
     expect(new Set(urls).size).toBe(urls.length);
+    expect(urls.some((url) => url.includes("/avatar"))).toBe(false);
   });
 
-  it("includes a verifiable last-modified date for every page", () => {
+  it("includes a verifiable static last-modified date without collapsing to the legacy 2026-06-23 fallback", () => {
     const entries = sitemap();
     expect(entries.length).toBeGreaterThan(0);
     for (const entry of entries) {
-      // lastModified is derived from git history (ground truth for when content
-      // changed) — never faked, never omitted.
       expect(entry.lastModified).toBeInstanceOf(Date);
-      const ms = (entry.lastModified as Date).getTime();
+      const modifiedDate = entry.lastModified as Date;
+      const ms = modifiedDate.getTime();
       expect(isNaN(ms)).toBe(false);
+      expect(modifiedDate.toISOString()).not.toBe("2026-06-23T00:00:00.000Z");
       // lastmod must never sit in the future.
       expect(ms).toBeLessThanOrEqual(Date.now());
     }

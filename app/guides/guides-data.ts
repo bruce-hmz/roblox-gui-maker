@@ -14,9 +14,17 @@ export type Faq = { q: string; a: string };
 export type Guide = {
   slug: string;
   title: string;
+  // Per-guide <title> override. Set when the brand suffix ("| Roblox GUI
+  // Maker") would make the page claim the homepage's head term instead of
+  // its own keyword family — doc-intent guide pages anchor their own terms.
+  metaTitle?: string;
   description: string;
   category: string;
   relatedTemplate?: string;
+  // Doc-intent guides answer the query fully on-page; an above-the-fold
+  // "open the template" button reads as a bridge page for that intent, so
+  // the CTA stays in the post-content sections only.
+  hideTemplateCta?: boolean;
   intro: string;
   sections: GuideSection[];
   faq: Faq[];
@@ -453,6 +461,7 @@ end)`,
     relatedGuides: [
       { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "How to Open a GUI with a Key Press in Roblox" },
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
     ],
   },
   {
@@ -632,40 +641,148 @@ end)`,
   {
     slug: "how-to-use-uilistlayout-in-roblox",
     title: "How to Use UIListLayout in Roblox",
+    metaTitle: "Roblox UIListLayout: LayoutOrder, AbsoluteContentSize, Position",
     description:
-      "UIListLayout auto-arranges a container's children into a row or column. Learn the key properties — FillDirection, Padding, alignment, SortOrder — with a working Luau example.",
+      "A complete UIListLayout guide for Roblox: Padding and alignment, LayoutOrder sorting, AbsoluteContentSize auto-sizing, and position overrides — all with copy-paste Luau.",
     category: "Layouts",
     relatedTemplate: "settings",
+    hideTemplateCta: true,
     intro:
-      "UIListLayout is the Roblox layout object that automatically stacks a Frame's children in a vertical list or horizontal row. Instead of positioning every button by hand, you drop one UIListLayout into a container and the children arrange themselves. This guide covers the properties that matter and a complete example.",
+      "UIListLayout is the Roblox layout object that automatically stacks a Frame's children into a vertical list or horizontal row. Instead of hand-positioning every button, you parent one UIListLayout to the container and the children arrange themselves — add one, remove one, reorder them, and the stack updates instantly. This guide covers every property that matters, then the three things that trip people up next: sorting with LayoutOrder, sizing containers to the stack with AbsoluteContentSize, and how position overrides work when the layout ignores a child's Position. Full Luau examples throughout, ending with a complete settings menu you can paste straight into Studio.",
     sections: [
       {
-        heading: "1. Add it to a container",
+        heading: "1. What UIListLayout does",
         paragraphs: [
-          "UIListLayout is a child of the container it controls. The moment it's parented, every sibling Frame, button or label gets arranged.",
+          "UIListLayout is a layout object, not a visible element: it has no size or color of its own. Parent it to any container — a Frame, a ScrollingFrame, a panel — and from that moment the container's children are arranged for you. Children keep their own Size; the layout only takes over their Position, stacking them top-to-bottom (or left-to-right) in sort order. New children are slotted in the instant they're parented, so you can build rows in a loop and never set a Position.",
+          "The one rule to remember: one layout per container, and the layout must be a child of the container it controls. Siblings of the layout — Frames, buttons, labels — get arranged. Elements inside those Frames do not; a layout only controls its direct siblings.",
+          "Why bother instead of positioning children by hand? Because a hand-built list is a maintenance trap: every Position is a number you must recalculate when you insert a row, change a height, or resize for mobile. A UIListLayout is one object doing that math forever — which is why nearly every shipped Roblox menu, shop and leaderboard panel uses one.",
         ],
-        code: `local layout = Instance.new("UIListLayout")
-layout.Parent = containerFrame`,
+        code: `local panel = Instance.new("Frame")
+panel.Size = UDim2.fromScale(0.35, 0.5)
+panel.Parent = screenGui
+
+local layout = Instance.new("UIListLayout")
+layout.Parent = panel`,
       },
       {
         heading: "2. Direction, padding and alignment",
         paragraphs: [
-          "FillDirection picks vertical or horizontal. Padding sets the gap between children. HorizontalAlignment and VerticalAlignment position the whole stack within the container.",
+          "Three properties shape the stack. FillDirection picks the axis: Enum.FillDirection.Vertical stacks children top to bottom, Horizontal goes left to right. Padding is a UDim whose offset part sets the pixel gap between children — UDim.new(0, 12) leaves 12 pixels between every element. HorizontalAlignment and VerticalAlignment position the whole stack inside the container, so a vertical list can sit centered, left- or right-aligned without touching the children.",
+          "Alignment applies to the stack as a whole, not to individual children. If you want one group of buttons centered and another left-aligned, that's two containers with two layouts — each with its own alignment settings.",
         ],
         code: `layout.FillDirection = Enum.FillDirection.Vertical
 layout.Padding = UDim.new(0, 12)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.VerticalAlignment = Enum.VerticalAlignment.Top`,
+        tip: "Pair UIListLayout with a UIPadding on the same container to inset the whole stack from the panel's edges — spacing that applies to the group, not to each child.",
       },
       {
-        heading: "3. Control order with SortOrder",
+        heading: "3. Control order with LayoutOrder",
         paragraphs: [
-          "By default children sort by their layout order, then name. Set SortOrder to LayoutOrder and give each child a LayoutOrder number to control the exact sequence.",
+          "By default a UIListLayout sorts children by LayoutOrder, breaking ties by Name — which is why renaming elements sometimes changes your menu. The robust pattern is to set SortOrder explicitly to Enum.SortOrder.LayoutOrder and give every child an explicit LayoutOrder number. Lower numbers come first, negatives are allowed, and gaps in the sequence don't matter — number your rows 10, 20, 30 and you can slot a new row at 15 later without renumbering anything.",
+          "SortOrder.Name is the other option: children sort alphabetically by their Name property. It's convenient for generated lists whose names already encode the order, but LayoutOrder survives renames and reads as intent in code.",
         ],
         code: `layout.SortOrder = Enum.SortOrder.LayoutOrder
-firstButton.LayoutOrder = 1
-secondButton.LayoutOrder = 2`,
-        tip: "Pair UIListLayout with a UIPadding on the same container to inset the whole stack from the edges — no per-child margins needed.",
+
+musicRow.LayoutOrder = 10
+graphicsRow.LayoutOrder = 20
+controlsRow.LayoutOrder = 30
+-- insert a new "Account" row between them later, no renumbering:
+accountRow.LayoutOrder = 15`,
+        tip: "If your list reorders itself when you rename an element in Studio, a LayoutOrder tie broken by Name (or SortOrder.Name) is why — give each child a unique LayoutOrder.",
+      },
+      {
+        heading: "4. Auto-size containers with AbsoluteContentSize",
+        paragraphs: [
+          "A UIListLayout always knows how much space its stack needs, and exposes it as the read-only AbsoluteContentSize property: a Vector2 where Y is the total height of a vertical list (every child's height plus the Padding gaps) and X is the total width of a horizontal one. Because it updates whenever children are added, removed or resized, it's the key to containers that grow to fit their contents — leaderboards, settings menus, quest logs.",
+          "Two patterns use it. On a plain Frame, listen to the layout's AbsoluteContentSize change signal and set the frame's height to match. On a ScrollingFrame, drive CanvasSize the same way so the scrollable area is always exactly as tall as the stack — no guessing, no overflow.",
+          "One timing detail: the signal fires after the layout pass, so set the size once up front too — otherwise the first frame renders with your placeholder height. That single visible frame is exactly the flash-of-wrong-size bug people report with auto-sized panels.",
+        ],
+        code: `layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	-- grow a plain panel to fit its rows:
+	panel.Size = UDim2.new(panel.Size.X.Scale, panel.Size.X.Offset, 0, layout.AbsoluteContentSize.Y)
+	-- or size a ScrollingFrame's canvas to the stack:
+	scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
+end)`,
+        tip: "On modern Roblox you can often skip the manual binding: set the container's AutomaticSize to Enum.AutomaticSize.Y and it grows to fit the layout's contents on its own.",
+      },
+      {
+        heading: "5. Position override: when UIListLayout ignores Position",
+        paragraphs: [
+          "The moment a UIListLayout controls a container, it owns its children's Position — whatever you set is overwritten on the next layout pass. That's the number-one source of \"my Position isn't working\" questions: the property is fine, the layout is winning. AnchorPoint still applies to each child inside the slot the layout gave it, and ZIndex is untouched, but a direct child of the container can never break out of the stack.",
+          "The escape hatch is nesting. Wrap the element you want to position freely in an intermediate Frame, and give that wrapper a LayoutOrder so it takes a normal slot in the stack. The layout arranges the wrapper — and inside the wrapper, which has no layout of its own, Position works exactly as usual. This is how you put a close button overlapping a title row, or a notification badge pinned to the corner of a list entry.",
+        ],
+        code: `-- the layout arranges \`header\`, so position freely INSIDE it:
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 40)
+header.LayoutOrder = 1
+header.Parent = panel
+
+local close = Instance.new("TextButton")
+close.AnchorPoint = Vector2.new(1, 0.5)
+close.Position = UDim2.new(1, -6, 0.5, 0) -- pinned to the row's right edge
+close.Size = UDim2.fromOffset(28, 28)
+close.Text = "X"
+close.Parent = header`,
+        tip: "Decorators like UICorner, UIStroke and UIPadding aren't laid out — only visible GuiObjects occupy slots — so they can stay direct children of the container.",
+      },
+      {
+        heading: "6. Complete example: a settings menu",
+        paragraphs: [
+          "Everything above in one runnable LocalScript: a centered panel, UIPadding for breathing room, a UIListLayout with explicit LayoutOrder sorting, a title, and three rows generated by a helper. Put it in StarterGui as a LocalScript and it runs as-is.",
+          "Because the rows are numbered 10, 20, 30, you can add a fourth row later with any LayoutOrder between them and the menu absorbs it without touching existing code. And since each row comes from the same helper, they stay pixel-identical — which is the whole point of letting a layout own the positioning.",
+          "From here, wiring the buttons is ordinary Activated code — toggles, tweens and the rest are covered in the GUI scripting guide.",
+        ],
+        code: `local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false
+screenGui.Parent = script.Parent
+
+local panel = Instance.new("Frame")
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.Size = UDim2.fromScale(0.32, 0.42)
+panel.BackgroundColor3 = Color3.fromRGB(28, 32, 44)
+panel.Parent = screenGui
+
+local pad = Instance.new("UIPadding")
+pad.PaddingTop = UDim.new(0, 16)
+pad.PaddingBottom = UDim.new(0, 16)
+pad.PaddingLeft = UDim.new(0, 16)
+pad.PaddingRight = UDim.new(0, 16)
+pad.Parent = panel
+
+local layout = Instance.new("UIListLayout")
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 10)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Parent = panel
+
+local title = Instance.new("TextLabel")
+title.LayoutOrder = 1
+title.Size = UDim2.new(1, 0, 0, 32)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Text = "Settings"
+title.Parent = panel
+
+local function row(order: number, text: string)
+	local button = Instance.new("TextButton")
+	button.LayoutOrder = order
+	button.Size = UDim2.new(1, 0, 0, 44)
+	button.BackgroundColor3 = Color3.fromRGB(41, 47, 63)
+	button.Font = Enum.Font.Gotham
+	button.TextSize = 16
+	button.TextColor3 = Color3.new(1, 1, 1)
+	button.Text = text
+	button.Parent = panel
+	return button
+end
+
+row(10, "Music: ON")
+row(20, "Graphics: Auto")
+row(30, "Rejoin server")`,
       },
     ],
     faq: [
@@ -677,8 +794,21 @@ secondButton.LayoutOrder = 2`,
         q: "Why aren't my children spacing apart?",
         a: "Set the layout's Padding to a UDim value like UDim.new(0, 10). Without it, children touch edge to edge.",
       },
+      {
+        q: "What is AbsoluteContentSize on a UIListLayout?",
+        a: "A read-only Vector2 telling you the total size the laid-out children occupy: for a vertical list, Y is the full stack height (children plus Padding gaps). Listen with GetPropertyChangedSignal(\"AbsoluteContentSize\") and use it to auto-size a Frame or a ScrollingFrame's CanvasSize.",
+      },
+      {
+        q: "Why does UIListLayout ignore my child's Position?",
+        a: "Because the layout controls Position for every direct child of its container. To position one element freely, wrap it in a Frame, give the wrapper a LayoutOrder so it slots into the stack, and set Position on the element inside the wrapper.",
+      },
+      {
+        q: "How do I change the order of children at runtime?",
+        a: "Set the child's LayoutOrder property — the list re-sorts immediately, no rebuild needed. With SortOrder.LayoutOrder this is the supported way to move rows around, e.g. re-ranking a leaderboard after every score change.",
+      },
     ],
     relatedGuides: [
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
       { slug: "how-to-make-a-roblox-inventory-gui", title: "How to Make a Roblox Inventory GUI" },
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
     ],

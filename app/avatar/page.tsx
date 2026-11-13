@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Roblox Avatar Ideas — Free & Budget Outfits with Real Item IDs",
   description:
     "Curated Roblox avatar outfit ideas with real catalog item IDs: free starter looks, streetwear, soft pastel, hime cut and formal styles. Copy an ID, open the Roblox catalog, equip.",
+  robots: { index: false, follow: true },
   alternates: {
     canonical: "/avatar",
     languages: {

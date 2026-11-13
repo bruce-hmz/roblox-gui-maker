@@ -116,12 +116,22 @@ describe("applyTheme — preservation", () => {
 });
 
 describe("themes registry", () => {
-  it("exposes nexus, sunset, arctic", () => {
-    expect(THEMES.map((t) => t.name)).toEqual(["nexus", "sunset", "arctic"]);
+  it("exposes the six palettes", () => {
+    expect(THEMES.map((t) => t.name)).toEqual([
+      "nexus",
+      "sunset",
+      "arctic",
+      "emerald",
+      "royal",
+      "crimson",
+    ]);
   });
 
   it("getTheme resolves by name and returns undefined for unknown", () => {
     expect(getTheme("sunset")?.name).toBe("sunset");
+    expect(getTheme("emerald")?.primary).toBe("#10b981");
+    expect(getTheme("royal")?.primary).toBe("#a855f7");
+    expect(getTheme("crimson")?.primary).toBe("#f43f5e");
     expect(getTheme("nope")).toBeUndefined();
   });
 });

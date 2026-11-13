@@ -3,7 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
+import { KitProDownloadCard } from "../../components/KitProDownloadCard";
 import { ScenePreview } from "../../editor/ScenePreview";
+import {
+  kitGamepassIcons,
+  renderGamepassIconSvg,
+} from "../../editor/gamepass-icons";
 import { KITS, getKit, kitScene } from "../../editor/kits";
 import { getTheme } from "../../editor/themes";
 
@@ -46,6 +51,12 @@ export default async function KitDetailPage({
   const kit = getKit(slug);
   if (!kit) notFound();
   const theme = getTheme(kit.theme);
+  const badgePreviews = kitGamepassIcons(kit.slug).map((icon) => ({
+    id: icon.id,
+    titleTop: icon.titleTop,
+    ...(icon.titleBottom ? { titleBottom: icon.titleBottom } : {}),
+    svgMarkup: renderGamepassIconSvg(icon),
+  }));
 
   return (
     <>
@@ -85,6 +96,14 @@ export default async function KitDetailPage({
             Open this kit in the editor →
           </Link>
         </div>
+
+        <KitProDownloadCard
+          kitSlug={kit.slug}
+          kitName={kit.name}
+          screenCount={kit.screens.length}
+          icons={badgePreviews}
+          locale="en"
+        />
 
         {/* screens, recolored with the shared theme */}
         <div className="space-y-8">

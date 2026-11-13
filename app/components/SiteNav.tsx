@@ -14,8 +14,15 @@ const ITEMS: NavItem[] = [
   { en: "Editor", zh: "编辑器", href: "/editor" },
   { en: "Templates", zh: "模板", href: "/templates", zhHref: "/zh/templates", mobile: true },
   { en: "Kits", zh: "Kit", href: "/kits", zhHref: "/zh/kits" },
+  {
+    en: "Icon Maker",
+    zh: "通行证图标",
+    href: "/gamepass-icon-maker",
+    zhHref: "/zh/gamepass-icon-maker",
+  },
   { en: "Showcase", zh: "作品集", href: "/showcase", zhHref: "/zh/showcase" },
   { en: "Guides", zh: "教程", href: "/guides", zhHref: "/zh/guides" },
+  { en: "Pricing", zh: "价格", href: "/pricing", zhHref: "/zh/pricing" },
 ];
 
 export function SiteNav({ locale = "en" }: { locale?: Locale }) {
@@ -40,8 +47,8 @@ export function SiteNav({ locale = "en" }: { locale?: Locale }) {
             key={it.href}
             href={zh && it.zhHref ? it.zhHref : it.href}
             className={
-              (it.mobile ? "" : "hidden sm:inline-flex ") +
-              "px-3 py-1.5 rounded-md text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+              (it.mobile ? "" : "hidden lg:inline-flex ") +
+              "px-2.5 py-1.5 rounded-md text-ink-dim hover:text-ink hover:bg-raised transition-colors whitespace-nowrap"
             }
           >
             {zh ? it.zh : it.en}

@@ -29,7 +29,9 @@ import {
 } from "./scene";
 import { generateServerLuau } from "./server-luau";
 import { createProjectPackage } from "./project-package";
+import { ProUpgradeModal } from "../components/ProUpgradeModal";
 import { AI_HANDOFF_KEY, type AiHandoff } from "../lib/ai-handoff";
+import { requestEditorRbxmxExport } from "../lib/pro-client";
 import { trackEvent } from "../lib/track";
 import {
   ONBOARDING_COPY,
@@ -116,6 +118,9 @@ export function Editor({
   const [selectedId, setSelectedId] = useState<string | null>("play");
   const [copied, setCopied] = useState<CodeOutput | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [proModalOpen, setProModalOpen] = useState(false);
+  const [exportingRbxmx, setExportingRbxmx] = useState(false);
+  const [rbxmxExportError, setRbxmxExportError] = useState<string | null>(null);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   // AI funnel: the bar shown when the scene arrived from /api/generate-gui.
@@ -623,6 +628,40 @@ export function Editor({
     URL.revokeObjectURL(url);
   }
 
+  async function exportRbxmxModel() {
+    if (exportingRbxmx) return;
+    setExportingRbxmx(true);
+    setRbxmxExportError(null);
+    trackEvent("export_rbxmx_click");
+    try {
+      const outcome = await requestEditorRbxmxExport(scene, "rbxmx");
+      if (!outcome.ok) {
+        if (outcome.unauthorized) {
+          setProModalOpen(true);
+        } else {
+          setRbxmxExportError(outcome.message);
+        }
+        return;
+      }
+      const downloadUrl = URL.createObjectURL(outcome.blob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = outcome.filename;
+      trackEvent("download_project", { format: "rbxmx" });
+      trackAiExport("download_rbxmx");
+      anchor.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      setRbxmxExportError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Could not export .rbxmx model."
+      );
+    } finally {
+      setExportingRbxmx(false);
+    }
+  }
+
   async function importProject(file: File) {
     const request = ++importRequest.current;
     setImportError(null);
@@ -800,6 +839,16 @@ export function Editor({
         onCopy={copyCode}
         onDownload={downloadCode}
         onDownloadPackage={downloadProjectPackage}
+        onExportRbxmx={() => void exportRbxmxModel()}
+        exportingRbxmx={exportingRbxmx}
+        exportError={rbxmxExportError}
+      />
+      <ProUpgradeModal
+        open={proModalOpen}
+        onClose={() => setProModalOpen(false)}
+        contextTitle="Export Native .rbxmx Model for Roblox Studio"
+        defaultPlan="starter_rbxmx"
+        returnPath="/editor"
       />
       </div>
     </>

@@ -19,11 +19,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const g = getGuide(slug);
   if (!g) return { title: "Guide not found — Roblox GUI Maker" };
+  // Guides with their own keyword family override the brand suffix so the
+  // page doesn't claim the homepage's head term ("roblox gui maker").
+  const fullTitle = g.metaTitle ?? `${g.title} | Roblox GUI Maker`;
   return {
-    title: `${g.title} | Roblox GUI Maker`,
+    title: fullTitle,
     description: g.description,
     openGraph: {
-      title: `${g.title} | Roblox GUI Maker`,
+      title: fullTitle,
       description: g.description,
       url: `https://robloxguimaker.app/guides/${slug}`,
     },
@@ -111,7 +114,7 @@ export default async function GuidePage({
         </h1>
         <p className="text-lg text-ink-dim mb-8 leading-relaxed">{g.intro}</p>
 
-        {tpl && (
+        {tpl && !g.hideTemplateCta && (
           <Link
             href={`/editor?template=${tpl.slug}`}
             className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"

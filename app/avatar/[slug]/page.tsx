@@ -22,6 +22,7 @@ export async function generateMetadata({
   return {
     title: spoke.title.en,
     description: spoke.description.en,
+    robots: { index: false, follow: true },
     alternates: {
       canonical: `/avatar/${spoke.slug}`,
       languages: {

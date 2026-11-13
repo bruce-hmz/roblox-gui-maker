@@ -50,7 +50,7 @@ export function GuideDetailView({ slug }: { slug: string }) {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{g.title}</h1>
         <p className="text-lg text-ink-dim mb-8 leading-relaxed">{g.intro}</p>
 
-        {tpl && (
+        {tpl && !g.hideTemplateCta && (
           <Link
             href={`/editor?template=${tpl.slug}`}
             className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"

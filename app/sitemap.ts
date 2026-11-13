@@ -1,53 +1,31 @@
 import type { MetadataRoute } from "next";
-import { execSync } from "node:child_process";
 import { TEMPLATES } from "./editor/templates";
 import { GUIDES } from "./guides/guides-data";
 import { USE_CASES } from "./for/usecases";
 import { KITS } from "./editor/kits";
-import { SPOKES } from "./avatar/spokes";
+import { DEFAULT_LASTMOD_ISO, SITEMAP_LASTMOD_ISO } from "./sitemap-lastmod";
 
 const BASE = "https://robloxguimaker.app";
 
-// Honest last-modified date, read from git history at build time. Git is the
-// source of truth for "when did this content actually change" — unlike file
-// mtime, which resets to the checkout time on every deploy and would fake
-// freshness (a signal Google explicitly warns against). Falls back to a fixed
-// date only if git is unavailable at build time (e.g. a deploy that strips .git).
-const GIT_FALLBACK_DATE = new Date("2026-06-23T00:00:00Z");
-
-const gitDateCache = new Map<string, Date>();
-
-function gitLastModifiedFile(file: string): Date {
-  const cached = gitDateCache.get(file);
-  if (cached) return cached;
-  try {
-    const out = execSync(`git log -1 --format=%cI -- ${file}`, {
-      stdio: ["ignore", "pipe", "ignore"],
-    })
-      .toString()
-      .trim();
-    const date = out ? new Date(out) : GIT_FALLBACK_DATE;
-    const resolved = isNaN(date.getTime()) ? GIT_FALLBACK_DATE : date;
-    gitDateCache.set(file, resolved);
-    return resolved;
-  } catch {
-    // git unavailable (e.g. stripped from a deploy image): keep the build
-    // resilient rather than fail. The fallback is a deliberate, honest floor.
-    return GIT_FALLBACK_DATE;
-  }
+function fileLastModified(filePath: string): Date {
+  const isoString = SITEMAP_LASTMOD_ISO[filePath] ?? DEFAULT_LASTMOD_ISO;
+  const parsedDate = new Date(isoString);
+  return Number.isNaN(parsedDate.getTime())
+    ? new Date(DEFAULT_LASTMOD_ISO)
+    : parsedDate;
 }
 
 // Latest commit across one or more source files — use the max so a route that
 // renders several data sources reflects the most recent of them.
 function lastModified(...files: string[]): Date {
-  return new Date(Math.max(...files.map((f) => gitLastModifiedFile(f).getTime())));
+  return new Date(
+    Math.max(...files.map((filePath) => fileLastModified(filePath).getTime()))
+  );
 }
 
 // zh alternate is declared only where a translated route actually resolves —
-// home, templates, guides, for, kits, showcase, about and their detail pages
-// (all under app/zh/*). /editor is English-only, so it correctly has no zh.
-// x-default falls back to the default-language (en) URL for visitors whose
-// locale matches neither en nor zh.
+// home, templates, guides, for, kits, gamepass-icon-maker, pricing, showcase,
+// about and their detail pages (all under app/zh/*). /editor is English-only.
 function entry(
   path: string,
   opts: { files: string[]; zh?: string }
@@ -56,9 +34,6 @@ function entry(
   const modified = lastModified(...opts.files);
   if (!opts.zh) return [{ url, lastModified: modified }];
   const zhUrl = `${BASE}${opts.zh}`;
-  // Emit BOTH the en and zh URLs as first-class <loc> entries, each carrying
-  // the full hreflang cluster. zh pages exist and resolve; listing them only
-  // as alternates starved them of their own lastmod signaling.
   return [
     {
       url,
@@ -93,6 +68,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       files: ["app/editor/kits.ts", "app/kits/page.tsx"],
       zh: "/zh/kits",
     }),
+    entry("/gamepass-icon-maker", {
+      files: ["app/gamepass-icon-maker/page.tsx", "app/editor/gamepass-icons.ts"],
+      zh: "/zh/gamepass-icon-maker",
+    }),
+    entry("/pricing", {
+      files: ["app/pricing/page.tsx"],
+      zh: "/zh/pricing",
+    }),
     entry("/showcase", { files: ["app/showcase/page.tsx"], zh: "/zh/showcase" }),
     entry("/guides", {
       files: ["app/guides/guides-data.ts", "app/guides/page.tsx"],
@@ -103,18 +86,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       zh: "/zh/for",
     }),
     entry("/about", { files: ["app/about/page.tsx"], zh: "/zh/about" }),
-    entry("/avatar", {
-      files: ["app/avatar/data.ts", "app/avatar/page.tsx"],
-      zh: "/zh/avatar",
-    }),
-    ...SPOKES.map((s) =>
-      entry(`/avatar/${s.slug}`, {
-        files: ["app/avatar/spokes.ts", "app/avatar/data.ts"],
-        zh: `/zh/avatar/${s.slug}`,
-      })
-    ),
-    // Legal / trust pages are English-only for now — no /zh routes exist, so
-    // no zh alternate is declared (avoids the soft-404 hreflang leak).
+    // Note: /avatar/* consumer outfit pages are intentionally excluded from
+    // sitemap and marked noindex so search topical authority stays focused on
+    // Roblox creator GUI, Studio .rbxmx kits, and Gamepass icon tooling.
     entry("/privacy", { files: ["app/privacy/page.tsx"] }),
     entry("/terms", { files: ["app/terms/page.tsx"] }),
     entry("/trust", { files: ["app/trust/page.tsx"] }),
@@ -138,7 +112,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
   const kits = KITS.map((k) =>
-    entry(`/kits/${k.slug}`, { files: ["app/editor/kits.ts"], zh: `/zh/kits/${k.slug}` })
+    entry(`/kits/${k.slug}`, {
+      files: ["app/editor/kits.ts"],
+      zh: `/zh/kits/${k.slug}`,
+    })
   );
   return [...fixed, ...templates, ...guides, ...usecases, ...kits].flat();
 }

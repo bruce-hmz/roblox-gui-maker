@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SiteNav } from "../components/SiteNav";
 import { SiteFooter } from "../components/SiteFooter";
 import { KitCard } from "../components/KitCard";
@@ -48,6 +49,23 @@ export default function KitsPage() {
           {KITS.map((kit) => (
             <KitCard key={kit.slug} kit={kit} />
           ))}
+        </div>
+
+        <div className="mt-10 rounded-2xl border border-line bg-panel p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1 max-w-2xl">
+            <p className="text-sm font-semibold text-ink">
+              Want all 6 kits as native Roblox Studio .rbxmx bundles + 48 Gamepass icons?
+            </p>
+            <p className="text-xs text-ink-dim">
+              Opening any screen in the editor and copying Luau stays 100% free. Unlock All-Access once (USD 19.90, no subscription) to download every multi-screen .rbxmx hierarchy with a wired screen switcher and matched 512×512 shop badges.
+            </p>
+          </div>
+          <Link
+            href="/pricing"
+            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-on-primary transition hover:brightness-110"
+          >
+            See Studio Pro Bundles →
+          </Link>
         </div>
 
         <section className="mx-auto mt-16 max-w-3xl space-y-4 text-ink-dim leading-relaxed">

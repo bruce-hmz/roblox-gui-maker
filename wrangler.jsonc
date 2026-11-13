@@ -1,0 +1,29 @@
+// Cloudflare Workers config — deployed via @opennextjs/cloudflare
+// (`npm run deploy`). Domain: robloxguimaker.app (zone already on Cloudflare).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "roblox-gui-maker",
+  "main": "./worker-wrapper.js",
+  // Custom domains only (robloxguimaker.app + www); keep *.workers.dev off
+  // to avoid duplicate-content indexing.
+  "workers_dev": false,
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "routes": [
+    {
+      "pattern": "robloxguimaker.app",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.robloxguimaker.app",
+      "custom_domain": true
+    }
+  ]
+}

@@ -49,6 +49,66 @@ export const KITS: Kit[] = [
       { role: "Quest tracker", template: "quest-tracker" },
     ],
   },
+  {
+    slug: "tycoon-kit",
+    name: "Tycoon Empire UI Kit",
+    tagline: "Five cohesive screens for a tycoon — rich emerald theme",
+    description:
+      "A tycoon empire interface set: a main menu, a VIP & game pass store, a cash & dropper upgrade shop, a promo code panel, and a top tycoons leaderboard — unified under one deep emerald theme.",
+    theme: "emerald",
+    screens: [
+      { role: "Main menu", template: "main-menu" },
+      { role: "VIP & pass store", template: "game-pass-shop" },
+      { role: "Cash & dropper upgrades", template: "shop" },
+      { role: "Promo codes", template: "code-redeem" },
+      { role: "Top tycoons", template: "leaderboard" },
+    ],
+  },
+  {
+    slug: "rng-aura-kit",
+    name: "RNG & Aura Roll UI Kit",
+    tagline: "Five cohesive screens for an RNG/aura roller — royal violet theme",
+    description:
+      "A luck-based roller interface set: a roll hub menu, an aura storage inventory, a luck & auto-roll pass store, a streak rewards calendar, and a rare-drop notification stack — unified under one royal violet theme.",
+    theme: "royal",
+    screens: [
+      { role: "Roll hub menu", template: "main-menu" },
+      { role: "Aura storage", template: "inventory" },
+      { role: "Luck & auto-roll passes", template: "game-pass-shop" },
+      { role: "Streak rewards", template: "daily-rewards" },
+      { role: "Rare drop banner", template: "notification-toast" },
+    ],
+  },
+  {
+    slug: "obby-shop-kit",
+    name: "Obby & Parkour Monetization Kit",
+    tagline: "Five monetization-ready screens for an obby — crimson action theme",
+    description:
+      "A parkour monetization set: a stage menu, a skip-stage & speed-coil pass store, a playtime & daily gifts calendar, a boost code panel, and a stage HUD health bar — unified under one obsidian crimson theme.",
+    theme: "crimson",
+    screens: [
+      { role: "Stage menu", template: "main-menu" },
+      { role: "Skip stage & coil passes", template: "game-pass-shop" },
+      { role: "Playtime & daily gifts", template: "daily-rewards" },
+      { role: "Boost codes", template: "code-redeem" },
+      { role: "Stage HUD bar", template: "health-bar" },
+    ],
+  },
+  {
+    slug: "tower-defense-kit",
+    name: "Tower Defense Command UI Kit",
+    tagline: "Five cohesive screens for tower defense — electric nexus theme",
+    description:
+      "A tower defense command set: a lobby menu, a unit loadout inventory, a summon & crate shop, a wave missions tracker, and an endless wave leaderboard — unified under the classic electric nexus theme.",
+    theme: "nexus",
+    screens: [
+      { role: "Lobby menu", template: "main-menu" },
+      { role: "Unit loadout", template: "inventory" },
+      { role: "Summon & crate shop", template: "shop" },
+      { role: "Wave missions", template: "quest-tracker" },
+      { role: "Endless wave ranks", template: "leaderboard" },
+    ],
+  },
 ];
 
 export function getKit(slug: string): Kit | undefined {

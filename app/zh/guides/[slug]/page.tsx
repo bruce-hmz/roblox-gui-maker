@@ -16,11 +16,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const g = getGuideZh(slug);
   if (!g) return { title: "未找到教程 — Roblox GUI Maker" };
+  // 有自己词族的指南覆盖品牌后缀,避免跟首页抢「roblox gui maker」。
+  const fullTitle = g.metaTitle ?? `${g.title} | Roblox GUI Maker`;
   return {
-    title: `${g.title} | Roblox GUI Maker`,
+    title: fullTitle,
     description: g.description,
     openGraph: {
-      title: g.title,
+      title: fullTitle,
       description: g.description,
       url: `https://robloxguimaker.app/zh/guides/${slug}`,
     },

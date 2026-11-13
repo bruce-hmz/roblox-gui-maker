@@ -79,3 +79,47 @@
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* footer badge marquee — seamless loop of two identical badge groups */
+.badge-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+.badge-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: badge-marquee 35s linear infinite;
+}
+.badge-marquee:hover .badge-marquee-track {
+  animation-play-state: paused;
+}
+.badge-marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  /* equals the group gap so translateX(-50%) lands seamlessly */
+  padding-right: 2.5rem;
+}
+@keyframes badge-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .badge-marquee-track {
+    animation: none;
+  }
+}

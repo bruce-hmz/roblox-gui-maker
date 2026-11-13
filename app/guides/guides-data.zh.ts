@@ -10,6 +10,7 @@ type GuideZhSection = { heading: string; paragraphs?: string[]; tip?: string };
 
 type GuideZhProse = {
   title: string;
+  metaTitle?: string;
   description: string;
   category: string;
   intro: string;
@@ -383,28 +384,61 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
 
   "how-to-use-uilistlayout-in-roblox": {
     title: "如何在 Roblox 里使用 UIListLayout",
+    metaTitle: "Roblox UIListLayout 用法:LayoutOrder、AbsoluteContentSize、Position",
     description:
-      "UIListLayout 会自动把容器的子元素排成一行或一列。学习关键属性 —— FillDirection、Padding、对齐、SortOrder —— 附一个可运行的 Luau 示例。",
+      "一份完整的 Roblox UIListLayout 指南:Padding 与对齐、LayoutOrder 排序、AbsoluteContentSize 自动撑高、Position 覆盖 —— 全部附可直接复制的 Luau。",
     category: "布局",
     intro:
-      "UIListLayout 是 Roblox 里自动把一个 Frame 的子元素按纵向列表或横向一行排开的对象。你不用手动给每个按钮定位,只要往容器里放一个 UIListLayout,子元素就自己排好。本指南讲解那些重要的属性和一个完整示例。",
+      "UIListLayout 是 Roblox 里自动把一个 Frame 的子元素排成纵向列表或横向一行的布局对象。你不用手动给每个按钮定位,只要往容器里放一个 UIListLayout,子元素就自己排好 —— 增删、调序,排列即时更新。本指南讲清楚每个重要属性,然后是接下来最容易踩坑的三件事:用 LayoutOrder 控制顺序、用 AbsoluteContentSize 让容器随内容撑高、以及当布局忽略子元素 Position 时位置覆盖怎么做。全程附 Luau 示例,最后是一个可直接粘进 Studio 的完整设置菜单。",
     sections: [
       {
-        heading: "1. 把它放进容器",
-        paragraphs: ["UIListLayout 是它所控制容器的子元素。一旦挂上去,每个同级的 Frame、按钮或标签都会被排好。"],
+        heading: "1. UIListLayout 是做什么的",
+        paragraphs: [
+          "UIListLayout 是布局对象,不是可见元素:它自己没有尺寸和颜色。把它挂到任意容器 —— Frame、ScrollingFrame、面板 —— 从这一刻起容器的子元素就自动排好。子元素保留自己的 Size,布局只接管它们的 Position,按排序把它们从上到下(或从左到右)堆叠。新子元素挂上的瞬间就入列,所以你可以用循环批量生成行,全程不碰 Position。",
+          "要记住的唯一规则:一个容器一个布局,而且布局必须是它所控制容器的子级。与布局同级的 Frame、按钮、标签会被排列;这些 Frame 里面的元素不会 —— 布局只控制直接同级元素。",
+          "那为什么不用手动定位?因为手搭的列表是个维护陷阱:每个 Position 都是一个数字,插一行、改一个高度、适配手机,全都要重算。一个 UIListLayout 就是一个替你永远算这笔账的对象 —— 这也是为什么几乎所有上线 Roblox 游戏的菜单、商店、排行榜面板都在用它。",
+        ],
       },
       {
         heading: "2. 方向、间距和对齐",
         paragraphs: [
-          "FillDirection 选纵向或横向。Padding 设子元素之间的间距。HorizontalAlignment 和 VerticalAlignment 在容器内定位整组排列。",
+          "三个属性决定排列形态。FillDirection 选轴:Enum.FillDirection.Vertical 从上到下堆叠,Horizontal 从左到右。Padding 是一个 UDim,其 Offset 部分设子元素之间的像素间距 —— UDim.new(0, 12) 表示每个元素之间留 12 像素。HorizontalAlignment 和 VerticalAlignment 决定整组排列在容器里的位置,纵向列表可以居中、靠左或靠右,不用动任何子元素。",
+          "对齐作用于整组排列,不作用于单个子元素。想让一组按钮居中、另一组靠左,就是两个容器各带各的布局 —— 各自设置对齐。",
         ],
+        tip: "把 UIListLayout 和同一容器上的 UIPadding 搭配,让整组排列离面板边缘留白 —— 这份间距作用于整组,而不是每个子元素。",
       },
       {
-        heading: "3. 用 SortOrder 控制顺序",
+        heading: "3. 用 LayoutOrder 控制顺序",
         paragraphs: [
-          "默认子元素按布局顺序、再按名字排序。把 SortOrder 设为 LayoutOrder,给每个子元素一个 LayoutOrder 数字,就能控制确切顺序。",
+          "默认情况下 UIListLayout 按 LayoutOrder 排序子元素,同名次再按 Name 决胜 —— 这就是为什么改个元素名字菜单顺序会变。稳妥的写法是把 SortOrder 显式设为 Enum.SortOrder.LayoutOrder,并给每个子元素明确的 LayoutOrder 数字。数字小的在前,允许负数,序列有空洞也没关系 —— 行编号用 10、20、30,之后想插一行用 15 就行,不用重新编号。",
+          "SortOrder.Name 是另一个选项:子元素按 Name 属性的字母序排。对名字本身已编码顺序的生成式列表方便,但 LayoutOrder 不怕改名,在代码里读起来也更像刻意为之。",
         ],
-        tip: "把 UIListLayout 和同一容器上的 UIPadding 搭配,让整组排列离边缘留白 —— 不用给每个子元素加外边距。",
+        tip: "如果在 Studio 里改了个元素名字列表就重排,多半是 LayoutOrder 同名次被 Name 决胜(或 SortOrder.Name)—— 给每个子元素唯一的 LayoutOrder 就好。",
+      },
+      {
+        heading: "4. 用 AbsoluteContentSize 让容器自适应",
+        paragraphs: [
+          "UIListLayout 始终知道自己的排列需要多大空间,并以只读属性 AbsoluteContentSize 暴露出来:一个 Vector2,纵向列表时 Y 是整摞的总高(所有子元素高度加 Padding 间距),横向时 X 是总宽。子元素增删或改尺寸时它会更新,所以它是做「容器随内容撑高」的关键 —— 排行榜、设置菜单、任务日志都靠它。",
+          "两种用法。普通 Frame 上,监听布局的 AbsoluteContentSize 变更信号,把 Frame 高度设成一样;ScrollingFrame 上,同样地驱动 CanvasSize,让可滚动区域永远正好等于排列高度 —— 不用猜,也不会溢出。",
+          "一个时机细节:信号在布局计算之后才触发,所以初始化时也要手动设一次尺寸 —— 否则第一帧会以你的占位高度渲染。这个只闪一帧的错误尺寸,就是大家反馈的「自适应面板闪一下」 bug 的来源。",
+        ],
+        tip: "新版 Roblox 上常常可以省掉手动绑定:把容器的 AutomaticSize 设为 Enum.AutomaticSize.Y,它就会自己随布局内容撑高。",
+      },
+      {
+        heading: "5. Position 覆盖:当 UIListLayout 忽略 Position",
+        paragraphs: [
+          "UIListLayout 接管容器的那一刻,就拥有了子元素的 Position —— 你设置的任何值都会在下一次布局时被覆盖。这是「我设的 Position 不生效」问题的第一大来源:属性没问题,是布局赢了。AnchorPoint 仍然作用于每个子元素在分到的槽位里,ZIndex 也不受影响,但容器的直接子元素永远逃不出排列。",
+          "逃生舱是嵌套。把想自由定位的元素包进一个中间 Frame,给这个包装 Frame 一个 LayoutOrder,让它正常占一个槽位。布局排列的是包装 Frame —— 而包装内部没有布局,Position 照常生效。关闭按钮压在标题行上、通知角标钉在列表条目一角,都是这么做的。",
+        ],
+        tip: "UICorner、UIStroke、UIPadding 这类装饰器不参与排列 —— 只有可见的 GuiObject 占槽位 —— 所以它们可以继续做容器的直接子级。",
+      },
+      {
+        heading: "6. 完整示例:一个设置菜单",
+        paragraphs: [
+          "把上面全部装进一个可运行的 LocalScript:居中面板、UIPadding 留白、显式 LayoutOrder 排序的 UIListLayout、标题,以及用 helper 函数生成的三行。放进 StarterGui 的 LocalScript 里直接就能跑。",
+          "行编号用了 10、20、30,之后想加第四行,取中间任意 LayoutOrder 即可,已有代码一行不动。每行都出自同一个 helper,所以像素级一致 —— 这正是把定位交给布局的意义所在。",
+          "接下来给按钮接线就是普通的 Activated 代码 —— 开关、缓动等在 GUI 脚本指南里有讲。",
+        ],
       },
     ],
     faq: [
@@ -416,8 +450,21 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
         q: "为什么我的子元素之间没有间距?",
         a: "把布局的 Padding 设为一个 UDim 值,比如 UDim.new(0, 10)。不设的话,子元素会紧贴。",
       },
+      {
+        q: "UIListLayout 的 AbsoluteContentSize 是什么?",
+        a: "一个只读 Vector2,表示排列好的子元素占用的总尺寸:纵向列表时 Y 是整摞的总高(子元素加 Padding 间距)。用 GetPropertyChangedSignal(\"AbsoluteContentSize\") 监听它,用来给 Frame 或 ScrollingFrame 的 CanvasSize 自适应尺寸。",
+      },
+      {
+        q: "为什么 UIListLayout 忽略我给子元素设的 Position?",
+        a: "因为布局控制着它容器所有直接子元素的 Position。想让某个元素自由定位,就把它包进一个 Frame,给包装 Frame 一个 LayoutOrder 让它排进列表,再对包装内部的元素设 Position。",
+      },
+      {
+        q: "运行时怎么调整子元素顺序?",
+        a: "直接改子元素的 LayoutOrder 属性 —— 列表立即重排,不需要重建。在 SortOrder.LayoutOrder 下这就是官方支持的挪行方式,比如每次分数变化后重排排行榜。",
+      },
     ],
     relatedGuides: [
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "如何制作 Roblox 主菜单 GUI" },
       { slug: "how-to-make-a-roblox-inventory-gui", title: "如何制作 Roblox 背包 GUI" },
       { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
     ],
@@ -1092,6 +1139,7 @@ export function getGuideZh(slug: string): Guide | undefined {
   return {
     ...en,
     title: zh.title,
+    metaTitle: zh.metaTitle ?? en.metaTitle,
     description: zh.description,
     category: zh.category,
     intro: zh.intro,
