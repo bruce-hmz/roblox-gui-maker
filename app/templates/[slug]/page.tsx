@@ -71,6 +71,31 @@ export default async function TemplatePage({
   // Adds a detail↔detail cross-link so template and use-case pages reinforce
   // each other's relevance instead of each standing alone.
   const useCases = USE_CASES.filter((u) => u.template === slug);
+  const templateFaqs = [
+    {
+      q: `How do I add this ${t.title} to Roblox Studio?`,
+      a: `Click Open in Editor to customize labels, colors, and sizes, then either paste the free exported LocalScript into a ScreenGui inside StarterGui or download the native .rbxmx model and insert it via StarterGui -> Insert from File....`,
+    },
+    {
+      q: `Does the ${t.title} scale cleanly on mobile phones and consoles?`,
+      a: `Yes. The template uses Scale positioning and native Roblox layout constraints (UIListLayout / UIGridLayout, UICorner, UIGradient) rather than rigid full-screen offsets, and you can preview Desktop, Tablet, and Mobile sizes inside the editor before exporting.`,
+    },
+    {
+      q: `Can I customize the ${t.title} visually or with AI before exporting?`,
+      a: `Yes. Open the template in the visual editor to rearrange nodes, recolor themes, wire button interactions (show/hide, RemoteEvent, Teleport), or ask the AI prompt bar to adjust the layout, then export Luau free with no account.`,
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: templateFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -87,6 +112,10 @@ export default async function TemplatePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <Link
@@ -208,6 +237,21 @@ export default async function TemplatePage({
             </div>
           </section>
         )}
+
+        <section className="mt-10 max-w-2xl space-y-4">
+          <h2 className="text-xl font-semibold text-ink">
+            {t.title} Frequently Asked Questions
+          </h2>
+          {templateFaqs.map((item) => (
+            <div
+              key={item.q}
+              className="rounded-xl border border-line bg-panel p-4 text-sm"
+            >
+              <h3 className="font-semibold text-ink">{item.q}</h3>
+              <p className="mt-1 text-ink-dim leading-relaxed">{item.a}</p>
+            </div>
+          ))}
+        </section>
 
         <h2 className="text-xl font-semibold mt-12 mb-4">More templates</h2>
         <div className="grid sm:grid-cols-3 gap-4">

@@ -84,6 +84,25 @@ export default async function GuidePage({
     ],
   };
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: g.title,
+    description: g.description,
+    inLanguage: "en",
+    mainEntityOfPage: `https://robloxguimaker.app/guides/${slug}`,
+    author: {
+      "@type": "Organization",
+      name: "Roblox GUI Maker",
+      url: "https://robloxguimaker.app",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Roblox GUI Maker",
+      url: "https://robloxguimaker.app",
+    },
+  };
+
   return (
     <>
       <SiteNav />
@@ -97,6 +116,12 @@ export default async function GuidePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema).replace(/</g, "\\u003c"),
         }}
       />
       <main className="max-w-3xl mx-auto px-6 py-12">
@@ -114,14 +139,24 @@ export default async function GuidePage({
         </h1>
         <p className="text-lg text-ink-dim mb-8 leading-relaxed">{g.intro}</p>
 
-        {tpl && !g.hideTemplateCta && (
+        {g.customCta ? (
           <Link
-            href={`/editor?template=${tpl.slug}`}
+            href={g.customCta.href}
             className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
           >
-            Open the {tpl.title.replace("Roblox ", "").replace(" GUI", "")}{" "}
-            template →
+            {g.customCta.label} →
           </Link>
+        ) : (
+          tpl &&
+          !g.hideTemplateCta && (
+            <Link
+              href={`/editor?template=${tpl.slug}`}
+              className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
+            >
+              Open the {tpl.title.replace("Roblox ", "").replace(" GUI", "")}{" "}
+              template →
+            </Link>
+          )
         )}
 
         <div className="flex flex-col gap-8">

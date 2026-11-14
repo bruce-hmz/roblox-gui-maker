@@ -65,12 +65,41 @@ export default async function UseCasePage({
     ],
   };
 
+  const useCaseFaqs = [
+    {
+      q: `How do I build a Roblox ${u.noun} without writing layout code by hand?`,
+      a: `Open ${tpl ? `the ${tpl.title} template` : "a blank ScreenGui canvas"} in Roblox GUI Maker, drag and nest frames with ${u.properties.slice(0, 3).join(", ")}, customize colors and Scale sizing, and export ready-to-run Luau or a native .rbxmx model for Roblox Studio.`,
+    },
+    {
+      q: `Which Roblox properties matter most for a responsive ${u.noun}?`,
+      a: `Focus on ${u.properties.join(", ")}. Keeping panel dimensions in UDim2 Scale and testing Desktop, Tablet, and Mobile preview presets keeps your ${u.noun} legible on every aspect ratio.`,
+    },
+    {
+      q: `Where do exported scripts for a ${u.noun} go inside Roblox Studio?`,
+      a: `Visual interface and click-handling Luau belongs in a LocalScript inside a ScreenGui under StarterGui, while currency, rewards, or admin validation RemoteEvents must always be checked on the server inside ServerScriptService.`,
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: useCaseFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
       <SiteNav />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
       <main className="max-w-3xl mx-auto px-6 py-12">
         <Link
@@ -182,8 +211,28 @@ export default async function UseCasePage({
           Build it visually in Roblox GUI Maker — drag, resize, nest, auto-arrange
           with layouts, and wire buttons to show or hide panels — then export clean
           Luau that recreates the whole interface, click handlers included, ready to
-          paste into a LocalScript. Free, no login.
+          paste into a LocalScript, or export a native <code>.rbxmx</code> Studio
+          model with Pro. Free, no login.
         </p>
+
+        <section className="mb-12">
+          <h2 className="text-xl font-semibold text-ink mb-4">
+            Frequently asked questions about building a Roblox {u.noun}
+          </h2>
+          <div className="space-y-3">
+            {useCaseFaqs.map((item) => (
+              <div
+                key={item.q}
+                className="border border-line rounded-xl bg-surface p-5"
+              >
+                <h3 className="text-sm font-semibold text-ink mb-1.5">
+                  {item.q}
+                </h3>
+                <p className="text-sm text-ink-dim leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <h2 className="text-xl font-semibold text-ink mb-4">Other use cases</h2>
         <div className="grid sm:grid-cols-3 gap-4">

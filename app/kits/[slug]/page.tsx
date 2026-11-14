@@ -58,9 +58,56 @@ export default async function KitDetailPage({
     svgMarkup: renderGamepassIconSvg(icon),
   }));
 
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://robloxguimaker.app" },
+      { "@type": "ListItem", position: 2, name: "UI Kits", item: "https://robloxguimaker.app/kits" },
+      { "@type": "ListItem", position: 3, name: kit.name, item: `https://robloxguimaker.app/kits/${slug}` },
+    ],
+  };
+
+  const kitFaqs = [
+    {
+      q: `How do I import the ${kit.name} into Roblox Studio?`,
+      a: `Right-click StarterGui in Roblox Studio Explorer, choose Insert from File..., and select ${kit.slug}-complete.rbxmx from the kit download (or import individual screens/${kit.slug} screens from screens/*.rbxmx). Move server/${kit.slug}.server.lua into ServerScriptService and press Play.`,
+    },
+    {
+      q: `Can I customize ${kit.name} screens for free in the editor?`,
+      a: `Yes. Every one of the ${kit.screens.length} screens in ${kit.name} opens in the visual editor pre-themed in ${kit.theme} so you can edit text, tweak colors, and copy free client/server Luau code without signing up.`,
+    },
+    {
+      q: `What icons and scripts ship with ${kit.name}?`,
+      a: `Alongside the .rbxmx ScreenGuis and Luau scripts, the Pro ZIP includes 6 matched 512x512 Gamepass and shop badge icons tailored to the ${kit.theme} theme plus a pre-wired KitScreenSwitcher controller.`,
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: kitFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
       <SiteNav />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
+        }}
+      />
       <main className="max-w-5xl mx-auto px-6 py-12">
         {/* hero */}
         <div className="mb-10">
@@ -146,6 +193,51 @@ export default async function KitDetailPage({
             text, add your own items, then export client Luau (and optional server
             Luau for purchase and reward actions) straight into Roblox Studio.
           </p>
+        </section>
+
+        <section className="mx-auto mt-12 max-w-3xl space-y-4 text-sm text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            How to import {kit.name} into Roblox Studio
+          </h2>
+          <ol className="list-decimal pl-5 space-y-2">
+            <li>
+              Download the kit Pro ZIP above (or open individual screens free in
+              the editor to copy Luau).
+            </li>
+            <li>
+              In Roblox Studio Explorer, right-click{" "}
+              <strong className="text-ink">StarterGui</strong> →{" "}
+              <strong className="text-ink">Insert from File...</strong> and pick{" "}
+              <code className="text-ink">{kit.slug}-complete.rbxmx</code>.
+            </li>
+            <li>
+              Place <code className="text-ink">server/{kit.slug}.server.lua</code>{" "}
+              inside <strong className="text-ink">ServerScriptService</strong> and
+              press <strong className="text-ink">Play</strong>. See our{" "}
+              <Link
+                href="/guides/how-to-import-rbxmx-into-roblox-studio"
+                className="text-focus hover:underline"
+              >
+                Studio .rbxmx import guide
+              </Link>{" "}
+              if you need troubleshooting tips.
+            </li>
+          </ol>
+        </section>
+
+        <section className="mx-auto mt-12 max-w-3xl space-y-4 text-sm text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            {kit.name} Frequently Asked Questions
+          </h2>
+          {kitFaqs.map((item) => (
+            <div
+              key={item.q}
+              className="rounded-xl border border-line bg-panel p-5"
+            >
+              <h3 className="font-semibold text-ink">{item.q}</h3>
+              <p className="mt-1.5">{item.a}</p>
+            </div>
+          ))}
         </section>
       </main>
       <SiteFooter />

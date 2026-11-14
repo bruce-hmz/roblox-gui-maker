@@ -119,7 +119,21 @@ export default function TemplatesPage() {
             >
               Understand generated Roblox GUI scripts
             </Link>{" "}
-            for the exact output and security boundaries.
+            for the exact output and security boundaries,{" "}
+            <Link
+              href="/guides/how-to-import-rbxmx-into-roblox-studio"
+              className="font-medium text-focus hover:underline"
+            >
+              How to import .rbxmx into Roblox Studio
+            </Link>{" "}
+            for drag-and-drop native models, or pair your shop screen with{" "}
+            <Link
+              href="/gamepass-icon-maker"
+              className="font-medium text-focus hover:underline"
+            >
+              512×512 Gamepass icons
+            </Link>
+            .
           </p>
         </section>
       </main>

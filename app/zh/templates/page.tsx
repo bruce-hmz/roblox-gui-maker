@@ -87,7 +87,28 @@ export default function TemplatesPage() {
             模板用的是和从零搭建的项目相同的响应式几何与交互工具。组合 scale 和 offset、设置锚点和约束,导出前预览显示、隐藏、切换、RemoteEvent 或 Teleport 动作。
           </p>
           <p>
-            下载界面用的客户端 Luau、可选的服务端 Luau(用于配置好的服务端动作)、供日后编辑的 JSON,或包含项目文件与放置说明的 ZIP 压缩包。
+            下载界面用的客户端 Luau、可选的服务端 Luau（用于配置好的服务端动作）、供日后编辑的 JSON，或包含项目文件与放置说明的 ZIP 压缩包。你可以查看{" "}
+            <Link
+              href="/zh/guides/roblox-gui-script-generator"
+              className="font-medium text-focus hover:underline"
+            >
+              生成脚本结构与安全边界
+            </Link>
+            、阅读{" "}
+            <Link
+              href="/zh/guides/how-to-import-rbxmx-into-roblox-studio"
+              className="font-medium text-focus hover:underline"
+            >
+              Studio 原生 .rbxmx 导入教程
+            </Link>
+            ，或顺便制作{" "}
+            <Link
+              href="/zh/gamepass-icon-maker"
+              className="font-medium text-focus hover:underline"
+            >
+              512×512 Gamepass 通行证图标
+            </Link>
+            。
           </p>
         </section>
       </div>

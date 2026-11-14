@@ -27,11 +27,40 @@ export function UseCaseDetailView({ slug }: { slug: string }) {
     ],
   };
 
+  const useCaseFaqs = [
+    {
+      q: `如何不用手写大段布局代码就做好一套 Roblox ${u.noun}？`,
+      a: `在 Roblox GUI Maker 中${tpl ? `直接打开对应的起步模板` : "新建空白 ScreenGui 画布"}，搭配 ${u.properties.slice(0, 3).join("、")} 等原生组件可视化拖拽配色，即可免费导出完整 Luau 或选择导出原生 .rbxmx 拖入 Studio。`,
+    },
+    {
+      q: `打造适配手机和电脑的 Roblox ${u.noun}，哪些核心属性最关键？`,
+      a: `重点配置 ${u.properties.join("、")}，并优先采用 Scale 比例而非全像素 Offset；导出前建议在编辑器顶栏切到桌面、平板与手机视口逐一预览。`,
+    },
+    {
+      q: `导出的 ${u.noun} 脚本应该放进 Roblox Studio 的哪个位置？`,
+      a: `所有视觉展示与点击交互均写在 StarterGui > ScreenGui 下的 LocalScript；涉及金币扣费、奖励发放或管理指令的 RemoteEvent 校验逻辑，必须放进 ServerScriptService 的服务端 Script。`,
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: useCaseFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
       <div className="max-w-3xl mx-auto px-6 py-12">
         <Link href="/zh/for" className="text-sm text-ink-mute hover:text-ink mb-4 inline-block">
@@ -125,8 +154,27 @@ export function UseCaseDetailView({ slug }: { slug: string }) {
         )}
 
         <p className="text-ink-dim leading-relaxed mb-12">
-          在 Roblox GUI Maker 里可视化搭建 —— 拖拽、缩放、嵌套、用布局自动排列,把按钮接上显示或隐藏面板 —— 然后导出干净的 Luau,重建整个界面(含点击处理),可直接粘进 LocalScript。免费、免登录。
+          在 Roblox GUI Maker 里可视化搭建 —— 拖拽、缩放、嵌套、用布局自动排列，把按钮接上显示或隐藏面板 —— 然后导出干净的 Luau，重建整个界面（含点击处理），可直接粘进 LocalScript，或用 Pro 导出原生 <code>.rbxmx</code> Studio 模型。免费、免登录。
         </p>
+
+        <section className="mb-12">
+          <h2 className="text-xl font-semibold text-ink mb-4">
+            关于 {u.noun} 的常见问题
+          </h2>
+          <div className="space-y-3">
+            {useCaseFaqs.map((item) => (
+              <div
+                key={item.q}
+                className="border border-line rounded-xl bg-surface p-5"
+              >
+                <h3 className="text-sm font-semibold text-ink mb-1.5">
+                  {item.q}
+                </h3>
+                <p className="text-sm text-ink-dim leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <h2 className="text-xl font-semibold text-ink mb-4">其它用例</h2>
         <div className="grid sm:grid-cols-3 gap-4">

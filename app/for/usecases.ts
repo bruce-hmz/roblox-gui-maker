@@ -115,6 +115,7 @@ export const USE_CASES: UseCase[] = [
       "ImageLabel",
       "Visible",
     ],
+    relatedGuide: "how-to-make-a-roblox-inventory-gui",
   },
   {
     slug: "simulator-huds",
@@ -127,6 +128,7 @@ export const USE_CASES: UseCase[] = [
       "Persistent action buttons (rebirth, pets, shop)",
       "Small footprint that never blocks gameplay",
     ],
+    template: "health-bar",
     howTo: [
       "Drag a ScreenGui onto the canvas. Add corner Frames anchored to top-left and top-right using AnchorPoint and Position with scale values.",
       "Add TextLabels for currency (coins, gems) with an ImageLabel icon next to each. Use UIListLayout to stack multiple stats.",
@@ -180,7 +182,7 @@ export const USE_CASES: UseCase[] = [
       "BackgroundColor3",
       "UICorner",
     ],
-    relatedGuide: "how-to-make-a-roblox-shop-gui",
+    relatedGuide: "how-to-script-a-roblox-gui",
   },
   {
     slug: "loading-screens",
@@ -281,6 +283,7 @@ export const USE_CASES: UseCase[] = [
       "UserInputService",
       "TextButton",
     ],
+    relatedGuide: "how-to-open-a-gui-with-a-key-in-roblox",
   },
 ];
 

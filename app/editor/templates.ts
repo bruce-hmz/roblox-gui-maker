@@ -780,6 +780,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Main Menu GUI",
     category: "Menus",
     tagline: "Title screen with Play / Settings / Quit",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-main-menu-gui",
+      "how-to-open-a-gui-with-a-key-in-roblox",
+    ],
     description:
       "A clean centered main menu: game title, primary Play button in Electric Blue, and secondary action buttons — stacked with a UIListLayout so it stays tidy on any screen size.",
     scene: mainMenu,
@@ -789,6 +793,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Shop GUI",
     category: "Shop",
     tagline: "Item grid with a scrollable UIGridLayout",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-shop-gui",
+      "how-to-use-uilistlayout-in-roblox",
+    ],
     description:
       "A game shop panel with a header and a ScrollingFrame whose children auto-arrange into a grid via UIGridLayout — drop in as many items as you want and they tile automatically.",
     scene: shop,
@@ -798,6 +806,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Settings GUI",
     category: "Settings",
     tagline: "Toggle rows stacked with UIListLayout",
+    relatedGuideSlugs: [
+      "how-to-script-a-roblox-gui",
+      "how-to-use-uilistlayout-in-roblox",
+    ],
     description:
       "A settings panel: each option is a row with a label and a toggle pill, stacked vertically with UIListLayout and inner padding from UIPadding.",
     scene: settingsTpl,
@@ -807,6 +819,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Inventory GUI",
     category: "Menus",
     tagline: "Slot grid for items / cosmetics",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-inventory-gui",
+      "how-to-make-a-responsive-roblox-gui",
+    ],
     description:
       "An inventory with a fixed UIGridLayout of slots — perfect for items, cosmetics, or a hotbar. Add or remove slots and the grid reflows.",
     scene: inventory,
@@ -816,6 +832,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Loading Screen GUI",
     category: "Menus",
     tagline: "Title, progress bar and rotating tip",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-loading-screen-gui",
+      "how-to-animate-roblox-guis-with-tweenservice",
+    ],
     description:
       "A full-screen loading screen with a gradient background, big title, a progress bar (background + animated fill), and a tip line. A great first impression while the game loads.",
     scene: loadingScreen,
@@ -825,6 +845,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Leaderboard GUI",
     category: "HUD",
     tagline: "Ranked rows with score highlights",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-global-leaderboard-gui",
+      "how-to-use-uilistlayout-in-roblox",
+    ],
     description:
       "A live-style leaderboard with rank, name, and score columns, the top row highlighted. Rows stack with UIListLayout so it scales with player count.",
     scene: leaderboard,
@@ -834,6 +858,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Game Pass Shop GUI",
     category: "Shop",
     tagline: "Premium pass cards with purchase requests",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-gamepass-shop-gui",
+      "how-to-make-roblox-gamepass-icons",
+    ],
     description:
       "A polished game pass storefront with three editable offers and RemoteEvent purchase requests. Connect each trusted server handler to your Roblox Marketplace purchase flow before release.",
     scene: gamePassShop,
@@ -843,6 +871,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Code Redeem GUI",
     category: "Menus",
     tagline: "Code input, reward examples, and status states",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-code-redeem-gui",
+      "how-to-script-a-roblox-gui",
+    ],
     description:
       "A focused code redemption panel with editable input, feedback, and reward examples. Connect TextBox reading, validation, rate limits, and reward granting in Roblox Studio.",
     scene: codeRedeem,
@@ -852,6 +884,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Daily Rewards GUI",
     category: "Menus",
     tagline: "Seven-day streak with a server request",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-daily-rewards-gui",
+      "roblox-gui-code-structure",
+    ],
     description:
       "A seven-day reward calendar with claimed, current, and upcoming states plus a claim RemoteEvent. Validate time, streak, and duplicate claims on the server.",
     scene: dailyRewards,
@@ -861,6 +897,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Quest Tracker GUI",
     category: "HUD",
     tagline: "Expandable objective and progress HUD",
+    relatedGuideSlugs: [
+      "how-to-make-a-roblox-quest-tracker-gui",
+      "how-to-animate-roblox-guis-with-tweenservice",
+    ],
     description:
       "A compact quest HUD with editable objective, progress, reward, and a previewable details toggle. Connect live quest data and completion rewards in your game code.",
     scene: questTracker,
@@ -883,6 +923,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Notification GUI",
     category: "HUD",
     tagline: "Stacked, color-coded toast alerts",
+    relatedGuideSlugs: [
+      "how-to-animate-roblox-guis-with-tweenservice",
+      "how-to-use-uilistlayout-in-roblox",
+    ],
     description:
       "A stack of color-coded toast notifications — success, info, warning, and error — arranged with a UIListLayout so new alerts push in below the last. Each card is fully editable; fire a RemoteEvent from the server to surface live alerts.",
     scene: notifications,
@@ -892,6 +936,10 @@ const RAW_TEMPLATES: Template[] = [
     title: "Roblox Chat GUI",
     category: "HUD",
     tagline: "Scrolling message log with input and send",
+    relatedGuideSlugs: [
+      "how-to-use-uilistlayout-in-roblox",
+      "how-to-script-a-roblox-gui",
+    ],
     description:
       "A custom chat panel: a ScrollingFrame message log with colored sender names, plus a TextBox and a Send button wired to a RemoteEvent. Use it to replace the default Roblox chat or add a team channel in Studio.",
     scene: chat,

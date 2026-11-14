@@ -5,20 +5,20 @@ import { SiteFooter } from "../components/SiteFooter";
 import { GUIDES } from "./guides-data";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Guides — How to Make Menus, Shops & Loading Screens",
+  title: "Roblox GUI Guides — How to Make Menus, Shops, Gamepasses & Studio UI",
   description:
-    "Written guides for building Roblox GUIs: main menus, shops, loading screens, and how to use UIListLayout and UIGridLayout — with copy-paste Luau.",
+    "Step-by-step Roblox Studio UI tutorials: how to make main menus, coin & Game Pass shops, loading screens, responsive Scale layouts, TweenService animations, 512x512 Gamepass icons, and .rbxmx imports.",
   openGraph: {
-    title: "Roblox GUI Guides — How to Make Menus, Shops & Loading Screens",
+    title: "Roblox GUI Guides — How to Make Menus, Shops, Gamepasses & Studio UI",
     description:
-      "Written guides for building Roblox GUIs: main menus, shops, loading screens, and how to use UIListLayout and UIGridLayout — with copy-paste Luau.",
+      "Step-by-step Roblox Studio UI tutorials: menus, shops, Game Pass UI, UIListLayout, TweenService, 512x512 icons, and .rbxmx import workflows.",
     url: "https://robloxguimaker.app/guides",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Roblox GUI Guides — How to Make Menus, Shops & Loading Screens",
+    title: "Roblox GUI Guides — How to Make Menus, Shops, Gamepasses & Studio UI",
     description:
-      "Written guides for building Roblox GUIs: main menus, shops, loading screens, and more.",
+      "Step-by-step Roblox Studio UI guides with copy-paste Luau, responsive layouts, Gamepass icons, and .rbxmx Studio imports.",
   },
   alternates: {
     canonical: "/guides",
@@ -35,12 +35,35 @@ export default function GuidesPage() {
       <SiteNav />
       <main className="max-w-3xl mx-auto px-6 py-12">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-          Roblox GUI Guides
+          Roblox GUI Guides &amp; How-To Tutorials
         </h1>
-        <p className="text-ink-dim mb-10">
-          Step-by-step written guides for building common Roblox interfaces —
-          with copy-paste Luau you can drop straight into Studio.
+        <p className="text-ink-dim mb-6 leading-relaxed">
+          Practical Roblox Studio tutorials answering real UI questions &mdash; from
+          responsive Scale layouts and TweenService animations to Game Pass
+          shops, 512&times;512 pass icons, and importing{" "}
+          <code className="text-ink">.rbxmx</code> models straight into{" "}
+          <code className="text-ink">StarterGui</code>.
         </p>
+        <div className="flex flex-wrap gap-2 mb-10 text-xs">
+          <Link
+            href="/templates"
+            className="rounded-lg border border-line bg-panel px-3 py-1.5 font-medium text-ink-dim hover:border-focus hover:text-ink transition"
+          >
+            Browse 13 GUI templates →
+          </Link>
+          <Link
+            href="/gamepass-icon-maker"
+            className="rounded-lg border border-line bg-panel px-3 py-1.5 font-medium text-ink-dim hover:border-focus hover:text-ink transition"
+          >
+            512&times;512 Gamepass Icon Maker →
+          </Link>
+          <Link
+            href="/kits"
+            className="rounded-lg border border-line bg-panel px-3 py-1.5 font-medium text-ink-dim hover:border-focus hover:text-ink transition"
+          >
+            6 Pro UI Kits →
+          </Link>
+        </div>
         <div className="flex flex-col gap-4">
           {GUIDES.map((g) => (
             <Link

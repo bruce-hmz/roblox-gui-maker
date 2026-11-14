@@ -39,10 +39,12 @@ export default function TermsPage() {
             What this tool is
           </h2>
           <p className="text-ink-dim leading-relaxed">
-            Roblox GUI Maker is a free, browser-based visual builder for Roblox
-            game interfaces. By using the tool you accept these terms. If you do
-            not accept them, do not use the tool. There is no account and no
-            payment &mdash; you simply use the editor in your browser.
+            Roblox GUI Maker is a browser-based visual builder for Roblox game
+            interfaces with free Luau exports and optional one-time Studio Pro
+            Pass downloads. By using the tool you accept these terms. If you do
+            not accept them, do not use the tool. There is no account system
+            &mdash; free features work directly in your browser, and optional Pro
+            Passes are processed via one-time Stripe Checkout.
           </p>
         </section>
 

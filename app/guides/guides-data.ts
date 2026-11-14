@@ -21,6 +21,7 @@ export type Guide = {
   description: string;
   category: string;
   relatedTemplate?: string;
+  customCta?: { href: string; label: string };
   // Doc-intent guides answer the query fully on-page; an above-the-fold
   // "open the template" button reads as a bridge page for that intent, so
   // the CTA stays in the post-content sections only.
@@ -132,275 +133,505 @@ buyGrad.Parent = buy`,
     slug: "how-to-make-a-roblox-inventory-gui",
     title: "How to Make a Roblox Inventory GUI",
     description:
-      "Build a Roblox inventory GUI with a ScrollingFrame, UIGridLayout for uniform slots, filter tabs, and runtime population from a script — with copy-paste Luau.",
+      "How to build a Roblox inventory GUI with a ScrollingFrame, UIGridLayout for uniform slots, category tabs, item equip RemoteEvents, and copy-paste Luau.",
     category: "HUD",
     relatedTemplate: "inventory",
     intro:
-      "An inventory shows everything a player owns as a grid of slots they can tap to equip or use. The shape is a ScrollingFrame full of uniform cells laid out by a UIGridLayout, plus a template slot your script clones once per owned item. This guide builds one in Luau and maps to the inventory template in the editor.",
+      "An inventory GUI displays every tool, weapon, pet, or cosmetic a player owns inside a scrollable grid of interactive slots. The cleanest pattern in Roblox Studio uses a ScrollingFrame with a UIGridLayout plus a hidden template slot cloned once per item from server-replicated data. Below is the complete step-by-step Explorer setup, responsive slot sizing, selection borders, and equip RemoteEvent wiring.",
     sections: [
       {
-        heading: "1. ScrollingFrame + UIGridLayout for uniform slots",
+        heading: "1. Set up the ScreenGui and ScrollingFrame + UIGridLayout",
         paragraphs: [
-          "A ScrollingFrame is the scrollable container; a UIGridLayout inside it arranges every child into a uniform grid automatically. Set CellSize and CellPadding once and any number of slots tile correctly.",
+          "Place your inventory ScreenGui inside StarterGui with ResetOnSpawn set to false so players do not lose their open state or slot references after respawning. Inside the main Frame, add a ScrollingFrame set to AutomaticCanvasSize = Enum.AutomaticSize.Y and CanvasSize = UDim2.new(0, 0, 0, 0) so the scrollbar adapts automatically as players collect more items.",
+          "Parent a UIGridLayout inside the ScrollingFrame. Set CellSize using Scale on X (for example 0.22 on desktop or coupled with a UIAspectRatioConstraint inside the cell) so cards keep square proportions across phones and monitors instead of overflowing horizontally.",
         ],
-        code: `local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.fromScale(0.6, 0.7)
-scroll.Position = UDim2.fromScale(0.2, 0.15)
+        code: `-- LocalScript inside the Inventory ScreenGui
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local gui = script.Parent
+gui.ResetOnSpawn = false
+
+local scroll = gui:WaitForChild("Panel"):WaitForChild("ScrollingFrame")
 scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 scroll.ScrollBarThickness = 6
-scroll.Parent = gui
 
-local grid = Instance.new("UIGridLayout")
-grid.CellSize = UDim2.fromOffset(90, 90)
-grid.CellPadding = UDim2.fromOffset(8, 8)
+local grid = scroll:WaitForChild("UIGridLayout")
 grid.SortOrder = Enum.SortOrder.LayoutOrder
-grid.Parent = scroll`,
+grid.CellPadding = UDim2.fromOffset(8, 8)`,
       },
       {
-        heading: "2. Clone a template slot per item",
+        heading: "2. Build one reusable template slot (ImageButton + UIStroke)",
         paragraphs: [
-          "Build one slot Frame (with a UICorner and an ImageLabel for the icon) and keep it as a template. Clone it for each owned item rather than constructing slots inline — your layout code stays tiny and every slot is identical.",
+          "Avoid writing dozens of Instance.new calls inside your item loop. Instead, keep one styled template slot stored under the LocalScript (or in ReplicatedStorage) containing a background UICorner, an ImageLabel for the asset icon, an optional quantity TextLabel in the bottom-right corner, and a UIStroke whose Transparency starts at 1.",
+          "Make the clickable root of the slot an ImageButton or TextButton with Text = \"\" so players on mouse, mobile touch, and controller can focus and activate every cell cleanly.",
         ],
-        tip: "Use a naming convention like Slot_<itemId> so your scripts can find, equip, or remove slots by id later.",
+        tip: "Name each cloned slot Slot_<itemId> and set its LayoutOrder by rarity or obtain order so UIGridLayout keeps your backpack sorted automatically.",
       },
       {
-        heading: "3. Populate slots from player data",
+        heading: "3. Populate slots from player data and clear stale children",
         paragraphs: [
-          "Loop the player's owned items, clone the template, set its icon and name, and parent it to the ScrollingFrame. The UIGridLayout positions it automatically and the canvas grows with AutomaticCanvasSize.",
+          "Whenever the server sends an updated inventory table or a player switches category tabs (for example All / Weapons / Pets), destroy existing slot frames first without deleting the UIGridLayout or UIPadding inside the ScrollingFrame. Checking child:IsA(\"GuiObject\") prevents accidentally deleting layout constraints.",
         ],
-        code: `local function populate(items)
-	for _, item in ipairs(items) do
-		local slot = template:Clone()
+        code: `local equipRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("EquipItem")
+local slotTemplate = script:WaitForChild("SlotTemplate")
+local activeSlot: TextButton? = nil
+
+local function populateInventory(items: { { id: string, icon: string, qty: number } })
+	for _, child in ipairs(scroll:GetChildren()) do
+		if child:IsA("GuiObject") then
+			child:Destroy()
+		end
+	end
+
+	for index, item in ipairs(items) do
+		local slot = slotTemplate:Clone()
 		slot.Name = "Slot_" .. item.id
-		slot.Icon.Image = item.icon
+		slot.LayoutOrder = index
+		slot:WaitForChild("Icon").Image = item.icon
+		slot:WaitForChild("Quantity").Text = item.qty > 1 and ("x" .. item.qty) or ""
+
+		slot.Activated:Connect(function()
+			if activeSlot then
+				activeSlot.UIStroke.Transparency = 1
+			end
+			slot.UIStroke.Transparency = 0
+			activeSlot = slot
+			equipRemote:FireServer(item.id)
+		end)
+
 		slot.Parent = scroll
 	end
 end`,
       },
+      {
+        heading: "4. Validate equip and use requests on the server",
+        paragraphs: [
+          "The client GUI only shows what the player owns and requests an equip or use action. A Script in ServerScriptService must verify the player actually owns that itemId inside their server-side inventory table or DataStore session before equipping a Tool or applying stats.",
+        ],
+        tip: "Set ClipsDescendants = true on the ScrollingFrame so rows sliding off the top and bottom edges clip cleanly inside the panel border.",
+      },
     ],
     faq: [
       {
-        q: "How do I add or remove items at runtime?",
-        a: "Clone the template slot and parent it to the ScrollingFrame to add; call Destroy() on the slot to remove. The UIGridLayout reflows the remaining slots automatically.",
+        q: "How do I add or remove items at runtime without breaking the grid?",
+        a: "Clone your template slot and parent it to the ScrollingFrame to add an item, or call slot:Destroy() to remove one. Because UIGridLayout manages positioning automatically, the remaining slots reflow cleanly.",
       },
       {
-        q: "How do I show which item is equipped?",
-        a: "Give the template slot a UIStroke that starts transparent, and toggle its Transparency off on the slot the player taps. A colored stroke reads as a clear selection border.",
+        q: "Why did my UIGridLayout stop working after clearing the ScrollingFrame?",
+        a: "Calling scroll:ClearAllChildren() deletes the UIGridLayout and UIPadding along with the slots. Always loop over scroll:GetChildren() and only destroy children where child:IsA(\"GuiObject\").",
+      },
+      {
+        q: "How do I show which item is currently equipped?",
+        a: "Give the template slot a UIStroke starting with Transparency = 1, then set Transparency = 0 (and clear the previous slot's stroke) when the server confirms the item is equipped.",
+      },
+      {
+        q: "How do I add category tabs like Weapons, Pets, and Consumables?",
+        a: "Pass a category string into populateInventory(items, selectedCategory) and skip items whose item.category does not match before cloning, or toggle Visible = false on non-matching slots because UIGridLayout ignores invisible GuiObjects.",
       },
     ],
     relatedGuides: [
       { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
+      { slug: "how-to-make-a-responsive-roblox-gui", title: "How to Make a Responsive Roblox GUI" },
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "How to Open a GUI with a Key Press in Roblox" },
     ],
   },
   {
     slug: "how-to-make-a-roblox-code-redeem-gui",
     title: "How to Make a Roblox Code Redeem GUI",
     description:
-      "Make a Roblox promo/creator code redemption GUI: a TextBox for input, a RemoteEvent to the server, and server-side validation + reward granting — with copy-paste Luau.",
+      "How to build a working Roblox Twitter/promo code redeem GUI with TextBox input, server-side RemoteFunction validation, DataStore duplicate protection, and error feedback.",
     category: "Menus",
     relatedTemplate: "code-redeem",
     intro:
-      "A code redeem panel lets players type a promo or creator code and receive a reward. The interface is simple — a TextBox plus a redeem button — but the security is one-directional: the client only sends the code, and the server decides whether it is valid and grants the reward. This guide builds both sides in Luau.",
+      "A code redeem GUI lets players type promotional, milestone, or creator codes into a TextBox to claim coins, boosts, or exclusive items. While the client UI takes only a few instances, security and anti-duplicate tracking belong completely on the server. Follow this complete client + server pattern with copy-paste Luau.",
     sections: [
       {
-        heading: "1. TextBox input and a redeem button",
+        heading: "1. Build the TextBox, Redeem button, and status label",
         paragraphs: [
-          "A TextBox collects the code, a TextButton fires the request. On click, read the box's text and send it to the server through a RemoteEvent.",
+          "Inside StarterGui, create a panel Frame containing a TextBox (with ClearTextOnFocus = false so players can fix a typo without retyping), a TextButton labeled REDEEM, and a status TextLabel below them for messages like \"Redeemed +500 Coins!\" or \"Code already claimed.\"",
         ],
-        code: `local box = Instance.new("TextBox")
-box.Size = UDim2.fromScale(1, 0.12)
-box.PlaceholderText = "Enter code"
-box.Parent = panel
+        code: `-- LocalScript inside the CodeRedeem ScreenGui
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local redeemFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("RedeemCode") :: RemoteFunction
 
-local redeem = Instance.new("TextButton")
-redeem.Size = UDim2.fromScale(1, 0.12)
-redeem.Text = "REDEEM"
-redeem.Parent = panel
+local panel = script.Parent:WaitForChild("Panel")
+local box = panel:WaitForChild("CodeInput") :: TextBox
+local redeemBtn = panel:WaitForChild("RedeemButton") :: TextButton
+local statusLabel = panel:WaitForChild("StatusLabel") :: TextLabel
 
-local redeemEvent = game:GetService("ReplicatedStorage")
-	:WaitForChild("Remotes"):WaitForChild("RedeemCode")
-redeem.Activated:Connect(function()
-	redeemEvent:FireServer(box.Text)
+local busy = false
+
+redeemBtn.Activated:Connect(function()
+	if busy then return end
+	local rawCode = box.Text
+	if string.gsub(rawCode, "%s+", "") == "" then
+		statusLabel.Text = "Please enter a code first."
+		return
+	end
+
+	busy = true
+	statusLabel.Text = "Checking code..."
+	local ok, message = redeemFunction:InvokeServer(rawCode)
+	statusLabel.Text = message or (ok and "Reward granted!" or "Could not redeem code.")
+	if ok then
+		box.Text = ""
+	end
+	busy = false
 end)`,
       },
       {
-        heading: "2. Validate codes on the server",
+        heading: "2. Validate codes and enforce expiration on the server",
         paragraphs: [
-          "Keep the list of valid codes and their rewards in a server Script. Normalize the incoming code (uppercase, no spaces), look it up, and ignore anything unknown. The client never sees the list.",
+          "Keep your code table strictly inside a Script in ServerScriptService so exploiters can never inspect valid codes from local memory. Normalize incoming input with string.upper and strip whitespace, reject non-string values immediately, and check optional expiresAt Unix timestamps via os.time().",
         ],
-        code: `local codes = {
-	LAUNCHDAY = { coins = 500 },
-	WELCOME = { item = "starter_crate" },
+        code: `-- Script in ServerScriptService
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local redeemFunction = remotes:WaitForChild("RedeemCode") :: RemoteFunction
+
+local CODES = {
+	LAUNCHDAY = { coins = 500, expiresAt = 1893456000 },
+	WELCOME = { coins = 250, expiresAt = nil },
 }
 
-redeemEvent.OnServerEvent:Connect(function(player, raw)
-	local code = string.upper(tostring(raw):gsub("%s+", ""))
-	local reward = codes[code]
-	if not reward then return end -- invalid code: do nothing
-	grantReward(player, reward)
-end)`,
-        tip: "Never trust the client. Only the server knows which codes are valid and must be the one to grant coins or items.",
+local playerCooldowns: { [Player]: number } = {}
+local claimedByPlayer: { [number]: { [string]: boolean } } = {} -- hydrate from DataStore on join
+
+redeemFunction.OnServerInvoke = function(player: Player, rawInput: unknown)
+	if typeof(rawInput) ~= "string" then
+		return false, "Invalid input."
+	end
+
+	local now = os.clock()
+	if (playerCooldowns[player] or 0) > now then
+		return false, "Please wait a moment before trying again."
+	end
+	playerCooldowns[player] = now + 1.5
+
+	local code = string.upper((string.gsub(rawInput, "%s+", "")))
+	local entry = CODES[code]
+	if not entry then
+		return false, "Invalid code."
+	end
+	if entry.expiresAt and os.time() > entry.expiresAt then
+		return false, "This code has expired."
+	end
+
+	local claimed = claimedByPlayer[player.UserId]
+	if not claimed then
+		claimed = {}
+		claimedByPlayer[player.UserId] = claimed
+	end
+	if claimed[code] then
+		return false, "You have already redeemed this code."
+	end
+
+	claimed[code] = true
+	-- Grant entry.coins to player leaderstats & persist claimed table in DataStore
+	return true, ("Redeemed +%d Coins!"):format(entry.coins)
+end`,
+        tip: "Always add a short per-player cooldown (e.g. 1.5 seconds) and clear playerCooldowns[player] on Players.PlayerRemoving to stop brute-force spam and memory leaks.",
       },
       {
-        heading: "3. Send feedback to the player",
+        heading: "3. Save redeemed codes inside the player's DataStore profile",
         paragraphs: [
-          "After granting, fire a RemoteEvent (or return from a RemoteFunction) back to the client so the UI can show 'Reward claimed' or 'Invalid code'. Keep the reward logic on the server and the message on the client.",
+          "Storing redeemed codes only in a server script table forgets them when the player rejoins another server. Save the player's claimed code dictionary alongside their currency inside DataStoreService, and mark claimed[code] = true before yielding on any async calls so rapid double-invokes cannot redeem twice.",
+        ],
+      },
+      {
+        heading: "4. Polish feedback states and mobile usability",
+        paragraphs: [
+          "Color statusLabel green on success and red on errors, reset the TextBox only when ok is true, and ensure the TextBox does not sit too close to the bottom edge where virtual mobile keyboards cover the prompt.",
         ],
       },
     ],
     faq: [
       {
-        q: "Why must the server validate the code?",
-        a: "Clients can be modified by exploiters. If the client decided the reward, anyone could grant themselves anything. The server is the only source of truth for valid codes and granted rewards.",
+        q: "Should I use a RemoteEvent or a RemoteFunction for a code redeem GUI?",
+        a: "Either works, though a RemoteFunction lets the server return (ok, message) cleanly to update the status label in one round trip. Just keep a client debounce and server rate limit so players cannot spam InvokeServer.",
       },
       {
-        q: "How do I expire or single-use codes?",
-        a: "Track redemption per player in a DataStore (or remove the code from the table after a global expiry). Check it server-side before granting.",
+        q: "How do I prevent a player from redeeming the same code twice?",
+        a: "Store a dictionary of claimed code keys inside each player's DataStore save (for example playerProfile.RedeemedCodes[code] = true). Check it on the server before granting coins or items, and save on leave.",
+      },
+      {
+        q: "Can players see my promo codes if they use an exploit?",
+        a: "No, as long as the CODES table lives strictly inside ServerScriptService. Server scripts are never replicated to clients.",
+      },
+      {
+        q: "Why does typing lowercase or trailing spaces make a valid code fail?",
+        a: "Phone keyboards frequently add a trailing space after autocorrect. Calling string.upper((string.gsub(rawInput, \"%s+\", \"\"))) on the server fixes casing and accidental whitespace automatically.",
       },
     ],
     relatedGuides: [
       { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
+      { slug: "how-to-make-a-roblox-daily-rewards-gui", title: "How to Make a Roblox Daily Rewards GUI" },
+      { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
     ],
   },
   {
     slug: "how-to-make-a-roblox-daily-rewards-gui",
     title: "How to Make a Roblox Daily Rewards GUI",
     description:
-      "Build a Roblox daily rewards / streak calendar GUI: a 7-day grid with claimed, current and locked states, server-side streak tracking, and a claim RemoteEvent — with Luau.",
+      "How to build a 7-day Roblox daily login rewards GUI with claimed, ready, and locked visual states, UTC server-time validation, DataStore streaks, and Luau code.",
     category: "Menus",
     relatedTemplate: "daily-rewards",
     intro:
-      "A daily rewards screen shows a row of day cards — claimed days dimmed, today's ready, future days locked — and a button to claim. The visual states are just background colors; the real logic is server-side: track when the player last claimed and their streak, and only grant a reward if a new day has begun.",
+      "A 7-day daily rewards calendar boosts retention by rewarding players who return each day. On the UI side, each day card displays one of three states (claimed, today ready, or locked); on the server side, os.time() and DataStoreService determine eligibility so players cannot spoof their device clock. Here is the complete layout and server streak system.",
     sections: [
       {
-        heading: "1. A 7-day grid with visual states",
+        heading: "1. Lay out a 7-day grid with clear visual states",
         paragraphs: [
-          "Each day is a Frame colored by its state: claimed (dimmed), current (highlighted), or locked (muted). Lay them out with a UIListLayout or manual positions — the editor's daily-rewards template does this for you.",
+          "Create seven numbered day Frames named Day1 through Day7 inside a container using UIListLayout (with HorizontalAlignment = Center and Wraps = true) or UIGridLayout so desktop shows a wide strip and narrow mobile screens wrap into clean rows. Style each card with three clear attributes or state colors: muted/checkmarked for claimed days, bright Electric Blue outline for today's claimable card, and dimmed with a lock label for future days.",
         ],
       },
       {
-        heading: "2. Track the streak on the server",
+        heading: "2. Validate eligibility and track streaks on the server",
         paragraphs: [
-          "Store lastClaimTime and streak per player (DataStore). On a claim request, compare server time to the last claim: if less than a day has passed, ignore it; if within two days, advance the streak; otherwise reset it to day 1.",
+          "Never check time in a LocalScript because client clocks depend on the player's device timezone and can be changed freely. Store lastClaimEpoch and streak in the player's DataStore profile. When the Claim RemoteEvent fires, compare os.time() on the server: wait at least 86400 seconds (or compare UTC day index math.floor(os.time() / 86400) for calendar-day resets) before advancing the streak.",
         ],
-        code: `local DAY = 86400
-claimEvent.OnServerEvent:Connect(function(player)
-	local data = playerData[player.UserId] -- { last = 0, streak = 0 }
-	local now = os.time()
-	if now - data.last < DAY then return end -- already claimed today
-	data.streak = (now - data.last < 2 * DAY) and data.streak + 1 or 1
-	data.last = now
-	grantDayReward(player, data.streak)
+        code: `-- Script in ServerScriptService
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local claimEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ClaimDailyReward") :: RemoteEvent
+local syncEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("SyncDailyRewards") :: RemoteEvent
+
+local DAY_SECONDS = 86400
+local REWARDS = { 100, 150, 200, 300, 400, 500, 1000 }
+
+local profiles: { [number]: { lastDayIndex: number, streak: number } } = {}
+
+local function currentDayIndex(): number
+	return math.floor(os.time() / DAY_SECONDS)
+end
+
+claimEvent.OnServerEvent:Connect(function(player: Player)
+	local profile = profiles[player.UserId]
+	if not profile then return end
+
+	local today = currentDayIndex()
+	if profile.lastDayIndex >= today then
+		return -- already claimed today
+	end
+
+	local nextStreak = (today - profile.lastDayIndex == 1)
+		and ((profile.streak % #REWARDS) + 1)
+		or 1
+
+	profile.lastDayIndex = today
+	profile.streak = nextStreak
+
+	local coins = REWARDS[nextStreak]
+	-- Grant coins here and mark DataStore dirty
+	syncEvent:FireClient(player, {
+		streak = nextStreak,
+		canClaim = false,
+		rewardGranted = coins,
+	})
 end)`,
-        tip: "Always use os.time() (server clock) for day boundaries. The client's clock can be wrong or spoofed.",
+        tip: "Comparing UTC day indices via math.floor(os.time() / 86400) feels much friendlier than strict 24-hour timers because players who play at 9 PM one day and 7 PM the next day still count as returning the next calendar day.",
       },
       {
-        heading: "3. Reflect the result in the UI",
+        heading: "3. Update the client calendar UI from server state",
         paragraphs: [
-          "After the server grants, it tells the client the new streak and last-claim day. The client recolors the day cards (mark today claimed, highlight tomorrow) so the calendar stays in sync with the server's truth.",
+          "When the player joins and whenever a claim succeeds, the server sends { streak, canClaim } through SyncDailyRewards. Your LocalScript loops through Day1 to Day7 and updates background colors, borders, and button interactability so the GUI never drifts out of sync with DataStore truth.",
+        ],
+        code: `-- LocalScript inside DailyRewards ScreenGui
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local syncEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("SyncDailyRewards") :: RemoteEvent
+local claimEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ClaimDailyReward") :: RemoteEvent
+
+local grid = script.Parent:WaitForChild("Panel"):WaitForChild("DaysGrid")
+local claimBtn = script.Parent:WaitForChild("Panel"):WaitForChild("ClaimButton") :: TextButton
+
+syncEvent.OnClientEvent:Connect(function(state)
+	local nextDay = state.canClaim and ((state.streak % 7) + 1) or 0
+	for day = 1, 7 do
+		local card = grid:FindFirstChild("Day" .. day) :: Frame?
+		if not card then continue end
+		if day <= state.streak and not (state.canClaim and state.streak == 7) then
+			card.BackgroundColor3 = Color3.fromRGB(32, 48, 38) -- claimed
+		elseif day == nextDay then
+			card.BackgroundColor3 = Color3.fromRGB(0, 120, 215) -- claim today
+		else
+			card.BackgroundColor3 = Color3.fromRGB(28, 30, 40) -- locked
+		end
+	end
+	claimBtn.Active = state.canClaim
+	claimBtn.Text = state.canClaim and "CLAIM REWARD" or "COME BACK TOMORROW"
+end)
+
+claimBtn.Activated:Connect(function()
+	claimEvent:FireServer()
+end)`,
+      },
+      {
+        heading: "4. Add a red notification dot to prompt claims",
+        paragraphs: [
+          "Most top games avoid popping up the full Daily Rewards screen immediately over a loading or tutorial view; instead, if state.canClaim is true, show a small pulsing badge on the main HUD's Rewards button until claimed.",
         ],
       },
     ],
     faq: [
       {
-        q: "How do I store the streak between sessions?",
-        a: "Save lastClaimTime and streak in a DataStore keyed by UserId. Load it when the player joins and save after each claim.",
+        q: "Should I check 24-hour intervals or calendar days for daily rewards?",
+        a: "Calendar day checks (math.floor(os.time() / 86400)) usually create better retention because players playing an hour earlier the next evening aren't forced to wait out a strict 24-hour timer.",
       },
       {
-        q: "What happens if a player skips a day?",
-        a: "Your call: reset the streak to 1, or keep it within a grace window (e.g. two days). The code above resets after a two-day gap.",
+        q: "How do I store streaks between play sessions?",
+        a: "Save lastDayIndex and streak inside a DataStore table keyed by tostring(player.UserId). Load the profile in Players.PlayerAdded and persist via UpdateAsync on PlayerRemoving and game:BindToClose.",
+      },
+      {
+        q: "What happens after a player finishes Day 7?",
+        a: "Using (profile.streak % 7) + 1 loops smoothly back to Day 1 on Day 8 so loyal players continue earning rewards every week.",
+      },
+      {
+        q: "Can players cheat daily rewards by changing Windows or phone date/time?",
+        a: "No, as long as all checks run on the server using os.time(), which reads Roblox's server clock rather than the client's device clock.",
       },
     ],
     relatedGuides: [
+      { slug: "how-to-make-a-roblox-code-redeem-gui", title: "How to Make a Roblox Code Redeem GUI" },
       { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "How to Animate Roblox GUIs with TweenService" },
     ],
   },
   {
     slug: "how-to-make-a-roblox-quest-tracker-gui",
     title: "How to Make a Roblox Quest Tracker HUD",
     description:
-      "Make a Roblox quest tracker HUD: a persistent corner panel with an objective, a live tweened progress bar, and an expand/collapse toggle — with copy-paste Luau.",
+      "How to build a compact Roblox quest tracker HUD pinned to the screen edge with a tweened progress bar, collapse/expand toggle, and live quest updates.",
     category: "HUD",
     relatedTemplate: "quest-tracker",
     intro:
-      "A quest tracker is a small panel pinned to a corner of the screen that shows the active objective and a progress bar that fills as the player makes progress. It stays visible during gameplay, so it has to be compact. This guide builds the HUD, a smooth progress bar, and a toggle to expand and collapse the details.",
+      "A quest tracker HUD stays visible during active gameplay to remind players of their current objective and live progress without blocking the center viewport. The secret is edge-anchored Scale positioning, a two-frame tweened progress bar, and a quick collapse toggle for smaller phone screens. Here is the complete Luau pattern.",
     sections: [
       {
-        heading: "1. A compact corner panel",
+        heading: "1. Pin a compact corner HUD away from Roblox's core buttons",
         paragraphs: [
-          "Anchor the panel to a corner with AnchorPoint and a scale Position so it sits tight against the edge on every screen size. A TextLabel holds the objective, a nested Frame pair (background + fill) is the progress bar.",
+          "Anchor the tracker to the top-right (AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(0.98, 0.08)) or middle-left below Roblox's top bar so it never collides with the Chat, Leaderboard, or Backpack controls. Use a UIPadding inside the panel and cap width with a UISizeConstraint so it does not eat half the screen on phones or stretch overly wide on ultrawide monitors.",
         ],
-        code: `local panel = Instance.new("Frame")
+        code: `-- LocalScript inside QuestTracker ScreenGui
+local TweenService = game:GetService("TweenService")
+local panel = script.Parent:WaitForChild("TrackerPanel") :: Frame
 panel.AnchorPoint = Vector2.new(1, 0)
-panel.Position = UDim2.fromScale(0.97, 0.06)
-panel.Size = UDim2.fromScale(0.3, 0.16)
-panel.Parent = gui`,
-      },
-      {
-        heading: "2. A progress bar that tweens",
-        paragraphs: [
-          "The bar is a background Frame with a child fill Frame. To update progress, tween the fill's Size on the X scale from its current value to the new ratio — TweenService makes it glide instead of jumping.",
-        ],
-        code: `local TweenService = game:GetService("TweenService")
+panel.Position = UDim2.fromScale(0.98, 0.14)
+panel.Size = UDim2.fromScale(0.24, 0.15)
 
-local function setProgress(fill, current, goal)
-	local ratio = math.clamp(current / goal, 0, 1)
-	local info = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
-	TweenService:Create(fill, info, { Size = UDim2.fromScale(ratio, 1) }):Play()
-end`,
-        tip: "Keep the HUD small and out of the gameplay area. Anchor to a corner and use scale sizing so it lands the same on phone and desktop.",
+local sizeLimit = Instance.new("UISizeConstraint")
+sizeLimit.MinSize = Vector2.new(210, 88)
+sizeLimit.MaxSize = Vector2.new(340, 140)
+sizeLimit.Parent = panel`,
       },
       {
-        heading: "3. Update from game events and collapse details",
+        heading: "2. Animate progress with a nested track and fill Frame",
         paragraphs: [
-          "Drive setProgress from your game's events (item collected, enemy defeated) so the bar moves live. Add a toggle button that shows and hides a details panel using a show/hide action — the editor generates that Luau for you, and you can animate it with a scale transition.",
+          "Build the bar using a dark rounded Track Frame and a child Fill Frame anchored at (0, 0) with Size = UDim2.fromScale(0, 1). Set ClipsDescendants = true on the Track so rounded corners stay crisp even when the Fill is narrow, and tween Fill.Size whenever progress changes.",
+        ],
+        code: `local titleLabel = panel:WaitForChild("ObjectiveLabel") :: TextLabel
+local countLabel = panel:WaitForChild("CountLabel") :: TextLabel
+local fill = panel:WaitForChild("Track"):WaitForChild("Fill") :: Frame
+
+local function updateQuestProgress(objectiveText: string, current: number, goal: number)
+	local safeGoal = math.max(goal, 1)
+	local clamped = math.clamp(current, 0, safeGoal)
+	local ratio = clamped / safeGoal
+
+	titleLabel.Text = objectiveText
+	countLabel.Text = ("%d / %d"):format(clamped, safeGoal)
+
+	TweenService:Create(
+		fill,
+		TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Size = UDim2.fromScale(ratio, 1) }
+	):Play()
+end`,
+        tip: "Keep quest titles under 5–7 words (for example \"Collect 10 Star Shards\") so text stays legible at 14px without wrapping awkwardly on mobile.",
+      },
+      {
+        heading: "3. Add a collapse/expand toggle for small screens",
+        paragraphs: [
+          "Players on phones appreciate being able to fold the tracker down to a single slim header pill. Add a small arrow TextButton in the panel header that toggles bodyContainer.Visible and smoothly tweens the panel height between expanded and collapsed states.",
+        ],
+        code: `local toggleBtn = panel:WaitForChild("Header"):WaitForChild("ToggleButton") :: TextButton
+local body = panel:WaitForChild("Body") :: Frame
+local expanded = true
+
+toggleBtn.Activated:Connect(function()
+	expanded = not expanded
+	body.Visible = expanded
+	toggleBtn.Text = expanded and "−" or "+"
+	TweenService:Create(
+		panel,
+		TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Size = expanded and UDim2.fromScale(0.24, 0.15) or UDim2.fromScale(0.24, 0.05) }
+	):Play()
+end)`,
+      },
+      {
+        heading: "4. Drive updates from server events cleanly",
+        paragraphs: [
+          "Track real quest progress on the server (coins picked up, NPCs defeated, stages cleared) and fire a RemoteEvent like QuestUpdated:FireClient(player, questData) only when counts change or on join. The client never decides when a quest finishes — the server sends a completion state so you can pulse the bar green and show a Claim button or toast.",
         ],
       },
     ],
     faq: [
       {
-        q: "How do I make the progress bar fill smoothly?",
-        a: "Use TweenService:Create on the fill Frame's Size, from its current X scale to the new ratio. A 0.3-second Quad ease looks responsive without being jittery.",
+        q: "How do I make the quest progress bar fill smoothly without jumping?",
+        a: "Calculate ratio = math.clamp(current / goal, 0, 1) and use TweenService:Create on the fill Frame's Size to UDim2.fromScale(ratio, 1) over roughly 0.25–0.35 seconds.",
       },
       {
-        q: "How do I know when a quest is complete?",
-        a: "When progress reaches the goal, fire a BindableEvent (server-side) or check client-side, then grant the reward, mark the quest done, and hide or recolor the tracker.",
+        q: "Where should I position a quest HUD so it doesn't overlap Roblox UI?",
+        a: "Avoid the extreme top-left (Roblox menu and chat) and top-right topbar inset. Start around Y Scale 0.12–0.16 on the right or left edge, or set IgnoreGuiInset = false so your coordinates automatically start below the 36px/58px core topbar.",
+      },
+      {
+        q: "How do I display multiple active quests at once?",
+        a: "Turn TrackerPanel into a vertical UIListLayout container, convert the quest card into a reusable template Frame, and clone one card per active quest ID.",
+      },
+      {
+        q: "Why does the rounded fill bar stick out of the track corners at low percentages?",
+        a: "Enable ClipsDescendants = true on the Track Frame or give both Track and Fill a matching UICorner (CornerRadius = UDim.new(1, 0)).",
       },
     ],
     relatedGuides: [
       { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "How to Animate Roblox GUIs with TweenService" },
+      { slug: "how-to-make-a-responsive-roblox-gui", title: "How to Make a Responsive Roblox GUI" },
     ],
   },
   {
     slug: "how-to-make-a-roblox-main-menu-gui",
     title: "How to Make a Roblox Main Menu GUI",
     description:
-      "Step by step: build a Roblox main menu GUI with a ScreenGui, centered panel, title and stacked Play/Settings buttons using UIListLayout, plus the Luau to handle button clicks.",
+      "Step-by-step guide: build a Roblox main menu GUI with a centered Frame, UIListLayout buttons, BlurEffect camera intro, and .Activated Luau click handling.",
     category: "Menus",
     relatedTemplate: "main-menu",
     intro:
-      "The main menu is the first thing players see when they join your game. This guide builds one from scratch in Luau — a ScreenGui container, a centered panel, a title, and Play / Settings buttons stacked automatically with a UIListLayout. You can also start from the ready-made main-menu template in the editor and customize it.",
+      "Your main menu is the first screen every player sees, and a clunky or off-center menu hurts first impressions before gameplay even begins. This guide walks through the full setup: ScreenGui settings, centered responsive container, UIListLayout stacked buttons, cross-device .Activated click events, and clean Play transition with Lighting BlurEffect.",
     sections: [
       {
-        heading: "1. Create the ScreenGui container",
+        heading: "1. Configure the ScreenGui container correctly",
         paragraphs: [
-          "Every on-screen interface lives inside a ScreenGui. Put it in the local player's PlayerGui so it renders on their screen, and set ResetOnSpawn to false so the menu survives respawns.",
+          "Create a ScreenGui inside StarterGui named MainMenu (or build it inside a LocalScript). Set ResetOnSpawn = false so dying in the game never brings the title screen back, and set IgnoreGuiInset = true if your dimmed backdrop should cover the full viewport cleanly behind Roblox's top bar.",
         ],
-        code: `local player = game:GetService("Players").LocalPlayer
+        code: `local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "MainMenu"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")`,
       },
       {
-        heading: "2. Add a centered panel and title",
+        heading: "2. Center the menu panel and add a responsive cap",
         paragraphs: [
-          "A Frame acts as the menu background, a UICorner rounds it, and a TextLabel shows the game title. AnchorPoint 0.5,0.5 plus Position 0.5,0.5 centers the panel exactly on screen.",
+          "Setting AnchorPoint = Vector2.new(0.5, 0.5) paired with Position = UDim2.fromScale(0.5, 0.5) centers any panel by its midpoint rather than its top-left corner. Add a UISizeConstraint and UIPadding so the card never looks huge on an ultrawide desktop or tiny on a phone.",
         ],
         code: `local panel = Instance.new("Frame")
-panel.Size = UDim2.fromScale(0.4, 0.6)
+panel.Size = UDim2.fromScale(0.38, 0.56)
 panel.Position = UDim2.fromScale(0.5, 0.5)
 panel.AnchorPoint = Vector2.new(0.5, 0.5)
 panel.BackgroundColor3 = Color3.fromRGB(21, 23, 31)
@@ -410,231 +641,284 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 18)
 corner.Parent = panel
 
+local pad = Instance.new("UIPadding")
+pad.PaddingTop = UDim.new(0, 20)
+pad.PaddingBottom = UDim.new(0, 20)
+pad.PaddingLeft = UDim.new(0, 20)
+pad.PaddingRight = UDim.new(0, 20)
+pad.Parent = panel
+
 local title = Instance.new("TextLabel")
 title.Size = UDim2.fromScale(1, 0.18)
 title.BackgroundTransparency = 1
 title.Text = "GAME TITLE"
 title.Font = Enum.Font.GothamBlack
-title.TextSize = 30
+title.TextScaled = true
 title.TextColor3 = Color3.fromRGB(153, 203, 255)
 title.Parent = panel`,
       },
       {
-        heading: "3. Stack the buttons with UIListLayout",
+        heading: "3. Stack Play, Shop, and Settings buttons with UIListLayout",
         paragraphs: [
-          "Drop a UIListLayout into the panel and every child you add afterwards stacks itself — no manual positioning. Set Padding for spacing and HorizontalAlignment to center them.",
+          "Drop a UIListLayout into the panel and set SortOrder = Enum.SortOrder.LayoutOrder. Assigning LayoutOrder = 1 to the title, 2 to Play, and 3 to Settings guarantees predictable ordering without wrestling with Y offsets every time you add a Credits or Updates button.",
         ],
         code: `local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 10)
+layout.Padding = UDim.new(0, 12)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = panel`,
       },
       {
-        heading: "4. Make the buttons do something",
+        heading: "4. Handle Play, sub-panels, and camera/blur polish with .Activated",
         paragraphs: [
-          "Each button is a TextButton. Connect MouseButton1Click to run code when the player taps it — here, PLAY hides the menu and starts the game.",
+          "Always wire buttons using button.Activated instead of MouseButton1Click so desktop clicks, mobile taps, and controller selection trigger the same callback. When Play is clicked, disable BlurEffect in Lighting, smoothly hide the menu, and enable your HUD ScreenGui.",
         ],
-        code: `local playBtn = Instance.new("TextButton")
-playBtn.Size = UDim2.fromScale(1, 0.14)
+        code: `local Lighting = game:GetService("Lighting")
+local blur = Instance.new("BlurEffect")
+blur.Size = 14
+blur.Parent = Lighting
+
+local playBtn = Instance.new("TextButton")
+playBtn.LayoutOrder = 2
+playBtn.Size = UDim2.fromScale(1, 0.16)
 playBtn.Text = "PLAY"
 playBtn.Font = Enum.Font.GothamBold
 playBtn.TextSize = 20
+playBtn.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+playBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 playBtn.Parent = panel
+Instance.new("UICorner", playBtn).CornerRadius = UDim.new(0, 12)
 
-playBtn.MouseButton1Click:Connect(function()
-\tgui.Enabled = false
-\t-- start the game here
+playBtn.Activated:Connect(function()
+	blur.Enabled = false
+	gui.Enabled = false
+	-- Enable your HUD ScreenGui or reset CameraType here
 end)`,
-        tip: "Use gui.Enabled = false to hide the menu and keep it around, or gui:Destroy() if you'll never show it again.",
+        tip: "Use gui.Enabled = false rather than gui:Destroy() if players can return to the main menu or open Settings from an in-game button later.",
       },
     ],
     faq: [
       {
-        q: "How do I center the menu on screen?",
-        a: "Set the panel's AnchorPoint to Vector2.new(0.5, 0.5) and Position to UDim2.fromScale(0.5, 0.5). The panel then centers on its own midpoint instead of its top-left corner.",
+        q: "How do I center a Roblox Main Menu GUI on every screen size?",
+        a: "Set AnchorPoint to Vector2.new(0.5, 0.5) and Position to UDim2.fromScale(0.5, 0.5), then size the Frame with Scale (plus a UISizeConstraint) so its midpoint stays locked to the screen center on desktop, tablet, and mobile.",
       },
       {
-        q: "Why does my menu disappear when I respawn?",
-        a: "By default a ScreenGui resets on spawn. Set ResetOnSpawn = false on the ScreenGui to keep it persistent.",
+        q: "Why does my main menu reappear every time a player dies?",
+        a: "By default ScreenGui.ResetOnSpawn is true, which clones a fresh copy from StarterGui when the character respawns. Set ResetOnSpawn = false on your MainMenu ScreenGui.",
+      },
+      {
+        q: "Should I use Activated or MouseButton1Click for main menu buttons?",
+        a: "Use Activated. Unlike MouseButton1Click, Activated fires reliably across mouse clicks, mobile touchscreen taps, and console gamepad confirmations.",
+      },
+      {
+        q: "How do I freeze or point the camera at the lobby behind the main menu?",
+        a: "In a LocalScript, set workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable and assign Camera.CFrame to a pre-placed Part in your map, then switch back to Enum.CameraType.Custom inside playBtn.Activated.",
       },
     ],
     relatedGuides: [
       { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "How to Open a GUI with a Key Press in Roblox" },
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
       { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
+      { slug: "how-to-import-rbxmx-into-roblox-studio", title: "How to Import .rbxmx GUI Files into Roblox Studio" },
     ],
   },
   {
     slug: "how-to-make-a-roblox-shop-gui",
     title: "How to Make a Roblox Shop GUI",
     description:
-      "Build a Roblox shop GUI: a ScrollingFrame whose items auto-tile with UIGridLayout, item cells with images and prices, and a RemoteEvent so purchases actually work server-side.",
+      "How to make a working Roblox item shop GUI with a UIGridLayout ScrollingFrame, item cards, close button, and secure server-side RemoteEvent currency checks.",
     category: "Shop",
     relatedTemplate: "shop",
     intro:
-      "A shop needs three things: a scrollable area, items that tile into a grid, and a way for the purchase to actually happen. This guide builds the UI with a ScrollingFrame + UIGridLayout, then wires the buy action through a RemoteEvent so the server verifies it. Start from the shop template to skip the layout work.",
+      "A great Roblox shop GUI makes browsing items effortless while keeping every coin deduction strictly on the server. Using a ScrollingFrame with UIGridLayout ensures new weapons, pets, or trails tile cleanly into rows without overlapping, and wiring each card through a RemoteEvent keeps exploiters from granting themselves free gear. Follow this step-by-step setup.",
     sections: [
       {
-        heading: "1. The panel and scrollable grid",
+        heading: "1. Build the shop container, close button, and ScrollingFrame grid",
         paragraphs: [
-          "A Frame holds everything; a ScrollingFrame is where items go. Adding a UIGridLayout to the ScrollingFrame makes every item cell tile automatically into a grid — add as many items as you want and they reflow.",
+          "Place a centered Frame inside StarterGui > ShopGui. Give it a top header bar with a Close TextButton (`X`), then fill the body with a ScrollingFrame using AutomaticCanvasSize = Enum.AutomaticSize.Y and CanvasSize = UDim2.new(0, 0, 0, 0) so the scrollbar grows cleanly as your catalog expands.",
+          "Inside the ScrollingFrame, add a UIGridLayout plus UIPadding so cards stay framed neatly away from the scrollbar track.",
         ],
-        code: `local panel = Instance.new("Frame")
-panel.Size = UDim2.fromScale(0.6, 0.76)
-panel.Position = UDim2.fromScale(0.2, 0.12)
-panel.Parent = gui
+        code: `-- LocalScript inside ShopGui
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.fromScale(1, 0.8)
-scroll.BackgroundTransparency = 1
-scroll.ScrollBarThickness = 6
-scroll.Parent = panel
+local gui = script.Parent :: ScreenGui
+gui.ResetOnSpawn = false
 
-local grid = Instance.new("UIGridLayout")
-grid.CellSize = UDim2.fromOffset(120, 120)
+local panel = gui:WaitForChild("Panel") :: Frame
+local scroll = panel:WaitForChild("ItemsScroll") :: ScrollingFrame
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ClipsDescendants = true
+
+local grid = scroll:WaitForChild("UIGridLayout") :: UIGridLayout
 grid.CellPadding = UDim2.fromOffset(10, 10)
-grid.Parent = scroll`,
+grid.SortOrder = Enum.SortOrder.LayoutOrder`,
       },
       {
-        heading: "2. An item cell",
+        heading: "2. Populate item cards dynamically from a shared catalog module",
         paragraphs: [
-          "Each item is a Frame with an ImageLabel, a price label, and a buy button. Because of the UIGridLayout, just parenting it to the ScrollingFrame places it in the grid.",
+          "Put item names, prices, and rbxassetid icons in a single ModuleScript inside ReplicatedStorage so both the client shop UI and server purchase handler read the exact same source of truth.",
         ],
-        code: `local function makeItem(name, price, imageId)
-\tlocal cell = Instance.new("TextButton")
-\tcell.Text = ""
-\tcell.BackgroundColor3 = Color3.fromRGB(40, 41, 51)
-\tcell.Parent = scroll
-
-\tlocal icon = Instance.new("ImageLabel")
-\ticon.Size = UDim2.fromScale(1, 0.7)
-\ticon.BackgroundTransparency = 1
-\ticon.Image = "rbxassetid://" .. imageId
-\ticon.Parent = cell
-
-\tlocal label = Instance.new("TextLabel")
-\tlabel.Size = UDim2.fromScale(1, 0.3)
-\tlabel.Position = UDim2.fromScale(0, 0.7)
-\tlabel.BackgroundTransparency = 1
-\tlabel.Text = name .. " - " .. price
-\tlabel.Parent = cell
-
-\treturn cell
-end`,
+        code: `-- ReplicatedStorage/ShopCatalog (ModuleScript)
+return {
+	SpeedCoil = { Name = "Speed Coil", Price = 250, Icon = "rbxassetid://0", Order = 1 },
+	GravityCoil = { Name = "Gravity Coil", Price = 600, Icon = "rbxassetid://0", Order = 2 },
+}`,
       },
       {
-        heading: "3. Wire the purchase through a RemoteEvent",
+        heading: "3. Fire purchases through a RemoteEvent and validate on the server",
         paragraphs: [
-          "Never trust the client with money. The buy button fires a RemoteEvent; the server checks the player can afford it, deducts currency, and grants the item.",
+          "Never let the client tell the server how much an item costs. The client button only fires the item's string ID via buyRemote:FireServer(itemId). On the server, look up the real price from ShopCatalog, confirm the player isn't already holding it (if permanent), check leaderstats.Coins, deduct safely, and grant the item.",
         ],
         code: `-- LocalScript (client)
-buyRemote = game.ReplicatedStorage:WaitForChild("BuyItem")
-cell.MouseButton1Click:Connect(function()
-\tbuyRemote:FireServer(itemId)
+local buyRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("BuyItem") :: RemoteEvent
+buyButton.Activated:Connect(function()
+	buyRemote:FireServer(itemId)
 end)
 
--- Script (server)
-buyRemote.OnServerEvent:Connect(function(player, itemId)
-\t-- verify currency, deduct, grant item
+-- Script in ServerScriptService (server)
+local ShopCatalog = require(ReplicatedStorage:WaitForChild("ShopCatalog"))
+buyRemote.OnServerEvent:Connect(function(player: Player, itemId: unknown)
+	if typeof(itemId) ~= "string" then return end
+	local item = ShopCatalog[itemId]
+	if not item then return end
+
+	local coins = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Coins")
+	if not coins or coins.Value < item.Price then return end
+
+	coins.Value -= item.Price
+	-- Grant tool/item to player's Backpack & save to DataStore
 end)`,
-        tip: "Always validate purchases on the server. A client can fire a RemoteEvent with any itemId, so the server must re-check price and ownership.",
+        tip: "If you are selling Robux Game Passes rather than in-game Coin items, pair this grid pattern with MarketplaceService:PromptGamePassPurchase instead of deducting leaderstats.",
+      },
+      {
+        heading: "4. Toggle the shop smoothly without losing scroll position",
+        paragraphs: [
+          "Toggle ShopGui.Enabled rather than destroying the shop on close. Keeping the ScreenGui cached preserves images and scroll offset while avoiding repeated Instance creation every time a player taps the Shop icon.",
+        ],
       },
     ],
     faq: [
       {
-        q: "How do I make the shop scroll smoothly?",
-        a: "Use a ScrollingFrame with AutomaticCanvasSize = Enum.AutomaticSize.Y and a UISizeConstraint or the UIGridLayout's cells defining height. ScrollBarThickness controls the scrollbar width.",
+        q: "How do I make the Roblox shop scroll smoothly as I add more items?",
+        a: "Set ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y and CanvasSize = UDim2.new(0, 0, 0, 0), and add UIPadding inside the ScrollingFrame so top and bottom cards never hug the edge.",
       },
       {
-        q: "How do items tile into a grid?",
-        a: "Parent a UIGridLayout to the ScrollingFrame. Set CellSize and CellPadding; every child Frame then auto-positions into rows and columns.",
+        q: "How do shop items automatically arrange into rows and columns?",
+        a: "Parent a UIGridLayout inside the ScrollingFrame and configure CellSize and CellPadding. Every GuiObject child added to the ScrollingFrame auto-tiles left-to-right.",
+      },
+      {
+        q: "Why shouldn't the client check coins and fire a 'Bought' remote?",
+        a: "Exploiters can fire any RemoteEvent directly with fake parameters. Only send the item ID from the client and always verify ownership and coin balance inside a Script in ServerScriptService.",
+      },
+      {
+        q: "What is the difference between a Coin Shop GUI and a Game Pass Shop GUI?",
+        a: "A Coin Shop uses your own RemoteEvent and deducts server-side in-game currency, whereas a Game Pass Shop calls MarketplaceService:PromptGamePassPurchase(player, passId) to process Robux purchases.",
       },
     ],
     relatedGuides: [
+      { slug: "how-to-make-a-roblox-gamepass-shop-gui", title: "How to Make a Roblox Game Pass Shop GUI" },
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
-      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "how-to-make-a-roblox-inventory-gui", title: "How to Make a Roblox Inventory GUI" },
     ],
   },
   {
     slug: "how-to-make-a-roblox-loading-screen-gui",
     title: "How to Make a Roblox Loading Screen GUI",
     description:
-      "Make a Roblox loading screen: a full-screen frame with a gradient, title, an animated progress bar using TweenService, and a rotating tip — then remove it when the game is ready.",
+      "How to build a custom Roblox loading screen GUI inside ReplicatedFirst with ContentProvider:PreloadAsync, smooth progress bar tweening, and clean fade-out.",
     category: "Menus",
     relatedTemplate: "loading-screen",
     intro:
-      "A loading screen covers the viewport while assets stream in. This guide builds a full-screen Frame with a gradient background, a big title, a progress bar whose fill tweens from 0 to full, and a tip line. Once your game is ready, you destroy the GUI. There's also a loading-screen template to start from.",
+      "A great Roblox loading screen covers the viewport the instant a player joins, displays real preload progress rather than a fake timer, and fades out smoothly once essential assets are ready. Putting the LocalScript inside ReplicatedFirst ensures it appears immediately before StarterGui finishes replicating.",
     sections: [
       {
-        heading: "1. Full-screen background and title",
+        heading: "1. Place the loading script inside ReplicatedFirst",
         paragraphs: [
-          "Set IgnoreGuiInset = true on the ScreenGui so the frame covers the whole viewport including the top bar. A UIGradient on the background Frame gives it depth.",
+          "Scripts in StarterGui wait for ReplicatedFirst and character replication, which makes your loading screen appear late. Instead, keep your LoadingScreen ScreenGui inside ReplicatedFirst alongside a LocalScript, call ReplicatedFirst:RemoveDefaultLoadingScreen(), and clone the GUI straight into PlayerGui.",
+          "Remember to set ScreenGui.IgnoreGuiInset = true and ScreenGui.DisplayOrder = 100 so your backdrop covers Roblox's top bar and sits above any early HUD elements.",
         ],
-        code: `local gui = Instance.new("ScreenGui")
-gui.IgnoreGuiInset = true
-gui.Parent = player.PlayerGui
+        code: `-- LocalScript inside ReplicatedFirst
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local Players = game:GetService("Players")
 
-local bg = Instance.new("Frame")
-bg.Size = UDim2.fromScale(1, 1)
-bg.BackgroundColor3 = Color3.fromRGB(12, 13, 23)
-bg.Parent = gui
+ReplicatedFirst:RemoveDefaultLoadingScreen()
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.fromScale(0.6, 0.12)
-title.Position = UDim2.fromScale(0.2, 0.36)
-title.BackgroundTransparency = 1
-title.Text = "LOADING"
-title.Font = Enum.Font.GothamBlack
-title.TextSize = 44
-title.Parent = bg`,
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+local loadingGui = script:WaitForChild("LoadingScreen"):Clone()
+loadingGui.IgnoreGuiInset = true
+loadingGui.DisplayOrder = 100
+loadingGui.Parent = playerGui`,
       },
       {
-        heading: "2. The progress bar",
+        heading: "2. Build the progress track, fill, and rotating tip label",
         paragraphs: [
-          "The bar is two Frames: a dark track and a colored fill. The fill starts at Scale 0 width and you tween it up as loading progresses.",
+          "Style your track and fill with rounded pill corners (CornerRadius = UDim.new(1, 0)) and enable ClipsDescendants on the track. Rotating gameplay tips every 2.5 seconds inside a task.spawn loop keeps the screen feeling alive while assets finish streaming.",
         ],
-        code: `local track = Instance.new("Frame")
-track.Size = UDim2.fromScale(0.4, 0.03)
-track.Position = UDim2.fromScale(0.3, 0.56)
-track.BackgroundColor3 = Color3.fromRGB(29, 31, 41)
-track.Parent = bg
-Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
-
-local fill = Instance.new("Frame")
-fill.Size = UDim2.fromScale(0, 1)
-fill.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
-fill.Parent = track
-Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)`,
       },
       {
-        heading: "3. Animate it and clean up",
+        heading: "3. Drive the bar from ContentProvider:PreloadAsync",
         paragraphs: [
-          "Use TweenService to grow the fill. When loading is done, Destroy the GUI so it's gone for good.",
+          "Instead of locking players behind an artificial 5-second wait, feed key UI decals, sounds, and models into ContentProvider:PreloadAsync and advance the bar ratio smoothly for each completed asset. Once preloaded and game:IsLoaded() is true, add a short minimum display cap only if you want an intro beat, or fade right away.",
         ],
-        code: `local tween = game:GetService("TweenService"):Create(
-\tfill,
-\tTweenInfo.new(3, Enum.EasingStyle.Linear),
-\t{ Size = UDim2.fromScale(1, 1) }
-)
-tween:Play()
-tween.Completed:Connect(function()
-\tgui:Destroy()
-end)`,
-        tip: "For a real game, drive the fill from actual asset-loading progress rather than a fixed timer, so it never finishes before the game is ready.",
+        code: `local ContentProvider = game:GetService("ContentProvider")
+local TweenService = game:GetService("TweenService")
+
+local fill = loadingGui.Backdrop.Track.Fill
+local status = loadingGui.Backdrop.StatusLabel
+
+local assets = workspace:WaitForChild("MapPreload"):GetDescendants()
+local total = math.max(#assets, 1)
+
+for i, asset in ipairs(assets) do
+	ContentProvider:PreloadAsync({ asset })
+	local ratio = i / total
+	status.Text = ("Loading assets (%d%%)"):format(math.floor(ratio * 100))
+	TweenService:Create(fill, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+		Size = UDim2.fromScale(ratio, 1),
+	}):Play()
+end`,
+        tip: "Keep the preload list focused on critical UI images, lobby geometry, and audio so mobile players with slower connections load quickly instead of stalling on distant map parts.",
+      },
+      {
+        heading: "4. Fade out and destroy the loading screen cleanly",
+        paragraphs: [
+          "Wait for game.Loaded if not already loaded, wrap the backdrop in a CanvasGroup (or tween BackgroundTransparency and TextTransparency), then call loadingGui:Destroy() once the fade finishes so no hidden full-screen frame swallows clicks.",
+        ],
+        code: `if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
+local fade = TweenService:Create(loadingGui.Backdrop, TweenInfo.new(0.45), {
+	GroupTransparency = 1,
+})
+fade:Play()
+fade.Completed:Wait()
+loadingGui:Destroy()`,
       },
     ],
     faq: [
       {
-        q: "How do I cover the top bar too?",
-        a: "Set IgnoreGuiInset = true on the ScreenGui. The first Frame with Size UDim2.fromScale(1,1) then covers the entire viewport.",
+        q: "How do I cover the top bar completely with a loading screen?",
+        a: "Set ScreenGui.IgnoreGuiInset = true and set your background Frame's Size to UDim2.fromScale(1, 1) at Position (0, 0). Without IgnoreGuiInset, Roblox leaves a gap at the top.",
       },
       {
-        q: "How do I animate the progress bar?",
-        a: "Tween the fill Frame's Size from UDim2.fromScale(0,1) to UDim2.fromScale(1,1) with TweenService, then Destroy the GUI in tween.Completed.",
+        q: "Why does Roblox's default loading screen flash before mine shows up?",
+        a: "Put your script and ScreenGui in ReplicatedFirst and call ReplicatedFirst:RemoveDefaultLoadingScreen() on the first line so Roblox hands over control as early as possible.",
+      },
+      {
+        q: "Should I add a 'Skip' button to my Roblox loading screen?",
+        a: "Yes — players love a Skip button once game:IsLoaded() is true, especially on rejoin. Preload essential UI images first and let players jump straight in if decorative assets are still streaming.",
+      },
+      {
+        q: "Why can't players click my Main Menu after the loading screen fades out?",
+        a: "You probably faded BackgroundTransparency to 1 without calling loadingGui:Destroy() or setting Enabled = false. Invisible frames still block inputs if Active = true or GuiButtons sit above your menu.",
       },
     ],
     relatedGuides: [
-      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "How to Animate Roblox GUIs with TweenService" },
       { slug: "roblox-gui-script-generator", title: "Roblox GUI Script Generator" },
     ],
   },
@@ -817,203 +1101,337 @@ row(30, "Rejoin server")`,
     slug: "how-to-make-a-roblox-global-leaderboard-gui",
     title: "How to Make a Roblox Global Leaderboard GUI",
     description:
-      "Build a global Roblox leaderboard that ranks all players across servers with OrderedDataStore, then displays the top entries in a GUI — with the full Luau for saving, sorting and showing rows.",
+      "How to make a cross-server Roblox global leaderboard GUI using OrderedDataStore, GetNameFromUserIdAsync caching, SurfaceGui or ScreenGui rows, and UIListLayout.",
     category: "Data",
     relatedTemplate: "leaderboard",
     intro:
-      "A global leaderboard ranks every player by a stat like total coins, and the ranking persists across servers. The hard part isn't the GUI — it's storing sorted data with OrderedDataStore and reading the top players back. This guide covers the full loop: save a score, fetch the top 10, and render them as rows. Start from the leaderboard template for the row layout.",
+      "A global leaderboard ranks players across every server by total coins, wins, or rebirths and updates automatically as records change. While UIListLayout makes stacking rank rows easy, the real challenge is respecting OrderedDataStore rate limits and caching usernames so your game never throttles. Here is the complete server and client implementation.",
     sections: [
       {
-        heading: "1. Store ranked data with OrderedDataStore",
+        heading: "1. Store integer scores by UserId inside OrderedDataStore",
         paragraphs: [
-          "An OrderedDataStore keeps values sortable. Use the player's UserId as the key and their score as the value, so each player appears once.",
+          "An OrderedDataStore only accepts positive integers and automatically indexes them for fast sorting. Always key entries by tostring(player.UserId) rather than Username so players never create duplicate entries when changing display names or usernames. Use UpdateAsync with math.max so stale servers cannot overwrite higher scores.",
         ],
-        code: `local DataStoreService = game:GetService("DataStoreService")
-local scores = DataStoreService:GetOrderedDataStore("CoinsLeaderboard")
+        code: `-- Script in ServerScriptService
+local DataStoreService = game:GetService("DataStoreService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local function saveScore(player, coins)
-\tscores:UpdateAsync(tostring(player.UserId), function(old)
-\t\treturn math.max(old or 0, coins)
-\tend)
+local scoreStore = DataStoreService:GetOrderedDataStore("CoinsLeaderboard_v1")
+local leaderboardRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LeaderboardUpdate") :: RemoteEvent
+
+local function saveScore(player: Player, coins: number)
+	local rounded = math.max(0, math.floor(coins))
+	pcall(function()
+		scoreStore:UpdateAsync(tostring(player.UserId), function(old)
+			return math.max(old or 0, rounded)
+		end)
+	end)
 end`,
       },
       {
-        heading: "2. Read the top players",
+        heading: "2. Fetch top N players on a 60-second timer and cache usernames",
         paragraphs: [
-          "GetSortedAsync returns the entries in order. Pass false for descending (highest first) and a page size. GetCurrentPage gives the ranked list of { key, value }.",
+          "Call GetSortedAsync(false, 10) for descending top-10 rankings. OrderedDataStore only stores keys and numbers, so resolve readable names with Players:GetNameFromUserIdAsync(userId) wrapped in pcall — and cache resolved names in a lookup table so you do not hammer Roblox web APIs every minute.",
         ],
-        code: `local function getTop(n)
-\tlocal page = scores:GetSortedAsync(false, n)
-\tlocal entries = {}
-\tfor _, entry in ipairs(page:GetCurrentPage()) do
-\t\tlocal userId = tonumber(entry.key)
-\t\tlocal player = game:GetService("Players"):GetNameFromUserIdAsync(userId)
-\t\ttable.insert(entries, { name = player, score = entry.value })
-\tend
-\treturn entries
+        code: `local nameCache: { [number]: string } = {}
+
+local function resolveName(userId: number): string
+	if nameCache[userId] then
+		return nameCache[userId]
+	end
+	local ok, result = pcall(function()
+		return Players:GetNameFromUserIdAsync(userId)
+	end)
+	local username = (ok and result) or ("Player_" .. userId)
+	nameCache[userId] = username
+	return username
+end
+
+local cachedTop: { { rank: number, name: string, score: number } } = {}
+
+local function refreshLeaderboard()
+	local ok, pages = pcall(function()
+		return scoreStore:GetSortedAsync(false, 10)
+	end)
+	if not ok or not pages then return end
+
+	local nextList = {}
+	for rank, entry in ipairs(pages:GetCurrentPage()) do
+		local userId = tonumber(entry.key) or 0
+		table.insert(nextList, {
+			rank = rank,
+			name = resolveName(userId),
+			score = entry.value,
+		})
+	end
+	cachedTop = nextList
+	leaderboardRemote:FireAllClients(cachedTop)
 end`,
-        tip: "GetNameFromUserIdAsync is a web call — cache names so you don't re-fetch the same player every refresh.",
+        tip: "Immediately call leaderboardRemote:FireClient(player, cachedTop) inside Players.PlayerAdded so joining players see the board right away instead of waiting up to 60 seconds for the next tick.",
       },
       {
-        heading: "3. Send the list to clients and build rows",
+        heading: "3. Render ranked rows inside UIListLayout without destroying layout constraints",
         paragraphs: [
-          "Fire a RemoteEvent with the top list; each client builds a row per entry. Because the panel has a UIListLayout, parenting each row stacks it automatically.",
+          "When LeaderboardUpdate fires on the client, destroy existing row Frames (checking child:IsA(\"Frame\") so you preserve the UIListLayout and UIPadding), then clone a styled RowTemplate per rank. Highlight rank #1–#3 with gold, silver, and bronze accents.",
         ],
-        code: `-- Server
-local remote = game.ReplicatedStorage:WaitForChild("LeaderboardUpdate")
-task.spawn(function()
-\twhile true do
-\t\tremote:FireAllClients(getTop(10))
-\t\ttask.wait(60) -- refresh once a minute
-\tend
-end)
+        code: `-- LocalScript inside LeaderboardGui
+local container = script.Parent:WaitForChild("Panel"):WaitForChild("Rows") :: ScrollingFrame
+local rowTemplate = script:WaitForChild("RowTemplate") :: Frame
 
--- Client: make one row per entry, parented to the panel
-local function makeRow(rank, name, score)
-\tlocal row = Instance.new("Frame")
-\trow.Size = UDim2.fromScale(1, 0.14)
-\trow.Parent = panel
-\t-- ...rank label, name label, score label...
-\treturn row
-end`,
+leaderboardRemote.OnClientEvent:Connect(function(rows)
+	for _, child in ipairs(container:GetChildren()) do
+		if child:IsA("GuiObject") then
+			child:Destroy()
+		end
+	end
+
+	for _, item in ipairs(rows) do
+		local row = rowTemplate:Clone()
+		row.LayoutOrder = item.rank
+		row:WaitForChild("RankLabel").Text = "#" .. item.rank
+		row:WaitForChild("NameLabel").Text = item.name
+		row:WaitForChild("ScoreLabel").Text = tostring(item.score)
+		row.Parent = container
+	end
+end)`,
+      },
+      {
+        heading: "4. Reuse the exact same layout in a lobby SurfaceGui",
+        paragraphs: [
+          "If you want a physical leaderboard wall inside your spawn lobby as well as a HUD modal, drop the exact same Panel frame into a SurfaceGui parented to a Part in Workspace and set PixelsPerStud to 50 for sharp text.",
+        ],
       },
     ],
     faq: [
       {
-        q: "How often should I refresh a global leaderboard?",
-        a: "OrderedDataStore has tight rate limits. Cache the top list and refresh every 30–60 seconds via a server loop, never on every score change.",
+        q: "How often should I refresh a Roblox global leaderboard?",
+        a: "Every 45 to 60 seconds in a server loop. OrderedDataStore shares strict per-minute request budgets; refreshing on every coin pickup will hit throttle errors.",
       },
       {
-        q: "Why does a player appear twice?",
-        a: "You're using something other than UserId as the key. Always key by tostring(player.UserId) so each player maps to exactly one entry.",
+        q: "Why does the same player appear twice on my leaderboard?",
+        a: "You are likely keying OrderedDataStore by Username instead of tostring(player.UserId), or testing with multiple accounts. Always key by UserId.",
+      },
+      {
+        q: "How do I show shortened numbers like 1.5M while keeping sorting accurate?",
+        a: "Store the full raw integer inside OrderedDataStore so sorting stays exact, then format item.score into \"1.5M\" on the client right before assigning ScoreLabel.Text.",
+      },
+      {
+        q: "Can a LocalScript read OrderedDataStore directly?",
+        a: "No. DataStoreService only runs on the server inside ServerScriptService. Always fetch rankings on the server and push the sanitized array to clients via RemoteEvent.",
       },
     ],
     relatedGuides: [
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
       { slug: "roblox-gui-code-structure", title: "Roblox GUI Code Explained: Instance.new, UDim2 & Parenting" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
     ],
   },
   {
     slug: "how-to-animate-roblox-guis-with-tweenservice",
     title: "How to Animate Roblox GUIs with TweenService",
     description:
-      "Make Roblox GUIs feel polished: slide panels in from off-screen, fade and pop them, and chain animations — all with TweenService and the right EasingStyle.",
+      "How to animate Roblox GUIs cleanly with TweenService: slide-in panels, CanvasGroup whole-UI fades, UIScale button hover/press bounce, and cancelling overlapping tweens.",
     category: "Animation",
     relatedTemplate: "main-menu",
     intro:
-      "Static GUIs feel flat. TweenService interpolates properties like Position, Size and transparency over time, so a menu can slide in, a button can pop, and a notification can fade. This guide covers the three patterns behind almost every animated Roblox UI.",
+      "Smooth animations separate polished front-page games from rigid starter interfaces. Using TweenService alongside CanvasGroup and UIScale lets you fade entire menus cleanly, animate button hover feedback inside UIListLayout containers without layout jitter, and prevent glitchy overlap when players spam clicks.",
     sections: [
       {
-        heading: "1. Slide a panel into place",
+        heading: "1. Slide a panel in cleanly using Quint or Back easing",
         paragraphs: [
-          "Start the panel off-screen, then tween its Position to the final spot. TweenInfo controls duration and easing.",
+          "Position closed panels just off-screen (for example UDim2.fromScale(0.5, 1.35)), then animate to center (0.5, 0.5) using TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out). Use Quint or Quad for clean sci-fi/simulator menus, and Back when you want subtle playful overshoot.",
         ],
         code: `local TweenService = game:GetService("TweenService")
-panel.Position = UDim2.fromScale(0.5, -0.5) -- start above the screen
+local activeTween: Tween? = nil
 
-local info = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-TweenService:Create(panel, info, { Position = UDim2.fromScale(0.5, 0.5) }):Play()`,
+local function slidePanel(panel: GuiObject, open: boolean)
+	if activeTween then
+		activeTween:Cancel()
+	end
+	local target = open and UDim2.fromScale(0.5, 0.5) or UDim2.fromScale(0.5, 1.4)
+	local info = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+	activeTween = TweenService:Create(panel, info, { Position = target })
+	activeTween:Play()
+end`,
       },
       {
-        heading: "2. Fade and pop with Size",
+        heading: "2. Fade entire menus smoothly with CanvasGroup",
         paragraphs: [
-          "Tween Size from small to full and BackgroundTransparency from 1 to 0 for a pop-in effect. Multiple properties can go in one tween.",
+          "Tweening BackgroundTransparency and TextTransparency across twenty nested labels makes overlapping layers bleed through each other. Wrap your modal inside a CanvasGroup and tween GroupTransparency between 1 and 0 so the entire window fades as a single unified layer.",
         ],
-        code: `panel.Size = UDim2.fromScale(0.2, 0.2)
-panel.BackgroundTransparency = 1
-TweenService:Create(panel, TweenInfo.new(0.3), {
-\tSize = UDim2.fromScale(0.4, 0.6),
-\tBackgroundTransparency = 0,
-}):Play()`,
+        code: `local function setModalFade(group: CanvasGroup, gui: ScreenGui, open: boolean)
+	if open then
+		group.GroupTransparency = 1
+		gui.Enabled = true
+	end
+	local goal = open and 0 or 1
+	local tween = TweenService:Create(group, TweenInfo.new(0.22, Enum.EasingStyle.Quad), {
+		GroupTransparency = goal,
+	})
+	tween.Completed:Connect(function()
+		if not open and group.GroupTransparency == 1 then
+			gui.Enabled = false
+		end
+	end)
+	tween:Play()
+end`,
+        tip: "Set gui.Enabled = false once GroupTransparency reaches 1 so Roblox stops caching the off-screen CanvasGroup texture and releases input focus.",
       },
       {
-        heading: "3. Chain animations with Completed",
+        heading: "3. Animate button hover & press without breaking UIListLayout",
         paragraphs: [
-          "Connect to a tween's Completed signal to start the next one — useful for an intro then a reveal.",
+          "Never tween a button's Size directly if it lives inside a UIListLayout or UIGridLayout — sibling buttons will jump sideways on every frame. Instead, parent a UIScale inside the button and tween UIScale.Scale (1.05 on hover, 0.95 on press, 1.0 on release).",
         ],
-        code: `local slide = TweenService:Create(panel, TweenInfo.new(0.4), { Position = UDim2.fromScale(0.5, 0.5) })
-slide.Completed:Connect(function()
-\tTweenService:Create(panel, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
-end)
-slide:Play()`,
-        tip: "EasingStyle changes the feel a lot: Back overshoots (playful), Quad is smooth, Elastic bounces. Pick by mood, not randomly.",
+        code: `local function attachButtonJuice(button: GuiButton)
+	local uiScale = button:FindFirstChildOfClass("UIScale") or Instance.new("UIScale", button)
+	local info = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	button.MouseEnter:Connect(function()
+		TweenService:Create(uiScale, info, { Scale = 1.05 }):Play()
+	end)
+	button.MouseLeave:Connect(function()
+		TweenService:Create(uiScale, info, { Scale = 1 }):Play()
+	end)
+	button.MouseButton1Down:Connect(function()
+		TweenService:Create(uiScale, info, { Scale = 0.95 }):Play()
+	end)
+	button.Activated:Connect(function()
+		TweenService:Create(uiScale, info, { Scale = 1.05 }):Play()
+	end)
+end`,
+      },
+      {
+        heading: "4. Cancel stale tweens and avoid rapid-toggle bugs",
+        paragraphs: [
+          "Always store a reference to the active Tween for a panel and call :Cancel() before creating the reverse animation. Guard Completed callbacks with a final state check so a canceled close tween never shuts off a panel the player just reopened.",
+        ],
       },
     ],
     faq: [
       {
-        q: "Can I tween TextColor3 or a color?",
-        a: "Yes — TweenService animates Color3 properties like TextColor3 and BackgroundColor3 the same way it animates Position.",
+        q: "Can I tween BackgroundColor3, TextColor3, and Rotation too?",
+        a: "Yes — TweenService interpolates UDim2, Vector2, number properties like Rotation/Transparency, and Color3 values inside the same goal dictionary.",
       },
       {
-        q: "How do I make an animation loop forever?",
-        a: "Set TweenInfo with Reverses = true and RepeatCount = -1, so the tween runs back and forth indefinitely.",
+        q: "Why do nearby buttons jump around when I tween a button's Size inside a menu?",
+        a: "UIListLayout and UIGridLayout reflow neighbors whenever a child's Size changes. Parent a UIScale object inside the button and tween UIScale.Scale instead.",
+      },
+      {
+        q: "How do I make a Roblox GUI animation loop forever?",
+        a: "Pass RepeatCount = -1 and Reverses = true to TweenInfo.new(duration, style, direction, -1, true). Calling :Play() once repeats back and forth continuously.",
+      },
+      {
+        q: "Why does my GUI suddenly vanish right after reopening it quickly?",
+        a: "An earlier close tween's Completed event fired and set Enabled = false or Visible = false. Always cancel the previous tween before playing a new one and check the current open state inside Completed.",
       },
     ],
     relatedGuides: [
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
       { slug: "how-to-design-polished-roblox-ui", title: "How to Design Polished Roblox UI (Gradients, Strokes & Depth)" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
     ],
   },
   {
     slug: "how-to-make-a-draggable-roblox-gui",
     title: "How to Make a Draggable Roblox GUI",
     description:
-      "Let players drag a Roblox GUI Frame around the screen with the mouse or touch, using UserInputService — including the offset fix so it doesn't jump to the cursor.",
+      "How to make a smooth draggable Roblox GUI window on PC and mobile: UserInputService title-bar drag script, grab-offset fix, screen viewport clamping, and UIDragDetector note.",
     category: "Interaction",
     intro:
-      "A draggable window, inventory or settings panel feels native. The trick is UserInputService: start dragging on press, move the Frame on InputChanged, and stop on release. The key detail is recording the offset between the cursor and the Frame at the start, so it doesn't snap to the corner.",
+      "Roblox's legacy Frame.Draggable property is deprecated and breaks unpredictably on touch devices and nested layouts. The reliable cross-platform method tracks pointer start, cursor delta, and release via UserInputService on a dedicated title bar while clamping coordinates so players never drag windows off-screen.",
     sections: [
       {
-        heading: "1. Track press, move and release",
+        heading: "1. Attach the drag trigger to a title bar, not the full panel",
         paragraphs: [
-          "Listen on the title bar (not the whole panel) so buttons inside still work. InputBegan starts the drag; UserInputService.InputChanged moves it; InputEnded stops it.",
+          "If you capture dragging across the entire window Frame, players miss clicks on buttons, sliders, and ScrollingFrames inside it. Put a slim TitleBar Frame at the top (or add a DragHandle button) and start dragging only on InputBegan there.",
         ],
-        code: `local UserInputService = game:GetService("UserInputService")
-local dragging, dragStart, startPos
+        code: `-- LocalScript inside the ScreenGui
+local UserInputService = game:GetService("UserInputService")
+local frame = script.Parent:WaitForChild("Window") :: Frame
+local titleBar = frame:WaitForChild("TitleBar") :: Frame
 
-titleBar.InputBegan:Connect(function(input)
-\tif input.UserInputType == Enum.UserInputType.MouseButton1
-\tor input.UserInputType == Enum.UserInputType.Touch then
-\t\tdragging = true
-\t\tdragStart = input.Position
-\t\tstartPos = frame.Position
-\tend
+local dragging = false
+local dragStart = Vector2.zero
+local startPos = frame.Position`,
+      },
+      {
+        heading: "2. Preserve the grab offset on mouse and touch",
+        paragraphs: [
+          "Instead of snapping frame.Position straight to input.Position (which makes the top-left corner jump under your cursor), save both dragStart and startPos when the pointer presses down, then add delta = input.Position - dragStart during InputChanged.",
+        ],
+        code: `titleBar.InputBegan:Connect(function(input: InputObject)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = Vector2.new(input.Position.X, input.Position.Y)
+		startPos = frame.Position
+	end
 end)`,
       },
       {
-        heading: "2. Move the Frame with the cursor",
+        heading: "3. Clamp position inside the screen viewport",
         paragraphs: [
-          "On InputChanged, add the cursor's travel since dragStart to the Frame's start position. Mixing Scale and Offset in UDim2.new keeps it working regardless of how the Frame was positioned.",
+          "Without clamping, players can fling your Settings or Inventory window completely off the viewport edge where the title bar can never be clicked again. Clamp the computed pixel offset against workspace.CurrentCamera.ViewportSize and reset dragging on global UserInputService.InputEnded.",
         ],
-        code: `UserInputService.InputChanged:Connect(function(input)
-\tif not dragging then return end
-\tif input.UserInputType == Enum.UserInputType.MouseMovement
-\tor input.UserInputType == Enum.UserInputType.Touch then
-\t\tlocal delta = input.Position - dragStart
-\t\tframe.Position = UDim2.new(
-\t\t\tstartPos.X.Scale, startPos.X.Offset + delta.X,
-\t\t\tstartPos.Y.Scale, startPos.Y.Offset + delta.Y
-\t\t)
-\tend
+        code: `local function clampPosition(pos: UDim2): UDim2
+	local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize
+	if not viewport then return pos end
+	local absSize = frame.AbsoluteSize
+	local anchorOffset = frame.AnchorPoint * absSize
+
+	local targetX = pos.X.Scale * viewport.X + pos.X.Offset
+	local targetY = pos.Y.Scale * viewport.Y + pos.Y.Offset
+	local clampedX = math.clamp(targetX, anchorOffset.X, viewport.X - absSize.X + anchorOffset.X)
+	local clampedY = math.clamp(targetY, anchorOffset.Y, viewport.Y - absSize.Y + anchorOffset.Y)
+
+	return UDim2.fromOffset(clampedX, clampedY)
+end
+
+UserInputService.InputChanged:Connect(function(input: InputObject)
+	if not dragging then return end
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+		local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
+		local rawPos = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+		frame.Position = clampPosition(rawPos)
+	end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
-\tif input.UserInputType == Enum.UserInputType.MouseButton1
-\tor input.UserInputType == Enum.UserInputType.Touch then
-\t\tdragging = false
-\tend
+UserInputService.InputEnded:Connect(function(input: InputObject)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
 end)`,
-        tip: "Drag by a title-bar Frame, not the whole panel — otherwise the drag swallows clicks on the buttons inside it.",
+        tip: "Listen to UserInputService.InputEnded globally rather than titleBar.InputEnded, because fast cursor sweeps frequently release outside the title bar bounds.",
+      },
+      {
+        heading: "4. Alternative: Studio's built-in UIDragDetector",
+        paragraphs: [
+          "For quick windows with no custom snapping or tween inertia, you can insert a UIDragDetector directly inside your Frame and point BoundingUI to an outer screen bounds Frame — zero Luau needed. Keep the UserInputService script above whenever you want saveable window positions or toggleable drag permissions.",
+        ],
       },
     ],
     faq: [
       {
-        q: "Why does the Frame jump to the cursor when I grab it?",
-        a: "You're setting Position to the cursor directly. Instead, record startPos = frame.Position at drag start and add the cursor's delta to it, so the Frame keeps its grab point.",
+        q: "Why shouldn't I use Frame.Draggable = true anymore?",
+        a: "Frame.Draggable has been deprecated by Roblox for years: it fails on many Scale/AnchorPoint combinations, glitches with touchscreens, and does not keep windows inside viewport boundaries.",
       },
       {
-        q: "Does this work on mobile?",
-        a: "Yes — handle Enum.UserInputType.Touch the same way as MouseButton1 in InputBegan and InputEnded, and Touch in InputChanged.",
+        q: "Why does the GUI jump to the cursor corner as soon as I click it?",
+        a: "Setting frame.Position directly to the pointer coordinates discards where on the title bar you clicked. Store dragStart and startPos on InputBegan and add the movement delta instead.",
+      },
+      {
+        q: "Does this draggable script work on mobile and tablets?",
+        a: "Yes — checking Enum.UserInputType.Touch alongside MouseButton1 and MouseMovement supports mobile touchscreens cleanly.",
+      },
+      {
+        q: "Should I use UIDragDetector or a UserInputService script?",
+        a: "UIDragDetector is fastest if you only need simple constrained dragging with zero code. Choose UserInputService when you want snap grids, edge bounds callbacks, or persistence across spawns.",
       },
     ],
     relatedGuides: [
@@ -1025,57 +1443,81 @@ end)`,
     slug: "how-to-make-a-responsive-roblox-gui",
     title: "How to Make a Responsive Roblox GUI",
     description:
-      "Make a Roblox GUI that looks right on phone, tablet and desktop: size with Scale not Offset, center with AnchorPoint, cap text with UITextSizeConstraint, and shrink whole sections with UIScale.",
+      "How to scale Roblox GUIs accurately on PC, phone, tablet, and 4K screens: Scale vs Offset UDim2, AnchorPoint centering, UIAspectRatioConstraint, UITextSizeConstraint, and UIScale.",
     category: "Layouts",
     relatedTemplate: "main-menu",
     intro:
-      "Roblox runs on everything from phones to 4K monitors, so a GUI built with fixed pixel sizes breaks on the wrong screen. The fix is to think in Scale (fractions of the screen) instead of Offset (pixels), anchor elements so they recenter, and cap text so it stays readable. This guide covers the four habits behind every responsive Roblox UI.",
+      "More than half of Roblox players join from phones and tablets, while the rest play on laptops, 4K monitors, or TVs. If you design strictly with pixel Offsets, your interface looks crisp on your Studio screen and broken everywhere else. Adopting these five layout constraints keeps every menu and HUD proportional across all aspect ratios.",
     sections: [
       {
-        heading: "1. Size with Scale, not Offset",
+        heading: "1. Size and position containers with Scale, reserve Offset for micro-padding",
         paragraphs: [
-          "UDim2 has a Scale and an Offset component. fromScale(0.4, 0.6) means 40%/60% of the screen — it adapts. fromOffset(400, 600) means fixed pixels — it doesn't.",
+          "Every UDim2 holds Scale (fraction of parent width or height) and Offset (fixed screen pixels). Build all major panels, HUD corners, and button widths using UDim2.fromScale(...) so they expand and contract smoothly across viewports, and save small pixel Offsets only for rounded corners, UIPadding, or 1–2px strokes.",
         ],
-        code: `-- Responsive (adapts to every screen)
-panel.Size = UDim2.fromScale(0.4, 0.6)
+        code: `-- Responsive centered panel: 42% wide, 58% tall
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
 panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.Size = UDim2.fromScale(0.42, 0.58)
 
--- Avoid: fixed pixels look wrong on phones or 4K
-panel.Size = UDim2.fromOffset(400, 600)`,
+-- Avoid fixed pixels for main frames: cuts off on phones
+-- panel.Size = UDim2.fromOffset(640, 480)`,
       },
       {
-        heading: "2. Center with AnchorPoint",
+        heading: "2. Lock edges and screen centers using AnchorPoint",
         paragraphs: [
-          "Position 0.5, 0.5 puts the top-left corner at the screen center. Set AnchorPoint 0.5, 0.5 and the element centers on its own middle instead.",
+          "AnchorPoint defines which point on your Frame attaches to Position. Use (0.5, 0.5) for centered popups, (1, 1) with Position (0.98, 0.96) for bottom-right action clusters, and (0.5, 1) with Position (0.5, 0.97) for bottom hotbars so resizing the window never pushes elements off the edge.",
         ],
-        code: `panel.AnchorPoint = Vector2.new(0.5, 0.5)
-panel.Position = UDim2.fromScale(0.5, 0.5)`,
       },
       {
-        heading: "3. Keep text readable",
+        heading: "3. Preserve card and icon shapes with UIAspectRatioConstraint",
         paragraphs: [
-          "TextScaled grows text to fill its box, which gets huge on big screens. A UITextSizeConstraint caps the max size so it stays tidy.",
+          "Pure Scale looks stretched on narrow phones or ultrawide monitors — a square shop slot turns into a thin tall strip. Add a UIAspectRatioConstraint (AspectRatio = 1 for square inventory slots or 1.6 for landscape windows) plus a UISizeConstraint (MinSize) so small phone buttons never shrink below tappable fingertip size.",
+        ],
+        code: `local aspect = Instance.new("UIAspectRatioConstraint")
+aspect.AspectRatio = 1.6
+aspect.DominantAxis = Enum.DominantAxis.Width
+aspect.Parent = panel
+
+local limits = Instance.new("UISizeConstraint")
+limits.MinSize = Vector2.new(280, 180)
+limits.MaxSize = Vector2.new(760, 520)
+limits.Parent = panel`,
+      },
+      {
+        heading: "4. Cap scaled typography with UITextSizeConstraint and shrink HUDs via UIScale",
+        paragraphs: [
+          "Setting TextScaled = true makes labels adapt to small boxes, yet blows headlines up huge on 4K displays. Parent a UITextSizeConstraint with MinTextSize = 11 and MaxTextSize = 24 so typography stays balanced. For dense corner HUDs, attach a single UIScale under the ScreenGui and drop Scale to 0.8 on phone viewports.",
         ],
         code: `label.TextScaled = true
-local cap = Instance.new("UITextSizeConstraint")
-cap.MaxTextSize = 24
-cap.Parent = label`,
-        tip: "The editor's Desktop / Tablet / Mobile toggle previews the same GUI at each viewport — build with Scale and check all three.",
+local textCap = Instance.new("UITextSizeConstraint")
+textCap.MinTextSize = 11
+textCap.MaxTextSize = 24
+textCap.Parent = label`,
+        tip: "Always test every ScreenGui inside Roblox Studio's Test -> Device Emulator (iPhone, iPad, 1080p, 4K) AND inside Roblox GUI Maker's Desktop/Tablet/Mobile switcher before shipping.",
       },
     ],
     faq: [
       {
-        q: "Why does my GUI look tiny on a phone?",
-        a: "It's sized in Offset (pixels). Switch to Scale via UDim2.fromScale so the GUI is a fraction of the screen and adapts to every device.",
+        q: "Why does my Roblox GUI look huge or cut off on mobile phones?",
+        a: "Your panel Sizes or Positions likely use Offset (fixed pixels) instead of Scale (screen fractions), or lack UIAspectRatioConstraint / UISizeConstraint bounds.",
       },
       {
-        q: "How do I shrink a whole GUI on small screens?",
-        a: "Parent a UIScale to the ScreenGui and set its Scale property (e.g., 0.8) to shrink every descendant together — useful for fitting dense HUDs on phones.",
+        q: "Where do I preview mobile and console screen sizes inside Roblox Studio?",
+        a: "Go to Test -> Device (the Device Emulator button) in Roblox Studio to switch between iPhone, iPad, Xbox, 1080p, and custom aspect ratios interactively.",
+      },
+      {
+        q: "How do I shrink an entire HUD uniformly for mobile players?",
+        a: "Parent a UIScale directly under your HUD ScreenGui and set UIScale.Scale (for example 0.8 when Workspace.CurrentCamera.ViewportSize.X < 800) instead of resizing dozens of Frames individually.",
+      },
+      {
+        q: "How do I stop buttons inside a UIListLayout from having uneven text sizes?",
+        a: "When TextScaled = true, shorter words scale larger than longer labels. Add a UITextSizeConstraint with the same MaxTextSize to every button, or set explicit FontSize / TextSize with AutomaticSize.",
       },
     ],
     relatedGuides: [
       { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
       { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
+      { slug: "how-to-design-polished-roblox-ui", title: "How to Design Polished Roblox UI (Gradients, Strokes & Depth)" },
     ],
   },
   {
@@ -1624,7 +2066,7 @@ open:Play()`,
     slug: "how-to-open-a-gui-with-a-key-in-roblox",
     title: "How to Open a GUI with a Key Press in Roblox",
     description:
-      "Bind a key like M or B to open a Roblox GUI: UserInputService.InputBegin toggling, the gameProcessedEvent guard against double-fires, and gamepad support with ContextActionService.",
+      "Bind a key like M or B to open a Roblox GUI: UserInputService.InputBegan toggling, the gameProcessedEvent guard against double-fires, and gamepad support with ContextActionService.",
     category: "Scripting",
     relatedTemplate: "main-menu",
     intro:
@@ -1719,6 +2161,269 @@ ContextActionService:SetTitle("OpenMenu", "Menu")`,
       { slug: "how-to-script-a-roblox-gui", title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)" },
       { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
       { slug: "how-to-make-a-draggable-roblox-gui", title: "How to Make a Draggable Roblox GUI" },
+    ],
+  },
+  {
+    slug: "how-to-import-rbxmx-into-roblox-studio",
+    title: "How to Import .rbxmx GUI Files into Roblox Studio",
+    description:
+      "How to import .rbxmx Roblox XML GUI models into Roblox Studio StarterGui without plugins: step-by-step Explorer steps, .rbxmx vs .lua comparison, and common UI fixes.",
+    category: "Workflow",
+    relatedTemplate: "main-menu",
+    customCta: {
+      href: "/editor",
+      label: "Open the Editor (.lua & .rbxmx export)",
+    },
+    intro:
+      "If you exported or downloaded a .rbxmx XML model file from Roblox GUI Maker or a Studio teammate, importing it puts live ScreenGui, Frame, UIListLayout, and LocalScript instances straight into your Explorer tree with zero manual pasting. Here is the exact workflow for StarterGui, how .rbxmx compares to Instance.new Luau scripts, and how to fix common visibility or inset quirks after import.",
+    sections: [
+      {
+        heading: "1. Choose between .rbxmx XML models and .lua runtime scripts",
+        paragraphs: [
+          "A .lua GUI script constructs elements at runtime using Instance.new inside PlayerGui, which keeps your workspace clean on disk and works great when syncing code through Rojo or Git. A .rbxmx file stores the serialized Roblox Studio XML hierarchy directly so you can drop finished ScreenGuis into StarterGui, drag panels visually with Studio handles, and inspect every UICorner, UIGradient, and UIStroke in the Properties widget right away.",
+        ],
+      },
+      {
+        heading: "2. Insert the .rbxmx file into StarterGui in Roblox Studio",
+        paragraphs: [
+          "Open your place in Roblox Studio and expand the Explorer panel. Always insert GUI models under StarterGui (not Workspace) so Roblox clones them automatically into every joining player's PlayerGui.",
+          "Right-click StarterGui -> choose Insert from File... -> select your .rbxmx model (for example a single screen or a kit's *-complete.rbxmx bundle). Press Play (F5) in Studio to test buttons, tweens, and multi-screen navigation tabs immediately.",
+        ],
+        code: `-- Expected Explorer structure after Insert from File... into StarterGui:
+-- StarterGui
+--   └── ScreenGui (e.g. MainMenu or KitName)
+--         ├── MainFrame (Frame / UIListLayout / UICorner)
+--         ├── UIController (LocalScript — handles clicks & tweens)
+--         └── KitScreenSwitcher (LocalScript — included in complete 5-screen kits)`,
+        tip: "Avoid double-clicking a .rbxmx file outside Studio expecting it to merge automatically: use StarterGui -> Right-Click -> Insert from File... inside your open place file.",
+      },
+      {
+        heading: "3. Move included server scripts into ServerScriptService",
+        paragraphs: [
+          "UI visuals and button animations stay inside StarterGui LocalScripts, while economy deductions, Daily Rewards, Code Redeem checks, and Marketplace purchases must run on the server. If your UI kit ZIP includes server/*.server.lua files, create a Script inside ServerScriptService and copy those server handlers there (alongside matching RemoteEvents in ReplicatedStorage).",
+        ],
+      },
+      {
+        heading: "4. Troubleshoot imported GUI visibility, inset, and clicks",
+        paragraphs: [
+          "If an imported overlay leaves a strip uncovered at the very top of the viewport, select its ScreenGui in Explorer and toggle IgnoreGuiInset = true. If a modal keeps popping open when players respawn, verify ResetOnSpawn = false on the ScreenGui. And if a whole kit package imported cleanly, check whether KitScreenSwitcher manages which screen starts Enabled = true.",
+        ],
+        tip: "Because .rbxmx stores native Roblox instances, every exported ScreenGui works offline with zero third-party Studio plugins required.",
+      },
+    ],
+    faq: [
+      {
+        q: "Where should I import a .rbxmx GUI file in Roblox Studio Explorer?",
+        a: "Right-click StarterGui in Explorer, choose Insert from File..., and pick your .rbxmx file. Importing directly into Workspace prevents the GUI from appearing on players' screens.",
+      },
+      {
+        q: "Do I need a Studio plugin to open or use .rbxmx files?",
+        a: "No. .rbxmx is Roblox Studio's built-in XML model format, so Insert from File... reads ScreenGuis, Frames, constraints, gradients, and scripts natively.",
+      },
+      {
+        q: "Why does my imported ScreenGui sit slightly below the top edge of the screen?",
+        a: "Roblox reserves topbar inset space by default unless ScreenGui.IgnoreGuiInset is enabled. Set IgnoreGuiInset = true on full-screen overlays and loading screens.",
+      },
+      {
+        q: "What is the difference between a single-screen .rbxmx and a UI Kit -complete.rbxmx bundle?",
+        a: "Single-screen .rbxmx files import one standalone ScreenGui, while a Pro UI Kit -complete.rbxmx file bundles all 5 matched screens plus KitScreenSwitcher so menu tabs and persistent HUD elements work together on first Play.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "How to Make a GUI in Roblox" },
+      { slug: "roblox-gui-code-structure", title: "Roblox GUI Code Explained: Instance.new, UDim2 & Parenting" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
+    ],
+  },
+  {
+    slug: "how-to-make-roblox-gamepass-icons",
+    title: "How to Make & Upload Roblox Gamepass Icons (512×512)",
+    description:
+      "How to size, design, and upload crisp 512x512 Roblox Gamepass and Badge icons: circular crop safe zones, Creator Dashboard pass upload steps, and in-game ImageLabel tips.",
+    category: "Design",
+    customCta: {
+      href: "/gamepass-icon-maker",
+      label: "Open the Free 512x512 Gamepass Icon Maker",
+    },
+    intro:
+      "Roblox displays Game Pass and Badge icons in two completely different places: the circular experience Store tab on your game page and rounded rectangular cards inside your in-game Shop GUI. If you put text or shield rims too close to the outer corners, Roblox's circular store crop slices them off. Follow these exact 512x512 specifications and Creator Dashboard upload steps.",
+    sections: [
+      {
+        heading: "1. Follow Roblox's 512x512 PNG dimensions and circular safe zone",
+        paragraphs: [
+          "Export every Game Pass icon and Developer Product / Badge icon as a square 512x512 pixel PNG with clear silhouette contrast so it remains readable even when scaled down to 64x64 thumbnails on mobile store lists.",
+          "Keep titles, shiny badges, and emblem edges inside an inner circle occupying roughly 82–88% of the canvas width (about 30–40px margin from each outer side on a 512px file). That guarantees zero clipped corners in Roblox's round Store frame while still filling rectangular in-game shop tiles cleanly.",
+        ],
+      },
+      {
+        heading: "2. Choose emblems, rims, and two-word micro-labels that sell passes",
+        paragraphs: [
+          "Strong passes communicate their gameplay perk in half a second: crowns or VIP stars for status, lightning bolts or winged boots for 2x Speed, magnet icons for Auto Collect, and crossed blades for Damage multipliers. Pair one bold center emblem with at most 1–2 short words (such as 2X COINS or VIP) instead of cramming feature paragraphs into a tiny thumbnail.",
+        ],
+        tip: "Generate clean 512x512 PNGs and vector SVGs tailored to dark fantasy, anime, obby, simulator, or sci-fi palettes directly in our free Gamepass Icon Maker with live circular safe-zone preview.",
+      },
+      {
+        heading: "3. Upload your pass icon in Roblox Creator Dashboard",
+        paragraphs: [
+          "Open create.roblox.com and go to Creations -> select your Experience -> Monetization -> Passes -> Create a Pass. Click Change Image, upload your 512x512 PNG, enter a concise pass name and perk description, and save.",
+          "Wait briefly for Roblox asset moderation to approve the image, then copy both the Pass ID (from the pass URL or Pass Details) for PromptGamePassPurchase and, if you want to reuse the icon inside custom in-game cards, grab the image asset ID for your ImageLabel.",
+        ],
+      },
+      {
+        heading: "4. Render crisp icons inside your in-game Game Pass Shop GUI",
+        paragraphs: [
+          "Set ImageLabel.ScaleType = Enum.ScaleType.Fit alongside a 1:1 UIAspectRatioConstraint so your square 512x512 icon never squashes on ultrawide monitors or narrow phones. Set BackgroundTransparency = 1 on the ImageLabel so transparent PNG edges sit smoothly over your card theme.",
+        ],
+        code: `-- Snippet: square ImageLabel ready for a 512x512 rbxassetid icon
+local icon = Instance.new("ImageLabel")
+icon.Size = UDim2.fromScale(0.65, 0.65)
+icon.BackgroundTransparency = 1
+icon.ScaleType = Enum.ScaleType.Fit
+icon.Image = "rbxassetid://YOUR_UPLOADED_IMAGE_ID"
+icon.Parent = passCard
+Instance.new("UIAspectRatioConstraint", icon).AspectRatio = 1`,
+      },
+    ],
+    faq: [
+      {
+        q: "What pixel size should a Roblox Gamepass icon be?",
+        a: "Use a square 512x512 pixel PNG file. Square 1:1 uploads prevent blurry upscaling and keep details sharp on both mobile store lists and high-DPI desktop displays.",
+      },
+      {
+        q: "Why does part of my Gamepass icon get cut off on the Roblox game page?",
+        a: "Roblox applies a circular mask to Pass and Badge thumbnails on the experience Store tab. Any corners, borders, or wide labels outside the inner circle safe zone are cropped automatically.",
+      },
+      {
+        q: "Can I use transparent backgrounds on Roblox Gamepass icons?",
+        a: "Yes — PNGs with clean alpha transparency work great both on the circular Store thumbnail and inside dark or glowing in-game Shop GUI cards.",
+      },
+      {
+        q: "What is the difference between a Pass ID and the uploaded Image Asset ID?",
+        a: "Pass ID is what you pass to MarketplaceService:PromptGamePassPurchase(player, passId) and UserOwnsGamePassAsync. Image Asset ID is the rbxassetid:// image texture applied to an ImageLabel.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-gamepass-shop-gui", title: "How to Make a Roblox Game Pass Shop GUI" },
+      { slug: "how-to-design-polished-roblox-ui", title: "How to Design Polished Roblox UI (Gradients, Strokes & Depth)" },
+      { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
+    ],
+  },
+  {
+    slug: "how-to-make-a-roblox-gamepass-shop-gui",
+    title: "How to Make a Roblox Game Pass Shop GUI",
+    description:
+      "How to build and script a Roblox Game Pass Shop GUI: UIGridLayout pass cards, MarketplaceService:PromptGamePassPurchase, Owned state sync, and server entitlement checks.",
+    category: "Shop",
+    relatedTemplate: "game-pass-shop",
+    intro:
+      "Unlike coin shops that deduct in-game currency, a Game Pass Shop GUI connects straight to Roblox's native Robux purchase prompt via MarketplaceService. A great pass store displays clear tier cards, disables or badges passes the player already owns, and awards perks reliably both immediately on purchase and whenever the player rejoins.",
+    sections: [
+      {
+        heading: "1. Design a 3-card or scrollable Game Pass card layout",
+        paragraphs: [
+          "Structure each pass card cleanly using UIListLayout or fixed fractional Scale slots: pass icon ImageLabel (512x512 square with UIAspectRatioConstraint), bold perk title, short bullet description (e.g. \"+100% Coins Forever\"), and a prominent Robux CTA TextButton.",
+          "Reserve highlighted borders or gold/cyan UIGradients for your flagship VIP or 2x Multiplier pass so players immediately spot the highest-value upgrade.",
+        ],
+      },
+      {
+        heading: "2. Prompt Robux purchase safely from a LocalScript",
+        paragraphs: [
+          "Store your Game Pass IDs in a shared ReplicatedStorage ModuleScript so buttons and server perk scripts never drift out of sync. When a player clicks Buy, first confirm they do not already own the pass (to prevent wasted or confusing prompts), then call MarketplaceService:PromptGamePassPurchase(player, passId).",
+        ],
+        code: `-- LocalScript inside GamePassShop ScreenGui
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local localPlayer = Players.LocalPlayer
+local PASS_IDS = {
+	VIP = 12345678,
+	DoubleCoins = 23456789,
+}
+
+local function attachPassButton(button: TextButton, passId: number)
+	local ok, owns = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(localPlayer.UserId, passId)
+	end)
+	if ok and owns then
+		button.Text = "OWNED"
+		button.Active = false
+		return
+	end
+
+	button.Activated:Connect(function()
+		MarketplaceService:PromptGamePassPurchase(localPlayer, passId)
+	end)
+end`,
+      },
+      {
+        heading: "3. Refresh the Owned state immediately via PromptGamePassPurchaseFinished",
+        paragraphs: [
+          "Listen to MarketplaceService.PromptGamePassPurchaseFinished on both client and server. In the LocalScript, check that player == localPlayer and wasPurchased == true, then update the card's button from price/Buy to OWNED right away without making the player rejoin.",
+        ],
+        code: `-- Client visual sync after purchase finishes
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, purchasedPassId, wasPurchased)
+	if player ~= localPlayer or not wasPurchased then return end
+	if purchasedPassId == PASS_IDS.VIP then
+		vipBuyButton.Text = "OWNED"
+		vipBuyButton.Active = false
+	end
+end)`,
+        tip: "Never grant gameplay multipliers (2x damage, VIP tag, speed boosts) solely from a LocalScript! Always verify ownership and apply perks inside a Script in ServerScriptService.",
+      },
+      {
+        heading: "4. Grant and persist Game Pass perks on the server",
+        paragraphs: [
+          "Inside ServerScriptService, check MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId) wrapped in pcall inside Players.PlayerAdded (caching owned pass booleans in memory for the session), AND listen to MarketplaceService.PromptGamePassPurchaseFinished so players who buy mid-session receive their perks instantaneously.",
+        ],
+        code: `-- Script in ServerScriptService
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local VIP_PASS_ID = 12345678
+
+local function grantVipPerk(player: Player)
+	player:SetAttribute("HasVIP", true)
+	-- Apply chat tag, speed boost, or coin multiplier server-side
+end
+
+Players.PlayerAdded:Connect(function(player)
+	local ok, owns = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(player.UserId, VIP_PASS_ID)
+	end)
+	if ok and owns then
+		grantVipPerk(player)
+	end
+end)
+
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, wasPurchased)
+	if wasPurchased and passId == VIP_PASS_ID then
+		grantVipPerk(player)
+	end
+end)`,
+      },
+    ],
+    faq: [
+      {
+        q: "How do I test Game Pass purchases for free inside Roblox Studio?",
+        a: "In Roblox Studio Playtest mode, MarketplaceService:PromptGamePassPurchase opens a simulated free test prompt (no real Robux spent) and fires PromptGamePassPurchaseFinished with wasPurchased = true so you can verify your Owned button and perk logic end-to-end.",
+      },
+      {
+        q: "Why does UserOwnsGamePassAsync sometimes fail if I call it every second?",
+        a: "UserOwnsGamePassAsync makes a web request to Roblox APIs and caches aggressively. Check once on PlayerAdded, wrap it in pcall, store a boolean Attribute like HasVIP on the Player, and update that Attribute when PromptGamePassPurchaseFinished fires.",
+      },
+      {
+        q: "Should Game Passes use PromptGamePassPurchase or ProcessReceipt?",
+        a: "Game Passes (one-time permanent perks) use PromptGamePassPurchase and PromptGamePassPurchaseFinished. Repeatable consumables like currency packs or spin tokens use Developer Products and ProcessReceipt.",
+      },
+      {
+        q: "Where can I create matching icons for my Game Pass Shop cards?",
+        a: "Use the free Roblox GUI Maker Gamepass Icon Maker at /gamepass-icon-maker to customize 512x512 circular-safe emblems, rims, and colors as PNG or SVG with matching Store and Shop GUI styling.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-roblox-gamepass-icons", title: "How to Make & Upload Roblox Gamepass Icons (512×512)" },
+      { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
+      { slug: "how-to-import-rbxmx-into-roblox-studio", title: "How to Import .rbxmx GUI Files into Roblox Studio" },
     ],
   },
 ];

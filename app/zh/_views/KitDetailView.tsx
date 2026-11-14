@@ -34,11 +34,40 @@ export function KitDetailView({ slug }: { slug: string }) {
     ],
   };
 
+  const kitFaqs = [
+    {
+      q: `如何把「${kit.name}」导入 Roblox Studio？`,
+      a: `在 Roblox Studio 的 Explorer 面板右键 StarterGui -> Insert from File...，选择下载包里的 ${kit.slug}-complete.rbxmx（或 screens/ 下的分屏 .rbxmx），再将 server/${kit.slug}.server.lua 放入 ServerScriptService 后按 Play 即可试玩。`,
+    },
+    {
+      q: `可以先免费打开和修改「${kit.name}」里的各个界面吗？`,
+      a: `可以。这套包含 ${kit.screens.length} 个界面的 UI Kit 均已套用${themeName}主题，点击任意界面的“在编辑器中打开”即可免费修改文案、色彩并复制完整 Luau 代码。`,
+    },
+    {
+      q: `下载包里除了界面，还有配套图标和服务端脚本吗？`,
+      a: `有的。Pro 下载包除包含一体化 .rbxmx（内含 KitScreenSwitcher 多屏切换器）外，还附带 6 枚契合${themeName}配色的 512x512 通行证图标以及 RemoteEvent / MarketplaceService 服务端示例脚本。`,
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: kitFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* hero */}
@@ -109,6 +138,50 @@ export function KitDetailView({ slug }: { slug: string }) {
           <p>
             在编辑器里打开任意界面,它加载时就已经套好主题。改文字、加你自己的物品,然后直接把客户端 Luau(以及购买、奖励动作可选的服务端 Luau)导出到 Roblox Studio。
           </p>
+        </section>
+
+        <section className="mx-auto mt-12 max-w-3xl space-y-4 text-sm text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            如何把「{kit.name}」导入 Roblox Studio
+          </h2>
+          <ol className="list-decimal pl-5 space-y-2">
+            <li>
+              在上方下载本 Kit 的 Pro ZIP 交付包（或点击各屏链接在编辑器中免费导出单屏 Luau）。
+            </li>
+            <li>
+              在 Roblox Studio Explorer 里右键{" "}
+              <strong className="text-ink">StarterGui</strong> →{" "}
+              <strong className="text-ink">Insert from File...</strong>，选中{" "}
+              <code className="text-ink">{kit.slug}-complete.rbxmx</code>。
+            </li>
+            <li>
+              把 <code className="text-ink">server/{kit.slug}.server.lua</code>{" "}
+              放入 <strong className="text-ink">ServerScriptService</strong> 并按{" "}
+              <strong className="text-ink">Play</strong> 试玩；细节可参考{" "}
+              <Link
+                href="/zh/guides/how-to-import-rbxmx-into-roblox-studio"
+                className="text-focus hover:underline"
+              >
+                .rbxmx 导入图文指南
+              </Link>
+              。
+            </li>
+          </ol>
+        </section>
+
+        <section className="mx-auto mt-12 max-w-3xl space-y-4 text-sm text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            「{kit.name}」常见问题
+          </h2>
+          {kitFaqs.map((item) => (
+            <div
+              key={item.q}
+              className="rounded-xl border border-line bg-panel p-5"
+            >
+              <h3 className="font-semibold text-ink">{item.q}</h3>
+              <p className="mt-1.5">{item.a}</p>
+            </div>
+          ))}
         </section>
       </div>
     </>

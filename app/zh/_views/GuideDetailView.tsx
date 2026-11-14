@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTemplate } from "../../editor/templates";
+import { TEMPLATES, getTemplate } from "../../editor/templates";
 import { getTemplateZh } from "../../editor/templates.zh";
+import { USE_CASES } from "../../for/usecases";
+import { getUseCaseZh } from "../../for/usecases.zh";
 import { getGuideZh } from "../../guides/guides-data.zh";
 
 // Shared zh render for a guide detail page. Consumes a full Guide (zh prose
@@ -11,6 +13,10 @@ export function GuideDetailView({ slug }: { slug: string }) {
   if (!g) notFound();
   const tpl = g.relatedTemplate ? getTemplate(g.relatedTemplate) : undefined;
   const tplZh = g.relatedTemplate ? getTemplateZh(g.relatedTemplate) : undefined;
+  const otherTemplates = TEMPLATES.filter((t) => t.slug !== g.relatedTemplate).slice(0, 3);
+  const useCases = g.relatedTemplate
+    ? USE_CASES.filter((u) => u.template === g.relatedTemplate)
+    : [];
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -32,6 +38,25 @@ export function GuideDetailView({ slug }: { slug: string }) {
     ],
   };
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: g.title,
+    description: g.description,
+    inLanguage: "zh-Hans",
+    mainEntityOfPage: `https://robloxguimaker.app/zh/guides/${slug}`,
+    author: {
+      "@type": "Organization",
+      name: "Roblox GUI Maker",
+      url: "https://robloxguimaker.app",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Roblox GUI Maker",
+      url: "https://robloxguimaker.app",
+    },
+  };
+
   return (
     <>
       <script
@@ -42,6 +67,10 @@ export function GuideDetailView({ slug }: { slug: string }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, "\\u003c") }}
+      />
       <div className="max-w-3xl mx-auto px-6 py-12">
         <Link href="/zh/guides" className="text-sm text-ink-mute hover:text-ink mb-4 inline-block">
           ← 全部教程
@@ -50,13 +79,23 @@ export function GuideDetailView({ slug }: { slug: string }) {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{g.title}</h1>
         <p className="text-lg text-ink-dim mb-8 leading-relaxed">{g.intro}</p>
 
-        {tpl && !g.hideTemplateCta && (
+        {g.customCta ? (
           <Link
-            href={`/editor?template=${tpl.slug}`}
+            href={g.customCta.href}
             className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
           >
-            打开{(tplZh?.title ?? tpl.title).replace("Roblox ", "").replace(" GUI", "")} 模板 →
+            {g.customCta.label} →
           </Link>
+        ) : (
+          tpl &&
+          !g.hideTemplateCta && (
+            <Link
+              href={`/editor?template=${tpl.slug}`}
+              className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
+            >
+              打开{(tplZh?.title ?? tpl.title).replace("Roblox ", "").replace(" GUI", "")} 模板 →
+            </Link>
+          )
         )}
 
         <div className="flex flex-col gap-8">
@@ -81,6 +120,57 @@ export function GuideDetailView({ slug }: { slug: string }) {
             </section>
           ))}
         </div>
+
+        {tpl && (
+          <section className="mt-12">
+            <h2 className="text-xl font-semibold text-ink mb-3">在你的游戏中使用</h2>
+            <div className="flex flex-col gap-2">
+              <Link
+                href={`/zh/templates/${tpl.slug}`}
+                className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+              >
+                <p className="text-sm font-semibold text-ink">
+                  查看{(tplZh?.title ?? tpl.title).replace("Roblox ", "").replace(" GUI", "")}模板 →
+                </p>
+                <p className="text-xs text-ink-mute mt-1">{tplZh?.description ?? tpl.description}</p>
+              </Link>
+              {useCases.map((u) => {
+                const uZh = getUseCaseZh(u.slug);
+                return (
+                  <Link
+                    key={u.slug}
+                    href={`/zh/for/${u.slug}`}
+                    className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+                  >
+                    <p className="text-sm font-semibold text-ink">{uZh?.title ?? u.title}</p>
+                    <p className="text-xs text-ink-mute mt-1 line-clamp-2">{uZh?.blurb ?? u.blurb}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {!tpl && otherTemplates.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-xl font-semibold text-ink mb-3">可搭配起步模板</h2>
+            <div className="flex flex-col gap-2">
+              {otherTemplates.map((t) => {
+                const tZh = getTemplateZh(t.slug);
+                return (
+                  <Link
+                    key={t.slug}
+                    href={`/zh/templates/${t.slug}`}
+                    className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+                  >
+                    <p className="text-sm font-semibold text-ink">{tZh?.title ?? t.title}</p>
+                    <p className="text-xs text-ink-mute mt-1 line-clamp-2">{tZh?.description ?? t.description}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {g.faq.length > 0 && (
           <section className="mt-12">

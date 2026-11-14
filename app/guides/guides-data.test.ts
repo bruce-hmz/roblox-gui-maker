@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { GUIDES, getGuide } from "./guides-data";
+import { getGuideZh } from "./guides-data.zh";
 
 const topicSlugs = [
   "roblox-gui-script-generator",
   "how-to-make-a-gui-in-roblox",
   "how-to-use-uilistlayout-in-roblox",
+];
+
+const workflowGuideSlugs = [
+  "how-to-import-rbxmx-into-roblox-studio",
+  "how-to-make-roblox-gamepass-icons",
+  "how-to-make-a-roblox-gamepass-shop-gui",
 ];
 
 // Visible prose words on a guide page (headings, paragraphs, tips, FAQ —
@@ -53,5 +60,28 @@ describe("core SEO guide topics", () => {
         ).toBeDefined();
       }
     }
+  });
+
+  it("ensures every guide has substantial sections, FAQs, and ZH parity", () => {
+    for (const guide of GUIDES) {
+      expect(guide.sections.length, guide.slug).toBeGreaterThanOrEqual(4);
+      expect(guide.faq.length, guide.slug).toBeGreaterThanOrEqual(3);
+      expect(guide.intro.length, guide.slug).toBeGreaterThan(140);
+
+      const zh = getGuideZh(guide.slug);
+      expect(zh, `zh missing for ${guide.slug}`).toBeDefined();
+      expect(zh!.sections.length, `zh section count ${guide.slug}`).toBe(
+        guide.sections.length
+      );
+      expect(zh!.faq.length, `zh faq count ${guide.slug}`).toBeGreaterThanOrEqual(
+        3
+      );
+    }
+  });
+
+  it.each(workflowGuideSlugs)("includes workflow guide %s", (slug) => {
+    const guide = getGuide(slug);
+    expect(guide).toBeDefined();
+    expect(guide?.faq.length).toBeGreaterThanOrEqual(4);
   });
 });

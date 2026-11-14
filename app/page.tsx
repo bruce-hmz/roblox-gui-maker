@@ -13,34 +13,34 @@ import { USE_CASES } from "./for/usecases";
 import { GUIDES } from "./guides/guides-data";
 
 export const metadata: Metadata = {
-  title: "Free Roblox GUI Maker with AI | Visual Editor & Luau Export",
+  title: "Free Roblox GUI Maker with AI | Visual Editor, Luau & .rbxmx Export",
   description:
-    "Free AI Roblox GUI maker: describe your interface, get a real editable GUI — not a mockup — then tweak it visually and export clean client + server Luau, JSON, or ZIP. No login required.",
+    "Free AI Roblox GUI maker: describe your interface to generate real editable ScreenGui instances, preview desktop/tablet/mobile layouts, make 512×512 Gamepass icons, and export clean Luau or Studio .rbxmx models.",
   keywords: [
     "Roblox GUI Maker",
     "AI Roblox GUI Generator",
     "Roblox GUI Generator",
     "Roblox UI Maker",
-    "AI Roblox UI Maker",
-    "Roblox UI Generator",
     "Roblox GUI builder",
     "online Roblox GUI editor",
+    "Roblox rbxmx export",
+    "Roblox Gamepass Icon Maker",
     "Roblox Studio GUI",
     "free Roblox GUI tool",
   ],
   openGraph: {
-    title: "Free Roblox GUI Maker with AI | Visual Editor & Luau Export",
+    title: "Free Roblox GUI Maker with AI | Visual Editor, Luau & .rbxmx Export",
     description:
-      "Describe your Roblox UI and get a real, editable interface with working interactions and clean Luau — then edit everything visually. Free, no login.",
+      "Describe your Roblox UI and get real, editable ScreenGui instances with working interactions, clean Luau, and native Studio .rbxmx export. Free, no login.",
     url: "https://robloxguimaker.app",
     siteName: "Roblox GUI Maker",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Roblox GUI Maker with AI | Visual Editor & Luau Export",
+    title: "Free Roblox GUI Maker with AI | Visual Editor, Luau & .rbxmx Export",
     description:
-      "Describe your Roblox UI and get a real, editable interface with working interactions and clean Luau — then edit everything visually. Free, no login.",
+      "Describe your Roblox UI and get real, editable ScreenGui instances with clean Luau and native Studio .rbxmx export. Free, no login.",
   },
   alternates: {
     canonical: "/",
@@ -55,18 +55,18 @@ export const metadata: Metadata = {
 const STEPS = [
   {
     n: "1",
-    title: "Drag & drop",
-    body: "Drop ScreenGui, Frame, TextButton, labels and more onto the canvas. Nest containers, snap them into place, resize from any corner.",
+    title: "Generate with AI or drag & drop",
+    body: "Start from a prompt, a template, or a blank canvas. Drop ScreenGui, Frame, TextButton, and layout containers into a real Roblox hierarchy.",
   },
   {
     n: "2",
-    title: "Tweak properties",
-    body: "Edit real Roblox properties — BackgroundColor3, transparency, text, font, corner radius. Everything uses the names you already know from Studio.",
+    title: "Tweak properties & test screens",
+    body: "Edit BackgroundColor3, UDim2 scale/offset, UICorner, UIGradient, and button actions — then preview desktop, tablet, and mobile viewports.",
   },
   {
     n: "3",
-    title: "Download a complete project",
-    body: "Export clean client and server Luau, keep an editable JSON project, or download everything together as a ZIP for Roblox Studio.",
+    title: "Export Luau or native .rbxmx",
+    body: "Copy free client and server Luau for StarterGui and ServerScriptService, save JSON/ZIP, or export a native .rbxmx model to drop directly into Studio.",
   },
 ];
 
@@ -84,8 +84,8 @@ const PRODUCT_PROOFS = [
     body: "Generate separate server handlers with clear validation boundaries for RemoteEvent and allow-listed Teleport actions.",
   },
   {
-    title: "ZIP + JSON Export",
-    body: "Download a complete project package or save a versioned scene document that imports back into the editor.",
+    title: "Luau, ZIP & .rbxmx",
+    body: "Export free client + server Luau scripts and editable JSON/ZIP packages, or native .rbxmx models ready to drag into Studio.",
   },
 ];
 
@@ -93,32 +93,42 @@ const FAQS = [
   {
     question: "Is Roblox GUI Maker free to use?",
     answer:
-      "Yes. The editor is free, requires no account, and keeps project work in your browser unless you download it.",
+      "Yes. The visual editor, AI scene starter, all 13 templates, the 512×512 Gamepass Icon Maker, and clean client + server Luau, JSON, and ZIP exports are free with no account required. Optional one-time Pro passes unlock native .rbxmx Studio model export and multi-screen UI Kit bundles.",
   },
   {
     question: "How is this different from AI image generators?",
     answer:
-      "Image tools give you a picture of a GUI. Describe your interface here and you get a real, editable Roblox GUI — actual ScreenGui, Frame, and TextButton instances you can drag, restyle, preview on desktop, tablet, and mobile, and export as clean client and server Luau. AI generates the starting point; the visual editor keeps you in control.",
+      "Image tools give you a flat picture of a GUI. Describe your interface here and you get a real, editable Roblox GUI — actual ScreenGui, Frame, TextLabel, and TextButton instances you can drag, restyle, preview on desktop, tablet, and mobile, and export as clean client and server Luau or .rbxmx.",
+  },
+  {
+    question: "What is the difference between free Luau export and Pro .rbxmx export?",
+    answer:
+      "Free Luau export generates clean Instance.new scripts you paste into a LocalScript (and optional server Script). Native .rbxmx export packages your entire ScreenGui hierarchy — complete with UDim2 values, UICorner, UIGradient, UIStroke, UIListLayout, and embedded scripts — as a Roblox XML model file you drop straight into StarterGui without plugins.",
+  },
+  {
+    question: "How do I import exported GUIs into Roblox Studio?",
+    answer:
+      "For free Luau exports, create a LocalScript inside StarterGui and paste the client script (and place any generated RemoteEvent/Teleport handler in a Script inside ServerScriptService). For .rbxmx models, go to File → Import Roblox Model in Studio or drag the .rbxmx file onto StarterGui in the Explorer.",
   },
   {
     question: "What files can I export?",
     answer:
-      "You can copy or download client Luau, download optional server Luau, export an editable JSON scene, or download a ZIP containing the project files and instructions.",
+      "You can copy or download client Luau, download optional server Luau, export an editable JSON scene, download a ZIP containing project files and setup notes, export PNG Gamepass icons at 512×512, or export native .rbxmx files with Pro.",
   },
   {
-    question: "Can I design for phones and tablets?",
+    question: "Can I design responsive GUIs for phones and tablets?",
     answer:
-      "Yes. Device previews and responsive geometry controls cover scale, offset, anchors, aspect ratios, and size constraints.",
+      "Yes. Device previews and responsive geometry controls cover UDim2 Scale vs Offset, AnchorPoint, UIAspectRatioConstraint, UISizeConstraint, UIListLayout, and UIGridLayout so panels stay aligned on phones, tablets, and widescreen monitors.",
   },
   {
-    question: "Does the editor generate game logic?",
+    question: "Does the editor generate server scripts and game logic?",
     answer:
-      "It generates UI instances and selected interaction wiring, including separate RemoteEvent and Teleport server handlers. Secure economy, purchase, reward, permission, and datastore validation remains your responsibility.",
+      "It generates UI instances and selected interaction wiring, including separate RemoteEvent and Teleport server handlers with clear server-validation boundaries. Economy balance, Robux purchase verification via MarketplaceService, rewards, and DataStore persistence remain your server logic.",
   },
   {
-    question: "Where do the generated scripts go in Roblox Studio?",
+    question: "How do I make 512×512 Roblox Gamepass icons that don't get cropped?",
     answer:
-      "Place client Luau in a LocalScript under StarterGui. Place generated server Luau in a Script under ServerScriptService.",
+      "Roblox automatically crops square Gamepass thumbnails into a circle on the experience Store page. Open our free Gamepass Icon Maker, preview the live circular safe zone overlay so badges and text stay inside the inner margin, and export a crisp 512×512 PNG ready for Creator Hub.",
   },
   {
     question: "Is this an official Roblox product?",
@@ -133,7 +143,7 @@ const webAppSchema = {
   name: "Roblox GUI Maker",
   url: "https://robloxguimaker.app",
   description:
-    "Free online visual Roblox GUI maker and generator. Build responsive Roblox UIs with drag-and-drop, preview interactions, and export clean Luau for Roblox Studio.",
+    "Free online visual Roblox GUI maker and AI generator. Build responsive Roblox UIs with drag-and-drop, create 512×512 Gamepass icons, preview interactions, and export clean Luau or native .rbxmx models for Roblox Studio.",
   applicationCategory: "DesignApplication",
   operatingSystem: "Web",
   browserRequirements: "Requires JavaScript",
@@ -144,9 +154,10 @@ const webAppSchema = {
     "Responsive geometry with scale, offset, anchors, aspect ratios, and size constraints",
     "Interaction previews for show, hide, toggle, RemoteEvent, and Teleport actions",
     "Server handlers for RemoteEvent and Teleport actions",
-    "Versioned JSON project import and export",
-    "Browser-local ZIP project export",
-    "Roblox GUI templates and how-to guides",
+    "Versioned JSON and browser-local ZIP project export",
+    "Native Roblox Studio .rbxmx model export (drag-and-drop into StarterGui)",
+    "512×512 Roblox Gamepass Icon Maker with live circular safe-zone preview",
+    "6 themed 5-screen Game UI Kits, 13 starter templates, and 22 step-by-step guides",
   ],
 };
 
@@ -211,6 +222,26 @@ export default function Home() {
               Browse Templates
             </Link>
           </div>
+          <p className="mt-4 text-xs sm:text-sm text-ink-dim">
+            Also included:{" "}
+            <Link
+              href="/gamepass-icon-maker"
+              className="text-focus hover:underline font-medium"
+            >
+              Free 512×512 Gamepass Icon Maker
+            </Link>{" "}
+            ·{" "}
+            <Link href="/kits" className="text-focus hover:underline font-medium">
+              5-Screen Game UI Kits
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/pricing"
+              className="text-focus hover:underline font-medium"
+            >
+              Studio .rbxmx Pro Export
+            </Link>
+          </p>
         </section>
 
         {/* hero preview */}
@@ -301,7 +332,7 @@ export default function Home() {
         {/* how it works */}
         <section className="max-w-5xl mx-auto px-6 py-16">
           <h2 className="text-2xl md:text-3xl font-semibold text-center mb-10">
-            From a blank screen to a working GUI in three steps
+            How to make a Roblox GUI in 3 steps
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {STEPS.map((s) => (
@@ -365,8 +396,9 @@ export default function Home() {
                 Game UI Kits
               </h2>
               <p className="text-sm text-ink-dim mt-1 max-w-md">
-                Whole-game interface sets — menu, shop, HUD and rewards in one
-                shared theme. The look of a finished game, free.
+                Whole-game interface sets — menu, shop, HUD, inventory, and
+                rewards in one shared theme. Start free with single-screen Luau
+                exports, or unlock full Studio <code>.rbxmx</code> bundles.
               </p>
             </div>
             <Link href="/kits" className="text-sm text-focus hover:underline font-medium">
@@ -377,6 +409,40 @@ export default function Home() {
             {KITS.map((kit) => (
               <KitCard key={kit.slug} kit={kit} />
             ))}
+          </div>
+        </section>
+
+        {/* gamepass icon maker callout */}
+        <section className="max-w-6xl mx-auto px-6 py-6">
+          <div className="rounded-2xl border border-focus/40 bg-panel p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-focus mb-2">
+                Free Tool · 512×512 PNG · Circular Safe-Zone Check
+              </p>
+              <h2 className="text-xl md:text-2xl font-semibold text-ink mb-2">
+                Roblox Gamepass Icon Maker — stop getting edges cropped
+              </h2>
+              <p className="text-sm text-ink-dim leading-relaxed">
+                Roblox automatically crops square Gamepass thumbnails into a
+                circle on Store pages. Design badges with sunburst gradients,
+                text, and a live circular safe-zone ring, then export crisp
+                512×512 PNGs ready for Creator Hub.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 shrink-0">
+              <Link
+                href="/gamepass-icon-maker"
+                className="px-5 py-3 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition text-sm"
+              >
+                Make Free Icons →
+              </Link>
+              <Link
+                href="/guides/how-to-make-roblox-gamepass-icons"
+                className="px-4 py-3 rounded-lg font-medium border border-line hover:bg-raised transition text-sm"
+              >
+                512×512 Icon Guide
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -508,12 +574,43 @@ export default function Home() {
             you a live preview on desktop and mobile.
           </p>
 
+          <h2 className="text-2xl font-semibold text-ink pt-4">
+            How to import an exported GUI into Roblox Studio (Luau &amp; .rbxmx)
+          </h2>
+          <p>
+            For free Luau exports, create a{" "}
+            <code className="text-focus">LocalScript</code> under{" "}
+            <code className="text-focus">StarterGui</code> and paste the
+            client script — and if your UI includes RemoteEvent or Teleport
+            actions, paste the separate server script under{" "}
+            <code className="text-focus">ServerScriptService</code>. Prefer a
+            drag-and-drop model instead? Unlock native{" "}
+            <code className="text-focus">.rbxmx</code> export on{" "}
+            <Link href="/pricing" className="text-focus hover:underline">
+              Pro
+            </Link>{" "}
+            and follow our{" "}
+            <Link
+              href="/guides/how-to-import-rbxmx-into-roblox-studio"
+              className="text-focus hover:underline"
+            >
+              Studio .rbxmx import guide
+            </Link>
+            .
+          </p>
+
           <h2 className="text-2xl font-semibold text-ink pt-4">Who it&rsquo;s for</h2>
           <p>
             Beginners who want a good-looking menu without fighting Studio&rsquo;s
             inspector; experienced developers who want to scaffold a shop or HUD
-            in minutes instead of an hour; and anyone who&rsquo;d rather design a
-            GUI visually and hand off clean Luau. It&rsquo;s free, runs in your
+            in minutes instead of an hour; and solo creators who also need a{" "}
+            <Link
+              href="/gamepass-icon-maker"
+              className="text-focus hover:underline"
+            >
+              512×512 Roblox Gamepass icon
+            </Link>{" "}
+            that survives Store circular cropping. It&rsquo;s free, runs in your
             browser, and never asks you to sign up. Whether you call it a{" "}
             <strong>Roblox GUI maker</strong>, <strong>Roblox UI builder</strong>,
             or <strong>online Roblox GUI editor</strong> — the goal is the same:
@@ -529,7 +626,7 @@ export default function Home() {
             id="faq-heading"
             className="mb-8 text-2xl font-semibold text-ink md:text-3xl"
           >
-            Frequently asked questions
+            Frequently asked questions about Roblox GUI Maker
           </h2>
           <div className="space-y-3">
             {FAQS.map((item) => (

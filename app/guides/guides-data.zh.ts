@@ -13,6 +13,7 @@ type GuideZhProse = {
   metaTitle?: string;
   description: string;
   category: string;
+  customCta?: { href: string; label: string };
   intro: string;
   // Same length and order as the English guide's sections.
   sections: GuideZhSection[];
@@ -83,301 +84,416 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
   "how-to-make-a-roblox-inventory-gui": {
     title: "如何制作 Roblox 背包 GUI",
     description:
-      "用 ScrollingFrame、UIGridLayout 做统一格子、过滤标签,以及从脚本运行时填充数据,搭建一个 Roblox 背包 GUI —— 附可直接复制的 Luau。",
+      "一步步制作 Roblox 背包 GUI：使用 ScrollingFrame + UIGridLayout 自动排版格子、复用模板槽位、清空旧格不删布局组件，以及服务端校验的装备 RemoteEvent。",
     category: "HUD",
     intro:
-      "背包把玩家拥有的所有东西显示成一排可点击装备或使用的格子。它的结构是一个 ScrollingFrame,里面用 UIGridLayout 排出统一尺寸的格子,外加一个模板格子,由你的脚本按每件物品克隆一次。本指南用 Luau 搭一个,并对应编辑器里的 inventory 模板。",
+      "背包 GUI 用来把玩家拥有的武器、工具、宠物或装扮展示成可点击装备的网格。在 Roblox Studio 里最稳妥的做法是：用 ScrollingFrame 配 UIGridLayout 自动排版，并按服务器同步的数据克隆一套隐藏模板格子。下面提供完整的层级搭建、防误删子元素技巧与装备验证流程。",
     sections: [
       {
-        heading: "1. 用 ScrollingFrame + UIGridLayout 做统一格子",
+        heading: "1. 搭建 ScreenGui 与 ScrollingFrame + UIGridLayout",
         paragraphs: [
-          "ScrollingFrame 是可滚动容器;里面的 UIGridLayout 会自动把每个子元素排成统一网格。CellSize 和 CellPadding 设一次,任意数量的格子都能正确平铺。",
+          "把背包 ScreenGui 放在 StarterGui 下，并将 ResetOnSpawn 设为 false，防止玩家重生后丢掉开关状态或脚本引用。在主面板内部放入 ScrollingFrame，将 AutomaticCanvasSize 设为 Enum.AutomaticSize.Y、CanvasSize 设为 UDim2.new(0, 0, 0, 0)，滚动条就能随物品增加自动伸长。",
+          "在 ScrollingFrame 内放入 UIGridLayout。如果希望格子在手机与电脑屏幕上都保持正方形，可以配合 Scale 宽度或给模板格子加上 UIAspectRatioConstraint，避免窄屏横向溢出。",
         ],
       },
       {
-        heading: "2. 每件物品克隆一个模板格子",
+        heading: "2. 制作一个可复用的模板格子（Button + UIStroke）",
         paragraphs: [
-          "做一个格子 Frame(带 UICorner 和一个 ImageLabel 当图标),把它当作模板保留。为每件拥有的物品克隆它,而不是内联构造每个格子 —— 这样布局代码很小,而且每个格子都一模一样。",
+          "不要在循环里手写几十行 Instance.new 来拼格子。提前做好一个样式完整的模板格子（包含圆角 UICorner、图标 ImageLabel、右下角数量标签与初始 Transparency = 1 的 UIStroke），存放在 LocalScript 下随时克隆。",
+          "把格子根节点设为 ImageButton 或 TextButton（Text 留空），这样鼠标、触屏和手柄都能稳定触发 Activated 事件。",
         ],
-        tip: "用 Slot_<物品id> 这样的命名约定,这样你的脚本能按 id 找到、装备或移除格子。",
+        tip: "把克隆出的格子命名为 Slot_<itemId>，并用 LayoutOrder 控制稀有度或获得顺序，UIGridLayout 会自动按序排列。",
       },
       {
-        heading: "3. 从玩家数据填充格子",
+        heading: "3. 填充玩家数据，并在刷新时保留布局组件",
         paragraphs: [
-          "遍历玩家拥有的物品,克隆模板,设置图标和名字,然后把它挂到 ScrollingFrame 下。UIGridLayout 会自动定位,画布随 AutomaticCanvasSize 增长。",
+          "每次服务端发来新背包列表或玩家切换分类标签（例如 武器 / 宠物 / 消耗品）时，必须先清理旧格子，但绝不能用 ClearAllChildren() 把 UIGridLayout 和 UIPadding 一起删掉。循环遍历时判断 child:IsA(\"GuiObject\") 再 Destroy 即可。",
         ],
+      },
+      {
+        heading: "4. 在服务端校验装备与使用请求",
+        paragraphs: [
+          "客户端 GUI 只负责展示列表并发出装备意图。ServerScriptService 中的 Script 必须在发 Tool 或加属性前，核对服务端缓存或 DataStore 里该玩家确实拥有对应 itemId。",
+        ],
+        tip: "记得开启 ScrollingFrame.ClipsDescendants = true，这样滚动出上下边界的格子会被面板边缘干净裁切。",
       },
     ],
     faq: [
       {
-        q: "运行时怎么增删物品?",
-        a: "克隆模板格子并挂到 ScrollingFrame 下即增加;对格子调用 Destroy() 即移除。UIGridLayout 会自动重排剩余格子。",
+        q: "运行时怎么安全地增删背包物品？",
+        a: "新增时克隆模板格子并设好 Parent 到 ScrollingFrame；移除时对目标格子调用 Destroy()。UIGridLayout 会自动重排剩余格子的位置。",
       },
       {
-        q: "怎么显示当前装备的是哪件?",
-        a: "给模板格子加一个初始透明的 UIStroke,在玩家点击的格子上把它的 Transparency 关掉。彩色描边就是一个清晰的选择边框。",
+        q: "为什么清空背包重绘之后，UIGridLayout 布局全乱了？",
+        a: "因为直接调用了 scroll:ClearAllChildren()，把 UIGridLayout 和 UIPadding 也一起删掉了。务必改为遍历 scroll:GetChildren() 并只销毁 child:IsA(\"GuiObject\")。",
+      },
+      {
+        q: "怎么高亮显示当前已装备的格子？",
+        a: "给模板格子预先挂一个 Transparency = 1 的 UIStroke。当玩家点击或服务端确认装备某格时，清除上一格的高亮并把当前格的 UIStroke.Transparency 设为 0。",
+      },
+      {
+        q: "怎么做武器、宠物等分类过滤标签？",
+        a: "在 populateInventory 函数里传入当前分类，克隆前过滤掉不匹配的 item.category，或者直接把不匹配格子的 Visible 设为 false——UIGridLayout 会自动跳过不可见格子。",
       },
     ],
-    relatedGuides: [{ slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" }],
+    relatedGuides: [
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" },
+      { slug: "how-to-make-a-responsive-roblox-gui", title: "如何制作响应式的 Roblox GUI" },
+      { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "如何用按键打开 Roblox GUI" },
+    ],
   },
 
   "how-to-make-a-roblox-code-redeem-gui": {
     title: "如何制作 Roblox 兑换码 GUI",
     description:
-      "做一个 Roblox 兑换码/创作者码 GUI:一个 TextBox 输入、一个到服务器的 RemoteEvent、以及服务端校验和发放奖励 —— 附可直接复制的 Luau。",
+      "制作一个防作弊的 Roblox 兑换码/创作者码 GUI：TextBox 输入、ClearTextOnFocus 防误清空、RemoteFunction 服务端校验、有效期与 DataStore 防重复领取。",
     category: "菜单",
     intro:
-      "兑换码面板让玩家输入一个兑换码或创作者码并领取奖励。界面很简单 —— 一个 TextBox 加一个兑换按钮 —— 但安全是单向的:客户端只发送码,由服务器决定是否有效并发放奖励。本指南用 Luau 搭好两端。",
+      "兑换码界面让玩家输入活动码或创作者支持码领取金币或道具。客户端只需要一个 TextBox、一个按钮和状态文本，但防刷机制、有效码表与重复领取记录必须完全放在服务端。本指南提供客户端与服务端完整实现思路与常见踩坑解答。",
     sections: [
       {
-        heading: "1. TextBox 输入和兑换按钮",
+        heading: "1. 搭建 TextBox 输入框、兑换按钮与状态提示",
         paragraphs: [
-          "TextBox 收集码,TextButton 发起请求。点击时读取输入框文本,通过 RemoteEvent 发给服务器。",
+          "在 StarterGui 的面板里放入 TextBox（建议关闭 ClearTextOnFocus = false，方便玩家改错字而不用重输一遍）、REDEEM 按钮，以及下方的状态 TextLabel 用来展示“领取成功”或“兑换码无效/已领取”。",
         ],
       },
       {
-        heading: "2. 在服务端校验兑换码",
+        heading: "2. 在服务端校验兑换码与过期时间",
         paragraphs: [
-          "把有效码及其奖励放在一个服务端 Script 里。对传入的码做规范化(转大写、去空格),查表,未知就忽略。客户端永远看不到这个列表。",
+          "把所有有效兑换码放在 ServerScriptService 的 Script 中，外挂永远无法从客户端内存窥探列表。收到请求后先做 typeof 校验和频控冷却，再用 string.upper 与去掉空白字符规范化输入，并核对可选的 os.time() 过期时间戳。",
         ],
-        tip: "永远不要信任客户端。只有服务器知道哪些码有效,也必须由它来发放金币或物品。",
+        tip: "务必加入按玩家冷却时间（如 1.5 秒）并在 Players.PlayerRemoving 时清理冷却记录，防止暴力刷包和内存泄漏。",
       },
       {
-        heading: "3. 把结果反馈给玩家",
+        heading: "3. 把已兑换记录写入玩家 DataStore",
         paragraphs: [
-          "发放后,通过 RemoteEvent(或 RemoteFunction 返回)回传客户端,让 UI 显示“已领取奖励”或“兑换码无效”。奖励逻辑留在服务端,提示信息留在客户端。",
+          "如果只用服务端局部表记录已领状态，玩家换服后又可以再领一次。把已兑换的码表（例如 RedeemedCodes[code] = true）存进玩家 DataStore 存档，并在异步保存前先标记状态，杜绝并发双击刷奖励。",
+        ],
+      },
+      {
+        heading: "4. 优化提示反馈与移动端输入体验",
+        paragraphs: [
+          "用绿色文字反馈成功、红色文字提示错误，仅在成功时清空 TextBox，并避免把输入框放得太靠屏幕底端，以免手机系统弹出软键盘时遮挡按钮。",
         ],
       },
     ],
     faq: [
       {
-        q: "为什么必须由服务器校验兑换码?",
-        a: "客户端可能被作弊者修改。如果由客户端决定奖励,任何人都能给自己发任何东西。服务器才是有效码和已发奖励的唯一真相来源。",
+        q: "兑换码 GUI 用 RemoteEvent 还是 RemoteFunction 更好？",
+        a: "两者都可以，但 RemoteFunction 能直接返回 (ok, message) 给客户端更新状态文本，一次往返就能完成反馈；配合客户端防抖与服务端限流即可安全使用。",
       },
       {
-        q: "怎么让兑换码过期或只能用一次?",
-        a: "在 DataStore 里按玩家记录兑换情况(或在全局过期后从表里移除该码)。发放前在服务端检查。",
+        q: "怎么防止同一玩家重复使用同一个兑换码？",
+        a: "在每个玩家的 DataStore 存档表里保存 RedeemedCodes[code] = true 字典。服务端发奖前先检查该键是否存在。",
+      },
+      {
+        q: "作弊者能在客户端逆向出我的有效兑换码吗？",
+        a: "不能，前提是 CODES 表只存在于 ServerScriptService 或 ServerStorage 中。Roblox 不会把服务端脚本和容器内容复制到客户端。",
+      },
+      {
+        q: "为什么玩家手机输入法带了个末尾空格就提示无效？",
+        a: "移动端输入法经常在自动补全后多塞一个空格。服务端先执行 string.upper((string.gsub(rawInput, \"%s+\", \"\"))) 即可自动兼容大小写与误触空格。",
       },
     ],
-    relatedGuides: [{ slug: "how-to-make-a-roblox-shop-gui", title: "如何制作 Roblox 商店 GUI" }],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-shop-gui", title: "如何制作 Roblox 商店 GUI" },
+      { slug: "how-to-make-a-roblox-daily-rewards-gui", title: "如何制作 Roblox 每日奖励 GUI" },
+      { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+    ],
   },
 
   "how-to-make-a-roblox-daily-rewards-gui": {
     title: "如何制作 Roblox 每日奖励 GUI",
     description:
-      "搭建一个 Roblox 每日奖励/连签日历 GUI:一个 7 天网格,带已领、当日、未解锁三种状态,服务端连签追踪,以及一个领取 RemoteEvent —— 附 Luau。",
+      "搭建 7 天 Roblox 每日登录签到奖励 GUI：已领/当日可领/未解锁三态卡片、服务端 UTC 日历时间判断、DataStore 连续天数保存与断签处理。",
     category: "菜单",
     intro:
-      "每日奖励界面显示一排天数卡片 —— 已领的天数变暗、今天可领、未来的天数锁定 —— 加一个领取按钮。视觉状态只是背景色的区别;真正的逻辑在服务端:记录玩家上次领取的时间和连签天数,只有进入了新一天才发放奖励。",
+      "7 天每日奖励系统是提升次日留存最常用的 UI 模块之一。前台只需用 7 张状态卡片区分已领、今天可领与未解锁，真正关键的是后端用服务端 os.time() 与 DataStore 验证日期并记录连签，彻底杜绝玩家改系统时间刷奖励。",
     sections: [
       {
-        heading: "1. 一个带视觉状态的 7 天网格",
+        heading: "1. 排版 7 天网格与三种卡片视觉状态",
         paragraphs: [
-          "每天是一个按状态上色的 Frame:已领(变暗)、当日(高亮)、未解锁(弱化)。用 UIListLayout 或手动位置排列 —— 编辑器的 daily-rewards 模板已经替你做好了。",
+          "用 Day1 到 Day7 七个 Frame 搭配支持自动换行的 UIListLayout 或 UIGridLayout，这样宽屏能横排、手机窄屏也能优雅折行。分别给“已领取”（暗色对勾）、“今日可领”（电蓝色边框高亮）和“未解锁”（灰暗锁定）设计清晰辨识度。",
         ],
       },
       {
-        heading: "2. 在服务端追踪连签",
+        heading: "2. 用服务端时间检验资格并推进连签",
         paragraphs: [
-          "按玩家存储 lastClaimTime 和 streak(DataStore)。收到领取请求时,把服务器时间和上次领取对比:不到一天就忽略;在两天以内就推进连签;否则重置为第 1 天。",
+          "千万不要在 LocalScript 里判断日期，客户端设备时钟可被玩家随意修改。服务端通过 math.floor(os.time() / 86400) 计算 UTC 天序号：与上次领取日相同则拒绝，正好大 1 则连签加一，跨天断档则重置回第 1 天。",
         ],
-        tip: "天的边界永远用 os.time()(服务器时钟)。客户端的时钟可能不准或被篡改。",
+        tip: "用 UTC 日索引（os.time() / 86400 取整）比严格等满 24 小时对玩家更友好：玩家昨天晚上 9 点签到、今天晚上 7 点上线也能顺利领到第二天奖励。",
       },
       {
-        heading: "3. 把结果反映到 UI",
+        heading: "3. 根据服务端同步结果刷新日历高亮",
         paragraphs: [
-          "服务器发放后,把新的连签天数和上次领取日告诉客户端。客户端重新给天数卡片上色(把今天标为已领、高亮明天),让日历和服务端的真实状态保持同步。",
+          "玩家进服和领奖成功后，服务端通过 SyncDailyRewards 发送最新 { streak, canClaim }。客户端再按真实状态重绘 7 张卡片的颜色与领取按钮状态，让 UI 与服务端完全同步。",
+        ],
+      },
+      {
+        heading: "4. 在主 HUD 图标上加未领取红点提醒",
+        paragraphs: [
+          "成熟的游戏通常不在加载完成时粗暴弹窗挡路，而是在 state.canClaim 为 true 时于侧边 HUD 按钮亮起红点角标，引导玩家主动打开领取。",
         ],
       },
     ],
     faq: [
       {
-        q: "怎么在多次会话间保存连签?",
-        a: "把 lastClaimTime 和 streak 存到按 UserId 索引的 DataStore 里。玩家加入时加载,每次领取后保存。",
+        q: "每日签到按满 24 小时判断，还是按自然日判断好？",
+        a: "按 UTC 自然日索引（math.floor(os.time() / 86400)）体验最好，避免玩家每天上线时间稍微提前一两小时却被卡住不能签。",
       },
       {
-        q: "玩家漏了一天会怎样?",
-        a: "由你决定:把连签重置为 1,或者在宽限期内(比如两天)保留。上面的代码在隔了两天后重置。",
+        q: "连续签到天数跨服怎么保存？",
+        a: "把 lastDayIndex 和 streak 存入按玩家 UserId 索引的 DataStore 数据表，进服读取并在每次领奖及离服时用 UpdateAsync 写入。",
+      },
+      {
+        q: "领完第 7 天之后第 8 天怎么办？",
+        a: "使用 (profile.streak % 7) + 1 就能在第 8 天平滑循环回第 1 天，老玩家也能持续每天上线领奖。",
+      },
+      {
+        q: "玩家修改 Windows 或手机日期能提前领奖励吗？",
+        a: "不能，只要所有判断都在 ServerScriptService 中使用 os.time() 读取 Roblox 服务端时间即可。",
       },
     ],
-    relatedGuides: [{ slug: "how-to-make-a-roblox-shop-gui", title: "如何制作 Roblox 商店 GUI" }],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-code-redeem-gui", title: "如何制作 Roblox 兑换码 GUI" },
+      { slug: "how-to-make-a-roblox-shop-gui", title: "如何制作 Roblox 商店 GUI" },
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "如何用 TweenService 给 Roblox GUI 加动画" },
+    ],
   },
 
   "how-to-make-a-roblox-quest-tracker-gui": {
     title: "如何制作 Roblox 任务追踪 HUD",
     description:
-      "做一个 Roblox 任务追踪 HUD:一个常驻角落面板,带目标、实时补间进度条,以及展开/收起开关 —— 附可直接复制的 Luau。",
+      "打造紧凑的 Roblox 角落任务追踪 HUD：避开顶部系统栏锚定、双层进度条 TweenService 平滑补间、手机折叠开关，以及服务端事件驱动更新。",
     category: "HUD",
     intro:
-      "任务追踪器是一个钉在屏幕角落的小面板,显示当前目标和一条随进度增长的进度条。它在游玩过程中一直可见,所以必须紧凑。本指南搭建这个 HUD、一条平滑的进度条,以及一个展开/收起详情的开关。",
+      "任务追踪器是在玩家探索地图时常驻角落的微型面板，用来提示当前目标和完成度。做好它有三个关键：用安全锚点和 UISizeConstraint 控制体积不挡视野、用双层裁切 Frame 配 TweenService 推进进度条，以及给移动端准备一键折叠按钮。",
     sections: [
       {
-        heading: "1. 一个紧凑的角落面板",
+        heading: "1. 锚定角落位置并避开 Roblox 系统按钮",
         paragraphs: [
-          "用 AnchorPoint 加基于 scale 的 Position 把面板锚定在角落,这样在任何屏幕尺寸上都紧贴边缘。一个 TextLabel 放目标,一对嵌套 Frame(背景+填充)做进度条。",
+          "把面板锚定在右上或中左侧边缘（例如 AnchorPoint = 1, 0、Y Scale 在 0.14 左右），避免撞上右上角核心栏或左上角聊天与菜单按钮。加上 UISizeConstraint 限制最小/最大像素范围，防止超宽屏拉伸变形或手机遮半屏。",
         ],
       },
       {
-        heading: "2. 一条会补间的进度条",
+        heading: "2. 用轨道 + 填充双层 Frame 做平滑进度条",
         paragraphs: [
-          "进度条是一个背景 Frame 加一个子填充 Frame。更新进度时,把填充的 Size 在 X 轴 scale 上从当前值补间到新比例 —— TweenService 让它滑过去而不是跳变。",
+          "进度条由底层 Track Frame 和子级 Fill Frame 组成。给 Track 打开 ClipsDescendants = true 保证低百分比时圆角不被顶破，进度变动时用 TweenService 把 Fill.Size.X.Scale 插值到 math.clamp(current / goal, 0, 1)。",
         ],
-        tip: "保持 HUD 小巧且不挡游玩区域。锚定角落并用 scale 尺寸,这样手机和桌面落点一致。",
+        tip: "任务标题尽量控制在 8–12 个字以内（例如“收集 10 个星辰碎片”），小字号在手机竖屏或横屏上才不会换行挤压布局。",
       },
       {
-        heading: "3. 从游戏事件更新,并收起详情",
+        heading: "3. 给小屏幕加一个折叠/展开按钮",
         paragraphs: [
-          "用你的游戏事件(捡到物品、击败敌人)驱动 setProgress,让进度条实时动。加一个开关按钮,用显示/隐藏动作控制一个详情面板 —— 编辑器会替你生成那段 Luau,你还可以用 scale 过渡给它加动画。",
+          "手机玩家屏幕空间寸土寸金，在面板标题栏放一个“− / +”小按钮，点击后切换主体内容 Visible 并缓动高度，既可随时查看目标，也不挡战斗视野。",
+        ],
+      },
+      {
+        heading: "4. 由服务端事件稳定驱动进度",
+        paragraphs: [
+          "击杀或收集计数统一在服务端统计，变化时再触发 QuestUpdated:FireClient(player, data)。客户端只负责渲染文字、条长度和完成高亮动画，不参与判定。",
         ],
       },
     ],
     faq: [
       {
-        q: "怎么让进度条平滑填充?",
-        a: "用 TweenService:Create 作用于填充 Frame 的 Size,从当前 X scale 补间到新比例。0.3 秒的 Quad 缓动看起来跟手又不抖。",
+        q: "怎么让任务进度条平滑推进而不是一跳一跳？",
+        a: "把比例算成 math.clamp(current / goal, 0, 1)，然后用 TweenService:Create 在 0.25–0.35 秒内把 Fill.Size 过渡到 UDim2.fromScale(ratio, 1)。",
       },
       {
-        q: "怎么知道任务完成了?",
-        a: "进度到达目标时,触发一个 BindableEvent(服务端)或在客户端检查,然后发放奖励、标记任务完成,并隐藏或重新上色追踪器。",
+        q: "任务 HUD 放在哪里才不会跟 Roblox 官方按钮重叠？",
+        a: "避开最左上角（菜单、聊天）和最右上角核心图标区。要么将 Y 起点设在 0.12–0.16 之间，要么在 ScreenGui 上保持 IgnoreGuiInset = false。",
+      },
+      {
+        q: "如果要同时追踪 2–3 个活跃任务怎么改？",
+        a: "把外层 TrackerPanel 改成竖向 UIListLayout 容器，将单个任务卡片抽成模板，按活跃任务表克隆多张即可。",
+      },
+      {
+        q: "为什么进度条很短的时候圆角会露出来变方？",
+        a: "给外层 Track 开启 ClipsDescendants = true，或者同时给 Track 与 Fill 都挂上相同 CornerRadius 的 UICorner。",
       },
     ],
-    relatedGuides: [{ slug: "how-to-animate-roblox-guis-with-tweenservice", title: "如何用 TweenService 给 Roblox GUI 加动画" }],
+    relatedGuides: [
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "如何用 TweenService 给 Roblox GUI 加动画" },
+      { slug: "how-to-make-a-responsive-roblox-gui", title: "如何制作响应式的 Roblox GUI" },
+    ],
   },
 
   "how-to-make-a-roblox-main-menu-gui": {
     title: "如何制作 Roblox 主菜单 GUI",
     description:
-      "一步步来:用 ScreenGui、居中面板、标题和用 UIListLayout 堆叠的 Play/Settings 按钮,搭建一个 Roblox 主菜单 GUI,外加处理按钮点击的 Luau。",
+      "零基础分步制作 Roblox 主菜单 GUI：ScreenGui 防重生复位设置、AnchorPoint 居中面板、UIListLayout 自动排按钮、BlurEffect 模糊背景与 .Activated 跨设备点击。",
     category: "菜单",
     intro:
-      "主菜单是玩家加入你游戏后看到的第一样东西。本指南用 Luau 从零搭一个 —— 一个 ScreenGui 容器、一个居中面板、一个标题,以及用 UIListLayout 自动堆叠的 Play / Settings 按钮。你也可以从编辑器里现成的主菜单模板开始再自定义。",
+      "主菜单决定了玩家进服前几秒的第一印象。菜单偏移、重生后反复弹出、手机按不到按钮，大多源自漏设了几个关键属性。本指南一步步带你配置 ScreenGui、居中响应式容器、UIListLayout 按钮栈，并用 .Activated 和 BlurEffect 做出丝滑开局切换。",
     sections: [
       {
-        heading: "1. 创建 ScreenGui 容器",
+        heading: "1. 正确配置 ScreenGui 容器属性",
         paragraphs: [
-          "每个屏幕界面都装在一个 ScreenGui 里。把它放进本地玩家的 PlayerGui 让它渲染在他的屏幕上,并把 ResetOnSpawn 设为 false,让菜单在重生后依然存在。",
+          "在 StarterGui 下新建 ScreenGui 并命名为 MainMenu。把 ResetOnSpawn 设为 false，防止角色死亡重生时主菜单重新弹出来；若要让暗色遮罩铺满全屏不留顶部黑边，同时将 IgnoreGuiInset 设为 true。",
         ],
       },
       {
-        heading: "2. 加一个居中面板和标题",
+        heading: "2. 用 AnchorPoint 居中面板并限制尺寸上下限",
         paragraphs: [
-          "一个 Frame 当菜单背景,UICorner 给它圆角,一个 TextLabel 显示游戏标题。AnchorPoint 0.5,0.5 加 Position 0.5,0.5 让面板正好居中在屏幕上。",
+          "把 AnchorPoint = Vector2.new(0.5, 0.5) 和 Position = UDim2.fromScale(0.5, 0.5) 配合使用，面板才会严格按中心点居中。再加一层 UISizeConstraint 和 UIPadding，在带鱼屏上不会铺得过宽，在手机上也不会小得看不清。",
         ],
       },
       {
-        heading: "3. 用 UIListLayout 堆叠按钮",
+        heading: "3. 用 UIListLayout 与 LayoutOrder 自动堆叠按钮",
         paragraphs: [
-          "往面板里放一个 UIListLayout,之后你加的每个子元素都会自动堆叠 —— 无需手动定位。设 Padding 控制间距,HorizontalAlignment 居中它们。",
+          "在面板里放一个 UIListLayout 并设 SortOrder = Enum.SortOrder.LayoutOrder。给标题、Play、Shop、Settings 分别设好 LayoutOrder = 1, 2, 3, 4，以后随时加“更新日志”按钮都不用重新算 Y 坐标。",
         ],
       },
       {
-        heading: "4. 让按钮做点事",
+        heading: "4. 用 .Activated 绑定 Play 与摄像头/模糊切换",
         paragraphs: [
-          "每个按钮是一个 TextButton。连接 MouseButton1Click,在玩家点击时执行代码 —— 这里 PLAY 会隐藏菜单并开始游戏。",
+          "按钮点击尽量使用 Activated 而非 MouseButton1Click，它在鼠标点击、手机触控和手柄确认键下都能稳定触发。玩家点 Play 后关闭 Lighting 里的 BlurEffect、隐藏菜单并打开游戏内 HUD。",
         ],
-        tip: "用 gui.Enabled = false 隐藏菜单并保留它,或者如果你再也不会显示它就用 gui:Destroy()。",
+        tip: "如果游戏内设置了“返回主菜单”或暂停设置入口，请用 gui.Enabled = false 隐藏菜单，不要直接 gui:Destroy()。",
       },
     ],
     faq: [
       {
-        q: "怎么让菜单在屏幕上居中?",
-        a: "把面板的 AnchorPoint 设为 Vector2.new(0.5, 0.5),Position 设为 UDim2.fromScale(0.5, 0.5)。面板就会以自己的中点而不是左上角居中。",
+        q: "怎么让主菜单在电脑、平板和手机上永远严格居中？",
+        a: "把 AnchorPoint 设为 Vector2.new(0.5, 0.5)、Position 设为 UDim2.fromScale(0.5, 0.5)，并用 Scale 配 UISizeConstraint 控制宽高比例。",
       },
       {
-        q: "为什么重生后菜单就没了?",
-        a: "ScreenGui 默认在重生时重置。在 ScreenGui 上设 ResetOnSpawn = false 让它常驻。",
+        q: "为什么玩家每次角色死亡重生后主菜单又弹出来了？",
+        a: "因为 ScreenGui 的 ResetOnSpawn 默认是 true，重生时 Roblox 会重新从 StarterGui 克隆一份。将其设为 false 即可解决。",
+      },
+      {
+        q: "按钮事件应该绑 Activated 还是 MouseButton1Click？",
+        a: "推荐优先绑 Activated，它原生兼容 PC 鼠标、移动端触摸以及主机手柄选择确认。",
+      },
+      {
+        q: "怎么在主菜单后面固定相机俯瞰大厅场景？",
+        a: "在 LocalScript 中把 workspace.CurrentCamera.CameraType 设为 Enum.CameraType.Scriptable，赋值为地图内预放镜头 Part 的 CFrame；点 Play 时切回 Enum.CameraType.Custom。",
       },
     ],
     relatedGuides: [
       { slug: "how-to-open-a-gui-with-a-key-in-roblox", title: "如何用按键打开 Roblox GUI" },
       { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" },
+      { slug: "how-to-import-rbxmx-into-roblox-studio", title: "如何把 .rbxmx GUI 模型文件导入 Roblox Studio" },
     ],
   },
 
   "how-to-make-a-roblox-shop-gui": {
     title: "如何制作 Roblox 商店 GUI",
     description:
-      "搭建一个 Roblox 商店 GUI:一个用 UIGridLayout 自动平铺物品的 ScrollingFrame、带图片和价格的物品格,以及一个让购买真正在服务端生效的 RemoteEvent。",
+      "制作安全可上线的 Roblox 道具商店 GUI：ScrollingFrame + UIGridLayout 自动货架网格、ModuleScript 商品配置表，以及服务端扣币校验的 RemoteEvent 完整流程。",
     category: "商店",
     intro:
-      "一个商店需要三样东西:一个可滚动区域、自动排成网格的物品,以及一个让购买真正发生的途径。本指南用 ScrollingFrame + UIGridLayout 搭界面,再通过 RemoteEvent 接好购买动作让服务器校验它。从商店模板开始可以跳过布局工作。",
+      "一个能直接上架使用的商店 GUI 必须把“展示”与“交易校验”彻底分开：前端用 ScrollingFrame 配 UIGridLayout 让再多商品都能自动排列，前后端共用一份 ModuleScript 目录，而扣金币和发道具全部交由服务端 Script 核对，避免作弊者绕过客户端。",
     sections: [
       {
-        heading: "1. 面板和可滚动网格",
+        heading: "1. 搭建商店外框、关闭按钮与 ScrollingFrame 网格",
         paragraphs: [
-          "一个 Frame 装下所有东西;ScrollingFrame 是放物品的地方。给 ScrollingFrame 加一个 UIGridLayout,每个物品格就会自动平铺成网格 —— 加多少物品都会重排。",
+          "在 StarterGui > ShopGui 下放一个居中面板，顶部放置标题和关闭按钮，正文区域放满 ScrollingFrame。开启 AutomaticCanvasSize = Enum.AutomaticSize.Y 并配合 ClipsDescendants = true，再在内部放入 UIGridLayout 与 UIPadding。",
         ],
       },
       {
-        heading: "2. 一个物品格",
+        heading: "2. 用一份共享的 ModuleScript 管理商品目录",
         paragraphs: [
-          "每个物品是一个 Frame,带一个 ImageLabel、一个价格标签和一个购买按钮。因为有 UIGridLayout,只要把它挂到 ScrollingFrame 下就自动落位到网格里。",
+          "把商品 ID、名称、价格和图标 rbxassetid 写在 ReplicatedStorage 的 ShopCatalog ModuleScript 里，让客户端生成卡片、服务端核价时读同一份配置，加新商品时只改一处。",
         ],
       },
       {
-        heading: "3. 通过 RemoteEvent 接通购买",
+        heading: "3. 用 RemoteEvent 提交购买并由服务端扣款校验",
         paragraphs: [
-          "永远不要把钱财交给客户端。购买按钮触发一个 RemoteEvent;服务器检查玩家买得起、扣除货币、发放物品。",
+          "客户端点击购买按钮时只能上传 itemId 字符串，绝对不能把价格传给服务端。ServerScriptService 里的 Script 按 itemId 查表拿真实价格，核对玩家金币余额并扣除后再发放道具。",
         ],
-        tip: "购买永远在服务端校验。客户端可以用任意 itemId 触发 RemoteEvent,所以服务器必须重新核对价格和归属。",
+        tip: "如果要售卖 Robux 游戏通行证（Game Pass），请使用 MarketplaceService:PromptGamePassPurchase 而非自建金币 RemoteEvent。",
+      },
+      {
+        heading: "4. 用 Enabled 开关商店以保留图片缓存与滚动位置",
+        paragraphs: [
+          "关闭商店时直接把 ShopGui.Enabled 设为 false 而不是销毁重建，下次打开无需重新加载图标和创建实例，响应更干脆。",
+        ],
       },
     ],
     faq: [
       {
-        q: "怎么让商店平滑滚动?",
-        a: "用带 AutomaticCanvasSize = Enum.AutomaticSize.Y 的 ScrollingFrame,再用 UISizeConstraint 或 UIGridLayout 的格子来定义高度。ScrollBarThickness 控制滚动条宽度。",
+        q: "怎么让商店随着商品增多平滑自动延伸滚动区域？",
+        a: "在 ScrollingFrame 上设 AutomaticCanvasSize = Enum.AutomaticSize.Y 且 CanvasSize = UDim2.new(0, 0, 0, 0)，并加上 UIPadding 避免卡片贴边。",
       },
       {
-        q: "物品怎么排成网格?",
-        a: "给 ScrollingFrame 挂一个 UIGridLayout。设 CellSize 和 CellPadding;每个子 Frame 就会自动排成行列。",
+        q: "商品卡片怎样自动按网格行列对齐？",
+        a: "把 UIGridLayout 挂进 ScrollingFrame，设置好 CellSize 和 CellPadding，子级每个商品卡片就会自动从左到右折行排布。",
+      },
+      {
+        q: "为什么不能在客户端判断钱够不够再发 RemoteEvent 给服务器发道具？",
+        a: "作弊者可以直接伪造任何 RemoteEvent 参数调用。客户端只传 itemId，金币扣除与权限检查必须由服务端独立完成。",
+      },
+      {
+        q: "游戏币商店和 Game Pass（通行证）商店有什么区别？",
+        a: "游戏币商店使用你自己的 RemoteEvent 和服务端金币数值；Game Pass 商店需要调用 Roblox 的 MarketplaceService:PromptGamePassPurchase 来走 Robux 购买弹窗。",
       },
     ],
     relatedGuides: [
+      { slug: "how-to-make-a-roblox-gamepass-shop-gui", title: "如何制作 Roblox 游戏通行证（Game Pass）商店 GUI" },
       { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
-      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "how-to-make-a-roblox-inventory-gui", title: "如何制作 Roblox 背包 GUI" },
     ],
   },
 
   "how-to-make-a-roblox-loading-screen-gui": {
     title: "如何制作 Roblox 加载界面 GUI",
     description:
-      "做一个 Roblox 加载界面:一个全屏带渐变的 Frame、标题、一条用 TweenService 动画的进度条和一条轮播提示,游戏就绪后移除它。",
+      "制作真正的 Roblox 自定义加载界面：放在 ReplicatedFirst 替换默认加载屏、用 ContentProvider:PreloadAsync 驱动实时进度条、渐隐淡出并 Destroy 释放拦截。",
     category: "菜单",
     intro:
-      "加载界面在资源流入时盖住整个视口。本指南搭一个带渐变背景的全屏 Frame、一个大标题、一条填充从 0 补间到满的进度条,以及一行提示。游戏就绪后,你销毁这个 GUI。另外也有一个加载界面模板可以从头开始。",
+      "好的加载界面应当在玩家进服第一刻立刻覆盖视口，反映真实资源预加载进度而不是干等假倒计时，并在就绪后平滑淡出并销毁。关键技巧是把脚本和 LoadingScreen 放进 ReplicatedFirst，并用 ContentProvider:PreloadAsync 驱动进度条。",
     sections: [
       {
-        heading: "1. 全屏背景和标题",
+        heading: "1. 把加载脚本放进 ReplicatedFirst 抢先显示",
         paragraphs: [
-          "在 ScreenGui 上设 IgnoreGuiInset = true,让 Frame 盖住整个视口(包括顶部状态栏)。背景 Frame 上加一个 UIGradient 给它层次感。",
+          "StarterGui 的脚本会等默认内容复制后才执行，导致原版加载画面一闪而过。把 LoadingScreen 和 LocalScript 放进 ReplicatedFirst，在第一行调用 ReplicatedFirst:RemoveDefaultLoadingScreen() 并克隆进 PlayerGui。",
+          "把 IgnoreGuiInset 设为 true、DisplayOrder 设为 100，确保全屏底图完全盖住顶部状态栏并覆盖所有其他界面。",
         ],
       },
       {
-        heading: "2. 进度条",
+        heading: "2. 制作胶囊进度条与轮播提示语",
         paragraphs: [
-          "进度条是两个 Frame:一条暗色轨道和一条彩色填充。填充从 Scale 0 宽度开始,随加载推进把它补间上去。",
+          "外层轨道 Track 与内层填充 Fill 都用圆角（CornerRadius = UDim.new(1, 0)），开启轨道 ClipsDescendants。配合一条每 2.5 秒轮换的玩法小提示，加载过程不枯燥。",
         ],
       },
       {
-        heading: "3. 加上动画并清理",
+        heading: "3. 用 ContentProvider:PreloadAsync 驱动真实进度",
         paragraphs: [
-          "用 TweenService 让填充增长。加载完成后 Destroy 这个 GUI,让它彻底消失。",
+          "把关键 UI 贴图、大厅模型和音效放进列表，逐批或分步交给 ContentProvider:PreloadAsync，每完成一项就用 TweenService 把 Fill 比例丝滑推进到对应百分比。",
         ],
-        tip: "在真实游戏里,用实际的资源加载进度驱动填充,而不是固定计时器,这样它不会在游戏就绪前就跑完。",
+        tip: "优先预加载 UI 图片、主大厅和必听音效即可，不要把整张大地图所有细节全塞进阻塞队列，以免低配手机玩家卡在加载页太久。",
+      },
+      {
+        heading: "4. 渐隐淡出并 Destroy 彻底清除遮罩",
+        paragraphs: [
+          "先检查 game:IsLoaded() 保证核心场景就绪，再用 CanvasGroup 的 GroupTransparency 淡出到 1。动画结束后必须调用 loadingGui:Destroy()，防止透明全屏 Frame 挡住后续主菜单点击。",
+        ],
       },
     ],
     faq: [
       {
-        q: "怎么连顶部状态栏也盖住?",
-        a: "在 ScreenGui 上设 IgnoreGuiInset = true。那么第一个 Size 为 UDim2.fromScale(1,1) 的 Frame 就盖住整个视口。",
+        q: "怎么让加载界面完全盖住 Roblox 顶部状态栏？",
+        a: "把 ScreenGui.IgnoreGuiInset 设为 true，并把背景 Frame 的 Size 设为 UDim2.fromScale(1, 1)。",
       },
       {
-        q: "怎么给进度条加动画?",
-        a: "用 TweenService 把填充 Frame 的 Size 从 UDim2.fromScale(0,1) 补间到 UDim2.fromScale(1,1),然后在 tween.Completed 里 Destroy 这个 GUI。",
+        q: "为什么进服时还会闪一下 Roblox 默认黑色加载界面？",
+        a: "把 LoadingScreen 和 LocalScript 移到 ReplicatedFirst，并在脚本第一行就调用 ReplicatedFirst:RemoveDefaultLoadingScreen()。",
+      },
+      {
+        q: "加载界面需要加“跳过”按钮吗？",
+        a: "建议加上：一旦 game:IsLoaded() 为 true 且关键 UI 加载完就显示 Skip 按钮，回访玩家会非常喜欢这个细节。",
+      },
+      {
+        q: "为什么加载界面淡出变透明之后，后面的开始按钮点不动？",
+        a: "只把透明度改成 1 而没 Destroy() 或关掉 Enabled 时，全屏透明 Frame 仍可能拦截输入。淡出完成后务必调用 loadingGui:Destroy()。",
       },
     ],
     relatedGuides: [
-      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "如何制作 Roblox 主菜单 GUI" },
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "如何用 TweenService 给 Roblox GUI 加动画" },
       { slug: "roblox-gui-script-generator", title: "Roblox GUI 脚本生成器" },
     ],
   },
@@ -473,115 +589,172 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
   "how-to-make-a-roblox-global-leaderboard-gui": {
     title: "如何制作 Roblox 全局排行榜 GUI",
     description:
-      "用 OrderedDataStore 搭建一个跨服给所有玩家排名的全局 Roblox 排行榜,然后在 GUI 里显示前列 —— 附保存、排序和渲染行的完整 Luau。",
+      "制作跨服 Roblox 全局排行榜 GUI：使用 OrderedDataStore 存储排名分数、缓存 GetNameFromUserIdAsync 用户名避免限流，并用 UIListLayout 渲染前 10 行。",
     category: "数据",
     intro:
-      "全局排行榜按某个统计(比如总金币)给每个玩家排名,而且排名跨服保留。难的不是 GUI —— 而是用 OrderedDataStore 存储可排序数据并把前列玩家读回来。本指南覆盖完整闭环:保存分数、取前 10 名、把它们渲染成行。从排行榜模板开始可以得到行布局。",
+      "全局排行榜会把所有服务器的玩家按总金币、击杀数或等级排序，并在重启与换服后持久保留。界面本身只是 ScrollingFrame 或 UIListLayout 排出的几行模板，真正考验稳健性的是 OrderedDataStore 频控管理、用户名缓存与服务端定时广播。",
     sections: [
       {
-        heading: "1. 用 OrderedDataStore 存储可排名数据",
-        paragraphs: ["OrderedDataStore 保持值可排序。用玩家的 UserId 当键、分数当值,这样每个玩家只出现一次。"],
-      },
-      {
-        heading: "2. 读取前列玩家",
+        heading: "1. 用 OrderedDataStore 按 UserId 存储整型分数",
         paragraphs: [
-          "GetSortedAsync 按顺序返回条目。传 false 表示降序(最高在前)和页大小。GetCurrentPage 给出排好序的 { key, value } 列表。",
+          "OrderedDataStore 只能存整数且按数值大小排序。务必用 tostring(player.UserId) 作键、分数作值，这样玩家改名后榜单依然准确且不会重复占榜。保存时优先用 UpdateAsync 防止旧服数据覆盖新纪录。",
         ],
-        tip: "GetNameFromUserIdAsync 是一次网络调用 —— 把名字缓存起来,免得每次刷新都重新拉同一个玩家。",
       },
       {
-        heading: "3. 把列表发给客户端并生成行",
+        heading: "2. 服务端定时读取榜单并缓存玩家用户名",
         paragraphs: [
-          "用一个 RemoteEvent 把前列列表发出去;每个客户端按条目生成一行。因为面板有 UIListLayout,挂上每一行就自动堆叠。",
+          "通过 GetSortedAsync(false, 10) 读取降序前 10 名，再用 Players:GetNameFromUserIdAsync 查询昵称（或配合 Players:GetUserThumbnailAsync 取头像）。记住一定要把 userId 对应的名字缓存在表里，避免每次刷新重复请求导致超过 API 配额。",
+        ],
+        tip: "GetNameFromUserIdAsync 属于异步网络请求，建议用 pcall 包裹并缓存结果；全局榜每 60 秒刷新一次足够满足大多数游戏。",
+      },
+      {
+        heading: "3. 下发榜单并在客户端克隆行模板",
+        paragraphs: [
+          "服务端把整理好的前 10 数组通过 RemoteEvent 推给所有客户端（同时新玩家进服时主动推一次缓存榜单）。客户端销毁旧的 GuiObject 行（保留 UIListLayout）后按序克隆 RowTemplate 填入名次、玩家名和格式化分数，前三名可额外换上金银铜高亮。",
+        ],
+      },
+      {
+        heading: "4. 兼容 SurfaceGui 实体大屏与 ScreenGui 弹窗",
+        paragraphs: [
+          "同一份行列表逻辑既可以放进 Lobby 大厅木牌上的 SurfaceGui，也能放进主 HUD 按钮弹出的 ScreenGui 面板里；只需在 SurfaceGui 上设好 PixelsPerStud 清晰度即可。",
         ],
       },
     ],
     faq: [
       {
-        q: "全局排行榜多久刷新一次?",
-        a: "OrderedDataStore 有严格的速率限制。缓存前列列表,用服务端循环每 30–60 秒刷新一次,绝不要在每次分数变化时刷新。",
+        q: "全局排行榜应该多久刷新一次最合适？",
+        a: "OrderedDataStore 有严格的读取频率限制。建议在服务端统一每 60 秒拉取并缓存一次，进服玩家直接读取缓存表，切忌每次玩家分数变动都重新 GetSortedAsync。",
       },
       {
-        q: "为什么一个玩家出现了两次?",
-        a: "你用了 UserId 以外的东西当键。永远用 tostring(player.UserId) 当键,这样每个玩家正好对应一条记录。",
+        q: "为什么排行榜里同一个玩家出现了两次？",
+        a: "说明你用玩家名字当 Key，或混用了测试账号与不同前缀。永远使用 tostring(player.UserId) 作为 OrderedDataStore 的唯一键。",
+      },
+      {
+        q: "怎么显示 1.2K、3.5M 这种简写分数而不是一长串数字？",
+        a: "OrderedDataStore 内部必须存纯整数（比如 1250000），客户端渲染 RowTemplate 时再用格式化函数把整数转换成 1.25M 展示即可。",
+      },
+      {
+        q: "OrderedDataStore 能在客户端 LocalScript 里直接读取吗？",
+        a: "不能，所有 DataStoreService 调用都必须在 ServerScriptService 的服务端 Script 里运行，再通过 RemoteEvent 把只读列表同步给客户端。",
       },
     ],
     relatedGuides: [
       { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
       { slug: "roblox-gui-code-structure", title: "看懂 Roblox GUI 代码:Instance.new、UDim2 与 Parenting" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" },
     ],
   },
 
   "how-to-animate-roblox-guis-with-tweenservice": {
     title: "如何用 TweenService 给 Roblox GUI 加动画",
     description:
-      "让 Roblox GUI 更有质感:让面板从屏外滑入、淡入弹出、串联动画 —— 全靠 TweenService 和合适的 EasingStyle。",
+      "精通 Roblox GUI TweenService 动效：菜单滑入与 CanvasGroup 整体淡入、按钮悬停弹性按压、取消旧补间防鬼畜冲突，以及 EasingStyle 实战搭配。",
     category: "动画",
     intro:
-      "静态的 GUI 显得扁平。TweenService 会在时间推移中插值 Position、Size、透明度等属性,所以菜单能滑入、按钮能弹出、通知能淡入。本指南讲解几乎所有 Roblox UI 动画背后的三种模式。",
+      "生硬闪现的弹窗会让整款游戏显得廉价，而恰当的 TweenService 过渡动画能立刻拉高 UI 质感。无论滑入、缩放弹出、按钮按压回弹还是 CanvasGroup 整体淡出，掌握正确取消旧动画的习惯就能杜绝反复快速开关导致的闪烁和位置错乱。",
     sections: [
       {
-        heading: "1. 让面板滑入到位",
-        paragraphs: ["先把面板放在屏外,再把它的 Position 补间到最终位置。TweenInfo 控制时长和缓动。"],
-      },
-      {
-        heading: "2. 用 Size 淡入弹出",
+        heading: "1. 滑入入场与 Back / Quint 缓动选择",
         paragraphs: [
-          "把 Size 从小补间到满,BackgroundTransparency 从 1 补间到 0,就是弹入效果。多个属性可以放在同一个补间里。",
+          "把面板先放在屏幕外（例如 Position = UDim2.fromScale(0.5, 1.4)），再用 TweenInfo(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out) 补间到目标中心点；需要活泼可爱的模拟/宠物风格弹窗时可换用 Back，科技和严谨竞技 UI 更适合 Quint 或 Quad。",
         ],
       },
       {
-        heading: "3. 用 Completed 串联动画",
-        paragraphs: ["连接到一个补间的 Completed 信号来启动下一个 —— 适合做“先入场再揭示”。"],
-        tip: "EasingStyle 很影响观感:Back 会过冲(俏皮)、Quad 平滑、Elastic 弹跳。按情绪选,别随便挑。",
+        heading: "2. 用 CanvasGroup 实现整个面板整体淡入淡出",
+        paragraphs: [
+          "如果把一个包含十几层文字和图片的子面板逐一改 Transparency，不仅代码繁琐，重叠加透明还会露底透视。把弹窗外框设为 CanvasGroup 并对 GroupTransparency 在 1 和 0 之间做 Tween，就能让整套 UI 统一平滑淡入淡出。",
+        ],
+        tip: "弹窗完全关闭（GroupTransparency = 1）后顺手把 ScreenGui.Enabled 设为 false 或 Active 关闭，既省掉 CanvasGroup 显存渲染，也不会拦截点击。",
+      },
+      {
+        heading: "3. 做一套丝滑的按钮悬停与按压回弹动画",
+        paragraphs: [
+          "连接 MouseEnter、MouseLeave、MouseButton1Down 和 Activated，对按钮内包容器或 UIScale 做 5% 的轻幅缩放（例如悬停放大到 1.05，按下缩到 0.96，松开弹回 1），手感立刻明显提升，而且不会破坏父级 UIListLayout 的排版。",
+        ],
+        tip: "对按钮做缩放动画时，直接补间里面加一个 UIScale 的 Scale 属性最安全——绝不要直接修改受 UIListLayout 控制的按钮 Size！",
+      },
+      {
+        heading: "4. 用缓存引用 Cancel() 上一个补间防止快速点击抽搐",
+        paragraphs: [
+          "玩家疯狂连点开关按钮时，两个反向 Tween 同时改 Position 会互相打架。每次创建新 Tween 前先对上一次保存的变量调用 currentTween:Cancel()，动画就能随时自然打断并平滑折返。",
+        ],
       },
     ],
     faq: [
       {
-        q: "能给 TextColor3 或颜色做补间吗?",
-        a: "能 —— TweenService 给 TextColor3、BackgroundColor3 等 Color3 属性做动画的方式和给 Position 做的一样。",
+        q: "TweenService 能直接补间 BackgroundColor3 或 TextColor3 吗？",
+        a: "可以，Position、Size、Rotation、ImageTransparency 和 Color3 属性都可以放进同一个目标表里同时过渡。",
       },
       {
-        q: "怎么让动画永远循环?",
-        a: "在 TweenInfo 里设 Reverses = true 和 RepeatCount = -1,补间就会来回不停地跑。",
+        q: "为什么给 UIListLayout 里的按钮做放大 Tween 时其他按钮位置乱跳？",
+        a: "因为 UIListLayout 会根据子元素的 Size 重新计算所有兄弟间距。正确做法是给按钮里挂一个 UIScale，然后补间 UIScale.Scale，它只影响视觉缩放而不改变布局占用尺寸。",
+      },
+      {
+        q: "怎么做一个无限呼吸闪烁的提示角标？",
+        a: "把 TweenInfo 第四个参数 RepeatCount 设为 -1，第五个参数 Reverses 设为 true，调用一次 Play() 就会无限来回循环。",
+      },
+      {
+        q: "为什么快速开关菜单两次后，面板在打开瞬间突然又关掉了？",
+        a: "因为旧关闭动画的 Completed 回调依然触发并把 ScreenGui.Enabled 设成了 false。记得每次启动新动画前先对旧补间 :Cancel()，并在回调里加状态判断。",
       },
     ],
     relatedGuides: [
       { slug: "how-to-script-a-roblox-gui", title: "如何给 Roblox GUI 写脚本(点击、开关与缓动)" },
       { slug: "how-to-design-polished-roblox-ui", title: "如何设计精致的 Roblox UI(渐变、描边与层次感)" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "如何制作 Roblox 主菜单 GUI" },
     ],
   },
 
   "how-to-make-a-draggable-roblox-gui": {
     title: "如何制作可拖拽的 Roblox GUI",
     description:
-      "用 UserInputService 让玩家用鼠标或触屏把一个 Roblox GUI Frame 在屏幕上拖来拖去 —— 包括防止它跳到光标位置的偏移修正。",
+      "制作流畅跨平台的 Roblox 可拖拽窗口 GUI：使用 UserInputService 兼容鼠标与触屏、固定点击偏移防跳变、限制不拖出屏幕边界。",
     category: "交互",
     intro:
-      "一个可拖拽的窗口、背包或设置面板用起来很原生。诀窍在 UserInputService:按下开始拖、InputChanged 时移动 Frame、松开停止。关键细节是在开始时记录光标和 Frame 之间的偏移,这样它不会一下子吸到角落。",
+      "老版 Frame.Draggable 属性早已被 Roblox 官方弃用且常在多点触控下失效。现代写法是用标题栏监听 InputBegan 触发拖拽、UserInputService.InputChanged 更新偏移，再把坐标夹紧在屏幕视口范围内，防止玩家一不小心把设置窗拖到屏幕外面再也抓不回来。",
     sections: [
       {
-        heading: "1. 追踪按下、移动和松开",
+        heading: "1. 只监听标题栏（DragHandle）的按下事件",
         paragraphs: [
-          "在标题栏(不是整个面板)上监听,这样里面的按钮还能用。InputBegan 开始拖;UserInputService.InputChanged 移动它;InputEnded 停止。",
+          "把拖拽触发区绑在顶部标题栏或空白把手 Frame 上，千万不要绑在整块主面板上，否则会和里面的 ScrollingFrame、滑块和按钮抢点击事件。",
         ],
       },
       {
-        heading: "2. 让 Frame 跟着光标移动",
+        heading: "2. 记录起始坐标与偏移量，避免刚一按就瞬移跳角",
         paragraphs: [
-          "在 InputChanged 里,把光标自 dragStart 以来的位移加到 Frame 的起始位置上。在 UDim2.new 里混合 Scale 和 Offset,无论 Frame 原本怎么定位都能正常工作。",
+          "按下瞬间同时保存 dragStart = input.Position 和 startPos = frame.Position；移动时用 delta = input.Position - dragStart 叠加上去，确保鼠标或手指点住标题栏哪个像素，窗口就稳稳贴在手下。",
         ],
-        tip: "用一个标题栏 Frame 来拖动,而不是整个面板 —— 否则拖动会吞掉里面按钮的点击。",
+      },
+      {
+        heading: "3. 用 math.clamp 把窗口限制在屏幕可视区域内",
+        paragraphs: [
+          "玩家拖拽太猛或缩小窗口时，面板很容易被甩出视口边缘。用 AbsoluteSize 计算屏幕可移动边界并做 math.clamp，让窗口四条边始终留在安全区内。",
+        ],
+        tip: "如果你的玩家会在屏幕尺寸变化时拖窗口，记得先换算好 AnchorPoint 对应的最小/最大像素边界，再做 clamp。",
+      },
+      {
+        heading: "4. 全局 InputEnded 与关闭弹窗时自动复位拖拽状态",
+        paragraphs: [
+          "有时候玩家鼠标拖出游戏窗口外才松键，因此必须在 UserInputService.InputEnded（而不仅是标题栏自身）里把 dragging 置回 false，以免出现鼠标松开了窗口却还粘在指针上的 Bug。",
+        ],
       },
     ],
     faq: [
       {
-        q: "为什么抓取时 Frame 会跳到光标位置?",
-        a: "你把 Position 直接设成了光标位置。正确做法是在拖动开始时记录 startPos = frame.Position,再把光标的位移(delta)加到它上面,这样 Frame 保留它的抓取点。",
+        q: "为什么我用 Frame.Draggable = true 没反应或者效果很卡？",
+        a: "Frame.Draggable 已被 Roblox 长期标记为废弃（Deprecated），对 Scale、触控与多层嵌套支持很差，新项目应统一改用 UserInputService 实现。",
       },
       {
-        q: "这在手机上能用吗?",
-        a: "能 —— 在 InputBegan 和 InputEnded 里把 Enum.UserInputType.Touch 当成 MouseButton1 一样处理,在 InputChanged 里处理 Touch。",
+        q: "为什么刚点下标题栏准备拖的时候，窗口突然跳走一大截？",
+        a: "因为直接把鼠标坐标赋给了 frame.Position。必须先记下按下瞬间的 dragStart 和 startPos，再用差值 delta 叠加。",
+      },
+      {
+        q: "这套拖拽脚本在手机和平板触屏上能用吗？",
+        a: "可以——在 InputBegan、InputChanged 和 InputEnded 里同时兼容 Enum.UserInputType.Touch，或者直接支持 UIDragDetector 实例。",
+      },
+      {
+        q: "听说 Roblox 出了原生 UIDragDetector，可以直接用吗？",
+        a: "可以！在面板里挂一个 Roblox 官方的 UIDragDetector 并设好 BoundingUI，几乎零脚本就能拖；需要自定义平滑惯性、吸附或拖拽权限时，手写 UserInputService 更灵活。",
       },
     ],
     relatedGuides: [
@@ -593,44 +766,59 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
   "how-to-make-a-responsive-roblox-gui": {
     title: "如何制作响应式的 Roblox GUI",
     description:
-      "做一个在手机、平板、桌面都好看的 Roblox GUI:用 Scale 而非 Offset 定尺寸、用 AnchorPoint 居中、用 UITextSizeConstraint 限制文字、用 UIScale 缩小整段。",
+      "让同一套 Roblox GUI 在 1080p、4K 电脑、平板与竖横屏手机上都比例协调：Scale 尺寸、AnchorPoint 居中、UIAspectRatioConstraint 锁定比例、UITextSizeConstraint 与 UIScale。",
     category: "布局",
     intro:
-      "Roblox 跑在从手机到 4K 显示器的各种设备上,所以用固定像素尺寸搭的 GUI 在不对的屏幕上就会错位。解决办法是用 Scale(屏幕的几分之几)而不是 Offset(像素)来思考,锚定元素让它们重新居中,限制文字让它保持可读。本指南讲解每个响应式 Roblox UI 背后的四个习惯。",
+      "Roblox 玩家超过一半使用手机和平板，剩下的用笔记本、带鱼屏甚至主机电视。如果在 Studio 里用固定像素（Offset）摆 UI，自己电脑看起来正好，到手机上就会溢出或者小得点不到。养成这五个排版习惯，就能一次做对全端适配。",
     sections: [
       {
-        heading: "1. 用 Scale 而不是 Offset 定尺寸",
+        heading: "1. 用 Scale（比例）而不是 Offset（像素）定主体位置和大小",
         paragraphs: [
-          "UDim2 有一个 Scale 分量和一个 Offset 分量。fromScale(0.4, 0.6) 表示屏幕的 40%/60% —— 它会自适应。fromOffset(400, 600) 表示固定像素 —— 它不会。",
+          "UDim2 有 Scale（屏幕或父容器百分比）和 Offset（固定像素）两套分量。主体弹窗和 HUD 容器务必用 Scale（例如 UDim2.fromScale(0.42, 0.58)），只在内边距 UIPadding、圆角 UICorner 或极小图标间隙使用少量像素 Offset。",
         ],
       },
       {
-        heading: "2. 用 AnchorPoint 居中",
+        heading: "2. 配合 AnchorPoint 锁住中心与边缘锚点",
         paragraphs: [
-          "Position 0.5, 0.5 把左上角放在屏幕中心。设 AnchorPoint 0.5, 0.5,元素就以自己的中点居中。",
+          "居中弹窗设 AnchorPoint(0.5, 0.5) + Position(0.5, 0.5)；右下角按钮设 AnchorPoint(1, 1) + Position(0.97, 0.96)。只有锚点选对方向，面板在屏幕拉宽或压扁时才不会歪出边界。",
         ],
       },
       {
-        heading: "3. 保持文字可读",
+        heading: "3. 用 UIAspectRatioConstraint 保住方形卡片和图标不变形",
         paragraphs: [
-          "TextScaled 会让文字放大到填满它的框,在大屏上会变得很大。一个 UITextSizeConstraint 给最大字号设上限,让它保持整洁。",
+          "纯 Scale 在 16:9 电脑和超窄手机上会把正方形格子拉成扁长条。给商品卡片、背包格子或主容器加一个 UIAspectRatioConstraint（AspectRatio = 1 做正方形，或设 1.6 保持弹窗长宽比），搭配 UISizeConstraint 限制最小可触控宽度。",
         ],
-        tip: "编辑器的 桌面 / 平板 / 手机 切换能在每种视口预览同一个 GUI —— 用 Scale 搭建,三种都检查一遍。",
+      },
+      {
+        heading: "4. 用 UITextSizeConstraint 控制字号上限，用 UIScale 统一缩放 HUD",
+        paragraphs: [
+          "打开 TextScaled = true 能让小屏文字缩小适应框体，但如果不配 UITextSizeConstraint（例如 MaxTextSize = 24, MinTextSize = 11），大显示器上的正文会变得像标题一样刺眼；角落 HUD 密度较高时，还能按视口宽度用脚本调整 ScreenGui 下的 UIScale。",
+        ],
+        tip: "在 Roblox GUI Maker 编辑器顶栏或 Studio 的 Test -> Device 模拟器里，务必依次切换到 iPhone / iPad / 1080p 视口检验一遍再导出。",
       },
     ],
     faq: [
       {
-        q: "为什么我的 GUI 在手机上很小?",
-        a: "它是用 Offset(像素)定尺寸的。改用 UDim2.fromScale 的 Scale,让 GUI 是屏幕的几分之几,从而适配每种设备。",
+        q: "为什么在 Studio 电脑画布看着正好，一到手机就飞出屏幕外面？",
+        a: "通常是 Position 或 Size 写在了 Offset（像素）上，比如 X Offset 800 在手机横屏下会直接冲出屏幕。改成 Scale 并加 UISizeConstraint / UIAspectRatioConstraint 即可。",
       },
       {
-        q: "怎么在小屏上缩小整个 GUI?",
-        a: "给 ScreenGui 挂一个 UIScale 并设它的 Scale 属性(比如 0.8),一起缩小所有后代 —— 适合在手机上塞下密集的 HUD。",
+        q: "Roblox Studio 在哪里模拟手机、平板和不同分辨率屏幕？",
+        a: "在 Studio 顶部菜单打开 Test -> Device（或 Home/View 里的 Emulator 工具），即可一键切换 iPhone、iPad、Xbox 和 4K 画面实时检验 GUI 适配效果。",
+      },
+      {
+        q: "怎么不逐一改尺寸，就把整套密集 HUD 在手机上整体缩小一圈？",
+        a: "给对应 ScreenGui 挂一个 UIScale，并在检测到手机窄屏时把 UIScale.Scale 设为 0.8–0.85，整个层级会等比一起缩小。",
+      },
+      {
+        q: "TextScaled 打开后文字一大一小看起来很乱怎么办？",
+        a: "TextScaled 会尽量把每个字填满盒子，短词和长句字号差距极大。保持相同行高按钮并用 UITextSizeConstraint 锁死 MaxTextSize（例如 20），或者统一启用 AutomaticSize + 固定字号。",
       },
     ],
     relatedGuides: [
       { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
       { slug: "how-to-use-uilistlayout-in-roblox", title: "如何在 Roblox 里使用 UIListLayout" },
+      { slug: "how-to-design-polished-roblox-ui", title: "如何设计精致的 Roblox UI(渐变、描边与层次感)" },
     ],
   },
 
@@ -1127,6 +1315,195 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
       { slug: "how-to-make-a-draggable-roblox-gui", title: "如何制作可拖拽的 Roblox GUI" },
     ],
   },
+
+  "how-to-import-rbxmx-into-roblox-studio": {
+    title: "如何把 .rbxmx GUI 模型文件导入 Roblox Studio",
+    description:
+      "不用任何插件把 .rbxmx XML GUI 模型导入 Roblox Studio StarterGui：详细 Explorer 操作步骤、.rbxmx 与 .lua 脚本对比，以及顶部状态栏裁切与重生问题排查。",
+    category: "工作流",
+    customCta: {
+      href: "/editor",
+      label: "打开编辑器（支持免费 .lua 与 Pro .rbxmx 导出）",
+    },
+    intro:
+      "如果你从 Roblox GUI Maker 导出了 .rbxmx 模型文件（或者收到美术/程序同事发来的 UI 模型包），直接导入 Studio 就能把现成的 ScreenGui、Frame、UIGradient 和 LocalScript 一次性放进层级树里。下面讲解正确导入 StarterGui 的步骤、.rbxmx 与纯 Luau 脚本的区别，以及导入后常见小问题排查。",
+    sections: [
+      {
+        heading: "1. .rbxmx 模型文件与 .lua 运行时脚本怎么选",
+        paragraphs: [
+          ".lua GUI 脚本会在玩家进服后用 Instance.new 动态搭出界面，非常适合放进 Git 或 Rojo 团队工作流；而 .rbxmx 是 Roblox Studio 原生 XML 模型格式，导入后能立刻在视口和 Properties 面板里可视化微调圆角、渐变、描边与间距。",
+        ],
+      },
+      {
+        heading: "2. 在 Roblox Studio 里把 .rbxmx 导入 StarterGui",
+        paragraphs: [
+          "打开你的地图项目并展开 Explorer 面板。GUI 文件务必放进 StarterGui（绝不要直接插到 Workspace），这样 Roblox 才会自动克隆给每个进入游戏的玩家。",
+          "在 StarterGui 上点击鼠标右键 -> 选择 Insert from File...（从文件插入）-> 选中你的 .rbxmx 文件（单个界面或完整 Kit 的 *-complete.rbxmx），随后按 F5 Play 即可直接测试按钮和切换逻辑。",
+        ],
+        tip: "请直接在 Roblox Studio 内右键 StarterGui -> Insert from File... 导入，不要在系统桌面直接双击 .rbxmx 文件。",
+      },
+      {
+        heading: "3. 把配套服务端脚本移入 ServerScriptService",
+        paragraphs: [
+          "界面展示、开关与动画保留在 StarterGui 的 LocalScript 里，而扣金币、兑换码、每日签到以及 Marketplace 购买验证必须放在服务端。若你的 UI 套件压缩包内含 server/*.server.lua 文件，请在 ServerScriptService 新建 Script 粘入并在 ReplicatedStorage 建好对应 RemoteEvent。",
+        ],
+      },
+      {
+        heading: "4. 排查导入后顶部留白、重生复现或全屏点击问题",
+        paragraphs: [
+          "如果全屏背景上方空了一条缝，选中 ScreenGui 把 IgnoreGuiInset 改为 true；如果角色死亡重生时主菜单又自己弹出来，请把 ResetOnSpawn 改为 false；若导入了 5 屏完整 Kit，可检查其中自带的 KitScreenSwitcher LocalScript 如何控制默认启动屏。",
+        ],
+        tip: "由于 .rbxmx 使用 Roblox Studio 原生格式，所有组件均可完全离线导入与发布，不需要额外购买或安装任何 Studio 插件。",
+      },
+    ],
+    faq: [
+      {
+        q: ".rbxmx GUI 模型应该导入到 Explorer 的哪个节点下？",
+        a: "右键 StarterGui -> Insert from File... 选中 .rbxmx 文件。若误放到 Workspace 下，玩家进入游戏后屏幕上不会显示该界面。",
+      },
+      {
+        q: "打开 .rbxmx 模型需要在 Studio 里安装插件吗？",
+        a: "不需要。.rbxmx 是 Roblox 官方原生支持的 XML 模型格式，Studio 自带的 Insert from File... 即可完整还原所有实例、UICorner、UIGradient 与脚本。",
+      },
+      {
+        q: "为什么导入的全屏菜单或加载页最顶端空了一条？",
+        a: "Roblox 默认为左上角/右上角核心栏预留安全边距。选中 ScreenGui 并开启 IgnoreGuiInset = true 即可铺满整块屏幕。",
+      },
+      {
+        q: "单屏 .rbxmx 和 UI Kit 里的 -complete.rbxmx 完整包有什么区别？",
+        a: "单屏 .rbxmx 导入一个独立的 ScreenGui；而 Pro UI Kit 的 -complete.rbxmx 把全部 5 个统一风格界面和 KitScreenSwitcher 导航脚本打包在一起，导入一次按 Play 即可直接联动。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-gui-in-roblox", title: "如何在 Roblox 里制作 GUI" },
+      { slug: "roblox-gui-code-structure", title: "看懂 Roblox GUI 代码:Instance.new、UDim2 与 Parenting" },
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "如何制作 Roblox 主菜单 GUI" },
+    ],
+  },
+
+  "how-to-make-roblox-gamepass-icons": {
+    title: "如何制作并上传 Roblox 通行证图标（512×512 规范）",
+    description:
+      "一文搞懂 Roblox 通行证（Game Pass）与徽章图标规范：512x512 尺寸、商店页圆形裁切安全区设计、Creator Dashboard 上传步骤，以及游戏内 ImageLabel 展示。",
+    category: "设计",
+    customCta: {
+      href: "/zh/gamepass-icon-maker",
+      label: "打开免费 512x512 通行证图标生成器",
+    },
+    intro:
+      "Roblox 通行证（Game Pass）和徽章图标会同时出现在两个截然不同的位置：游戏详情页 Store 商店标签里的圆形缩略图，以及游戏内商店 GUI 里的圆角方卡。如果图标徽章或文字画得太靠四角，网页商店页一裁切就会被切掉边。下面给出 512x512 安全区标准与官方上传流程。",
+    sections: [
+      {
+        heading: "1. 严格使用 512x512 正方形 PNG 并留出圆形安全区",
+        paragraphs: [
+          "导出通行证与徽章图标时统一选用 512x512 像素 1:1 正方形 PNG（支持透明通道或实底卡片），高对比度轮廓在手机端 64x64 列表缩略图里依然清晰。",
+          "核心徽章、双倍字样和光圈务必收在画布中间约 82%–88% 的圆形安全区内（四周保留约 30–40px 边距），这样在网页端被强制裁成圆形时关键信息丝毫不缺，放到游戏内方卡里也同样饱满。",
+        ],
+      },
+      {
+        heading: "2. 挑选一眼看懂卖点的徽章、外框与超短标语",
+        paragraphs: [
+          "优秀通行证图标能让玩家半秒钟看懂功能：皇冠/VIP 代表尊贵特权、闪电/飞靴代表 2 倍速度、磁铁代表自动拾取、双剑代表双倍伤害。居中主符号最多配 1–2 个短词（例如 VIP、2X COINS），切忌在小图里塞长句子。",
+        ],
+        tip: "使用本站免费的通行证图标生成器（/zh/gamepass-icon-maker），可直接切换暗黑奇幻、动漫、跑酷、模拟器与科幻配色，实时开关圆形安全区预览并一键下载 512x512 PNG。",
+      },
+      {
+        heading: "3. 在 Roblox Creator Dashboard 上传并拿到 Pass ID",
+        paragraphs: [
+          "登录 create.roblox.com，依次打开 Creations -> 选择你的 Experience -> Monetization -> Passes -> Create a Pass。点击 Change Image 上传你的 512x512 PNG，写好名称与简介并保存。",
+          "等待图片审核通过后，复制 Pass ID 用于 PromptGamePassPurchase；如果还要在游戏内自定义商店界面展示图标，同时复制对应贴图的 rbxassetid:// Asset ID。",
+        ],
+      },
+      {
+        heading: "4. 在游戏内商店 GUI 的 ImageLabel 里无变形显示",
+        paragraphs: [
+          "给显示图标的 ImageLabel 设置 ScaleType = Enum.ScaleType.Fit，同时放一个 AspectRatio = 1 的 UIAspectRatioConstraint 锁定正方形比例，再把 BackgroundTransparency 设为 1 贴合你的商店卡片底色。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Roblox Gamepass 通行证图标应该做多大分辨率？",
+        a: "推荐使用 512x512 像素的 1:1 正方形 PNG 图片，清晰度足够覆盖桌面端与移动端商店页及游戏内高清卡片。",
+      },
+      {
+        q: "为什么我上传到 Roblox 商店页面的通行证图标四周被切掉一圈？",
+        a: "因为 Roblox 在游戏主页 Store 标签会给 Pass 和 Badge 图标套上圆形遮罩。所有文字与徽章边界都必须放在内切圆形安全区之内。",
+      },
+      {
+        q: "通行证图标可以用透明背景 PNG 吗？",
+        a: "完全可以。透明底 PNG 在网站商店圆形框和游戏内深色发光商店卡片里都能自然融合。",
+      },
+      {
+        q: "Pass ID 和图片 Asset ID 有什么区别，分别怎么用？",
+        a: "Pass ID 用来传给 MarketplaceService:PromptGamePassPurchase 和 UserOwnsGamePassAsync 验证购买；图片 Asset ID（rbxassetid://...）则填在游戏内 ImageLabel.Image 上显示图样。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-gamepass-shop-gui", title: "如何制作 Roblox 游戏通行证（Game Pass）商店 GUI" },
+      { slug: "how-to-design-polished-roblox-ui", title: "如何设计精致的 Roblox UI(渐变、描边与层次感)" },
+      { slug: "how-to-make-a-roblox-shop-gui", title: "如何制作 Roblox 商店 GUI" },
+    ],
+  },
+
+  "how-to-make-a-roblox-gamepass-shop-gui": {
+    title: "如何制作 Roblox 游戏通行证（Game Pass）商店 GUI",
+    description:
+      "制作并编写 Roblox Game Pass 通行证商店 GUI：三列/网格卡片排版、MarketplaceService:PromptGamePassPurchase 拉起 Robux 弹窗、已拥有状态同步与服务端校验。",
+    category: "商店",
+    intro:
+      "与扣游戏金币的普通商店不同，Game Pass（通行证）商店直接调用 Roblox 原生 MarketplaceService 弹出 Robux 购买确认。做得好的通行证商店能清晰突出主力 VIP/双倍卡、购买后立刻切换成 OWNED 已拥有状态，并在玩家进服与中途购买时由服务端可靠发放永久特权。",
+    sections: [
+      {
+        heading: "1. 排版通行证卡片与高价值高亮区",
+        paragraphs: [
+          "用 UIListLayout 或等分 Scale 卡片呈现每个通行证：上方配 1:1 正方形 512x512 通行证图标，中间是名称和 1 句核心收益（如“永久 +100% 金币收益”），底部配高对比度 Robux 购买按钮；主力 VIP 卡可以叠加金色或电蓝色 UIGradient 与 UIStroke 提升点击转化。",
+        ],
+      },
+      {
+        heading: "2. 在 LocalScript 里安全唤起 Robux 购买弹窗",
+        paragraphs: [
+          "把所有 PassId 统一放进 ReplicatedStorage 配置表。玩家点击购买按钮前，先通过 pcall 检查 UserOwnsGamePassAsync：若已拥有则把按钮直接灰显为 OWNED，否则调用 MarketplaceService:PromptGamePassPurchase(localPlayer, passId)。",
+        ],
+      },
+      {
+        heading: "3. 监听 PromptGamePassPurchaseFinished 即时刷新已购买状态",
+        paragraphs: [
+          "在客户端同时监听 MarketplaceService.PromptGamePassPurchaseFinished，核对 player == localPlayer 且 wasPurchased == true 后，立刻把按钮改写成 OWNED 并禁用重复点击，玩家不用重进服务器就能看到变化。",
+        ],
+        tip: "绝对不要只靠客户端脚本发双倍属性或 VIP 称号！所有实质加成与权限都必须在 ServerScriptService 里独立核验并生效。",
+      },
+      {
+        heading: "4. 在 ServerScriptService 为新进服与即时购买玩家发放特权",
+        paragraphs: [
+          "服务端 Script 在 Players.PlayerAdded 时用 pcall 查询一次 UserOwnsGamePassAsync 并把状态缓存到 Player Attribute（如 HasVIP = true），同时监听服务端 PromptGamePassPurchaseFinished 做到进服必有、中途买完秒发。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "怎么在 Roblox Studio 里免费测试 Game Pass 购买流程？",
+        a: "直接在 Studio 里按 Play 运行测试，调用 PromptGamePassPurchase 会弹出虚拟免费测试购买框（不扣真实 Robux），确认后同样会正常触发 PromptGamePassPurchaseFinished（wasPurchased = true）。",
+      },
+      {
+        q: "为什么频繁调用 UserOwnsGamePassAsync 会报错或被限流？",
+        a: "UserOwnsGamePassAsync 需要访问 Roblox 线上接口。正确方式是进服 PlayerAdded 时用 pcall 检查并缓存在玩家 Attribute 里，购买完成事件里再同步更新该缓存。",
+      },
+      {
+        q: "Game Pass 和 Developer Product（开发者商品）脚本有什么区别？",
+        a: "永久只买一次的特权（如 VIP、双倍金币）用 Game Pass 和 PromptGamePassPurchase；可无限重复购买的消耗品（如金币礼包、十连抽）要用 Developer Product 和 MarketplaceService.ProcessReceipt。",
+      },
+      {
+        q: "去哪里制作适配 Game Pass 商店卡片的配套图标？",
+        a: "访问本站免费的 Roblox 通行证图标生成器（/zh/gamepass-icon-maker），挑选徽章与配色导出 512x512 PNG / SVG，或配合 5 屏 Pro UI Kit 成套下载。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-roblox-gamepass-icons", title: "如何制作并上传 Roblox 通行证图标（512×512 规范）" },
+      { slug: "how-to-make-a-roblox-shop-gui", title: "如何制作 Roblox 商店 GUI" },
+      { slug: "how-to-import-rbxmx-into-roblox-studio", title: "如何把 .rbxmx GUI 模型文件导入 Roblox Studio" },
+    ],
+  },
 };
 
 // Overlays the Chinese prose onto the English Guide, keeping the English Luau
@@ -1142,6 +1519,7 @@ export function getGuideZh(slug: string): Guide | undefined {
     metaTitle: zh.metaTitle ?? en.metaTitle,
     description: zh.description,
     category: zh.category,
+    customCta: zh.customCta ?? en.customCta,
     intro: zh.intro,
     sections: en.sections.map((s, i) => ({
       ...s,

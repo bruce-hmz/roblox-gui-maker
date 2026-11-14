@@ -53,7 +53,7 @@ export default function PrivacyPage() {
               "No accounts. There is no login, sign-up, or profile. We never ask for your name, email, or Roblox username.",
               "No project uploads. Everything you design stays in your browser's local storage. Your GUI projects are never transmitted to or stored on our servers.",
               "No Roblox credentials. This tool never asks for your Roblox password or your .ROBLOSECURITY cookie, and has no way to access your Roblox account.",
-              "No payment data. The tool is free, so there is no checkout, card, or billing information collected.",
+              "Minimal checkout handling. Core editing, Luau export, and single Gamepass icon downloads are free with zero payment data. If you choose to buy a one-time Studio Pro Pass, card entry happens on Stripe's hosted Checkout page — we never see or store card details, and only verify the Stripe session ID to set a signed unlock cookie in your browser.",
             ].map((t) => (
               <li key={t} className="flex gap-2.5">
                 <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
