@@ -225,10 +225,24 @@ export default function Home() {
           <p className="mt-4 text-xs sm:text-sm text-ink-dim">
             Also included:{" "}
             <Link
+              href="/roblox-shirt-tester"
+              className="text-focus hover:underline font-medium"
+            >
+              3D Shirt Tester
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/roblox-thumbnail-maker"
+              className="text-focus hover:underline font-medium"
+            >
+              1920×1080 Thumbnail Maker
+            </Link>{" "}
+            ·{" "}
+            <Link
               href="/gamepass-icon-maker"
               className="text-focus hover:underline font-medium"
             >
-              Free 512×512 Gamepass Icon Maker
+              512×512 Gamepass Icons
             </Link>{" "}
             ·{" "}
             <Link href="/kits" className="text-focus hover:underline font-medium">
@@ -443,6 +457,77 @@ export default function Home() {
                 512×512 Icon Guide
               </Link>
             </div>
+          </div>
+        </section>
+
+        {/* free creator tools suite */}
+        <section className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-wider text-focus mb-1">
+                Free Roblox Creator Tools
+              </p>
+              <h2 className="text-2xl font-semibold text-ink">
+                Every asset helper alongside your GUI workflow
+              </h2>
+            </div>
+            <Link href="/showcase" className="text-sm text-focus hover:underline">
+              Explore Showcase →
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                href: "/roblox-shirt-tester",
+                badge: "3D R6 · Save 10 Robux",
+                title: "3D Shirt & Pants Tester",
+                desc: "Drop any 585×559 PNG to orbit an R6 avatar 360° and verify collar, back, and sleeve seams before uploading.",
+              },
+              {
+                href: "/roblox-shirt-template-maker",
+                badge: "585×559 PNG & SVG",
+                title: "Shirt Template Maker",
+                desc: "Generate upload-ready transparent clothing templates with collar cutouts, trim stripes, and UV labels.",
+              },
+              {
+                href: "/roblox-thumbnail-maker",
+                badge: "1920×1080 + 512×512",
+                title: "Thumbnail & Safe-Zone Studio",
+                desc: "Compose high-CTR game banners, inspect Discover 220px card readability, and crop matching 1:1 icons.",
+              },
+              {
+                href: "/roblox-ui-sizer",
+                badge: "UDim2 + rbxassetid://",
+                title: "UDim2 UI Sizer & Decal Preview",
+                desc: "Convert pixel Offsets into responsive UDim2.fromScale + UIAspectRatioConstraint Luau and test decals.",
+              },
+              {
+                href: "/gamepass-icon-maker",
+                badge: "512×512 Circular Crop",
+                title: "Gamepass Icon Maker",
+                desc: "Design crisp store badges with sunbursts, text, and a live circle crop safe-zone indicator.",
+              },
+              {
+                href: "/studio-plugin",
+                badge: "Zero HTTP Permissions",
+                title: "Offline Studio Sync Plugin",
+                desc: "Install RobloxGuiMakerSync.lua once and paste /editor JSON into Studio with full Ctrl+Z Undo.",
+              },
+            ].map((tool) => (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                className="group rounded-xl border border-line bg-panel p-5 transition hover:border-focus hover:bg-raised"
+              >
+                <p className="text-[11px] font-mono uppercase tracking-wider text-focus mb-1.5">
+                  {tool.badge}
+                </p>
+                <h3 className="text-base font-semibold text-ink group-hover:text-focus transition">
+                  {tool.title} →
+                </h3>
+                <p className="mt-1.5 text-sm text-ink-dim leading-relaxed">{tool.desc}</p>
+              </Link>
+            ))}
           </div>
         </section>
 

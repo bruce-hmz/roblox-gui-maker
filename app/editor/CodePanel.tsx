@@ -16,6 +16,8 @@ type Props = {
   onExportRbxmx?: () => void;
   exportingRbxmx?: boolean;
   exportError?: string | null;
+  onCopyPluginJson?: () => void;
+  pluginJsonCopied?: boolean;
 };
 
 export function CodePanel({
@@ -28,6 +30,8 @@ export function CodePanel({
   onExportRbxmx,
   exportingRbxmx = false,
   exportError = null,
+  onCopyPluginJson,
+  pluginJsonCopied = false,
 }: Props) {
   const [activeOutput, setActiveOutput] = useState<CodeOutput>("client");
   const activeCode = activeOutput === "client" ? clientCode : serverCode;
@@ -107,6 +111,21 @@ export function CodePanel({
               </span>
             </button>
           )}
+          {onCopyPluginJson && (
+            <button
+              type="button"
+              onClick={onCopyPluginJson}
+              title="Copy v1 scene JSON for the offline Roblox Studio companion plugin"
+              className="flex items-center gap-1.5 rounded-md border border-line bg-raised px-2.5 py-1 text-xs font-medium text-ink transition hover:border-focus hover:bg-raised-hi focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {pluginJsonCopied ? (
+                <Check className="w-3.5 h-3.5 text-success" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-ink-dim" />
+              )}
+              {pluginJsonCopied ? "Plugin JSON Copied" : "Copy Plugin JSON"}
+            </button>
+          )}
           <button
             type="button"
             onClick={onDownloadPackage}
@@ -166,6 +185,12 @@ export function CodePanel({
             className="font-medium text-focus hover:underline"
           >
             New to GUI scripting? Read the guide →
+          </Link>
+          <Link
+            href="/studio-plugin"
+            className="font-medium text-focus hover:underline"
+          >
+            Offline Studio Plugin →
           </Link>
           <Link
             href="/"

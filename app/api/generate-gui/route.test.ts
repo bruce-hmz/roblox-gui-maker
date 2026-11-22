@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { POST, __resetGuardsForTests } from "./route";
 import { sanitizeScene } from "../../editor/persistence";
 import type { SceneNode } from "../../editor/catalog";
+import { signProPassToken } from "../../lib/pro-access";
 
 type ApiResponse = {
   scene?: SceneNode[];
@@ -10,16 +11,28 @@ type ApiResponse = {
     fallbackUsed: boolean | "template";
     warnings: string[];
     latencyMs: number;
+    isPro?: boolean;
+    remainingHour?: number;
+    remainingDay?: number;
   };
   error?: string;
   message?: string;
+  upgradeSuggested?: boolean;
 };
 
-async function post(body: unknown, ip = "9.9.9.9"): Promise<{ status: number; json: ApiResponse; headers: Headers }> {
+async function post(
+  body: unknown,
+  ip = "9.9.9.9",
+  extraHeaders: Record<string, string> = {}
+): Promise<{ status: number; json: ApiResponse; headers: Headers }> {
   const response = await POST(
     new Request("http://localhost/api/generate-gui", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-forwarded-for": ip },
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": ip,
+        ...extraHeaders,
+      },
       body: JSON.stringify(body),
     })
   );
@@ -101,9 +114,35 @@ describe("POST /api/generate-gui", () => {
     const blocked = await post({ prompt: "a hud" }, "1.2.3.4");
     expect(blocked.status).toBe(429);
     expect(blocked.json.error).toBe("rate_limited");
+    expect(blocked.json.upgradeSuggested).toBe(true);
     expect(blocked.headers.get("Retry-After")).toBeTruthy();
     // Different IP unaffected.
     expect((await post({ prompt: "a hud" }, "5.6.7.8")).status).toBe(200);
+  });
+
+  it("grants expanded Pro quota and sets meta.isPro with a valid Pro Pass token", async () => {
+    const proSecret = "sk_test_0123456789abcdef0123456789abcdef";
+    stubEnv({ AI_RATE_HOUR: "2", AI_RATE_DAY: "4", PRO_PASS_SECRET: proSecret });
+    __resetGuardsForTests();
+    const proToken = await signProPassToken(
+      {
+        version: 1,
+        plan: "pro_all_access",
+        sessionId: "cs_test_pro_rate_limit_01",
+        issuedAt: Date.now(),
+      },
+      proSecret
+    );
+
+    expect((await post({ prompt: "a hud" }, "1.2.3.4")).status).toBe(200);
+    expect((await post({ prompt: "a hud" }, "1.2.3.4")).status).toBe(200);
+    expect((await post({ prompt: "a hud" }, "1.2.3.4")).status).toBe(429);
+
+    const proRes = await post({ prompt: "a hud" }, "1.2.3.4", { "x-pro-token": proToken });
+    expect(proRes.status).toBe(200);
+    expect(proRes.json.meta?.isPro).toBe(true);
+    expect(proRes.json.meta?.remainingHour).toBe(29);
+    expect(proRes.json.meta?.remainingDay).toBe(149);
   });
 
   it("returns 503 when the daily budget is exhausted", async () => {

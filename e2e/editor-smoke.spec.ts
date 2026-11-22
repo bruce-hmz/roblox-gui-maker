@@ -23,11 +23,11 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
 
   await page.goto("/");
   await expect(page).toHaveTitle(
-    "Free Roblox GUI Maker with AI | Visual Editor & Luau Export"
+    "Free Roblox GUI Maker with AI | Visual Editor, Luau & .rbxmx Export"
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    /real editable GUI|No login required/
+    /real editable ScreenGui instances|Studio \.rbxmx models/
   );
   await expect(
     page.getByRole("heading", { level: 1, name: "Free Roblox GUI Maker with AI" })
@@ -39,7 +39,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
     "Responsive Layout",
     "Interaction Preview",
     "Server-Safe Actions",
-    "ZIP + JSON Export",
+    "Luau, ZIP & .rbxmx",
   ]) {
     await expect(
       page.getByRole("heading", { level: 3, name: heading })
@@ -55,7 +55,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
     (value) => value["@type"] === "SoftwareApplication"
   );
   expect(JSON.stringify(webAppSchema)).toContain(
-    "Browser-local ZIP project export"
+    "browser-local ZIP project export"
   );
   expect(JSON.stringify(webAppSchema)).toContain(
     "Server handlers for RemoteEvent and Teleport actions"
@@ -66,15 +66,19 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
   const faq = page.getByRole("region", {
     name: "Frequently asked questions",
   });
-  await expect(faq.locator("summary")).toHaveCount(7);
+  await expect(faq.locator("summary")).toHaveCount(9);
   await faq
     .getByText("How is this different from AI image generators?")
     .click();
-  await expect(faq.getByText(/actual ScreenGui, Frame, and TextButton instances/)).toBeVisible();
-  await faq.getByText("Does the editor generate game logic?").click();
+  await expect(
+    faq.getByText(/actual ScreenGui, Frame, TextLabel, and TextButton instances/)
+  ).toBeVisible();
+  await faq
+    .getByText("Does the editor generate server scripts and game logic?")
+    .click();
   await expect(
     faq.getByText(
-      /Secure economy, purchase, reward, permission, and datastore validation/
+      /Economy balance, Robux purchase verification via MarketplaceService/
     )
   ).toBeVisible();
   const faqSchema = structuredData.find(
@@ -85,13 +89,13 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
       acceptedAnswer: { text: string };
     }>;
   };
-  expect(faqSchema.mainEntity).toHaveLength(7);
+  expect(faqSchema.mainEntity).toHaveLength(9);
   expect(
     faqSchema.mainEntity?.find(
       (item) => item.name === "Is Roblox GUI Maker free to use?"
     )?.acceptedAnswer.text
   ).toBe(
-    "Yes. The editor is free, requires no account, and keeps project work in your browser unless you download it."
+    "Yes. The visual editor, AI scene starter, all 13 templates, the 512×512 Gamepass Icon Maker, and clean client + server Luau, JSON, and ZIP exports are free with no account required. Optional one-time Pro passes unlock native .rbxmx Studio model export and multi-screen UI Kit bundles."
   );
 
   await page.goto("/editor");

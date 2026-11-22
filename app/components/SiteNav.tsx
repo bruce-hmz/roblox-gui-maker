@@ -20,7 +20,18 @@ const ITEMS: NavItem[] = [
     href: "/gamepass-icon-maker",
     zhHref: "/zh/gamepass-icon-maker",
   },
-  { en: "Showcase", zh: "作品集", href: "/showcase", zhHref: "/zh/showcase" },
+  {
+    en: "Shirt Tester",
+    zh: "服装试穿",
+    href: "/roblox-shirt-tester",
+    zhHref: "/zh/roblox-shirt-tester",
+  },
+  {
+    en: "Thumbnails",
+    zh: "游戏封面",
+    href: "/roblox-thumbnail-maker",
+    zhHref: "/zh/roblox-thumbnail-maker",
+  },
   { en: "Guides", zh: "教程", href: "/guides", zhHref: "/zh/guides" },
   { en: "Pricing", zh: "价格", href: "/pricing", zhHref: "/zh/pricing" },
 ];

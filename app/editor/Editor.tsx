@@ -31,7 +31,7 @@ import { generateServerLuau } from "./server-luau";
 import { createProjectPackage } from "./project-package";
 import { ProUpgradeModal } from "../components/ProUpgradeModal";
 import { AI_HANDOFF_KEY, type AiHandoff } from "../lib/ai-handoff";
-import { requestEditorRbxmxExport } from "../lib/pro-client";
+import { loadClientProStatus, requestEditorRbxmxExport } from "../lib/pro-client";
 import { trackEvent } from "../lib/track";
 import {
   ONBOARDING_COPY,
@@ -117,6 +117,7 @@ export function Editor({
   const [scene, setScene] = useState<SceneNode[]>(start);
   const [selectedId, setSelectedId] = useState<string | null>("play");
   const [copied, setCopied] = useState<CodeOutput | null>(null);
+  const [pluginJsonCopied, setPluginJsonCopied] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [proModalOpen, setProModalOpen] = useState(false);
   const [exportingRbxmx, setExportingRbxmx] = useState(false);
@@ -130,12 +131,14 @@ export function Editor({
   const [aiOnboarding, setAiOnboarding] = useState(false);
   const [aiRegenerating, setAiRegenerating] = useState(false);
   const [aiRegenerateError, setAiRegenerateError] = useState<string | null>(null);
+  const [aiUpgradeSuggested, setAiUpgradeSuggested] = useState(false);
   const aiInfoRef = useRef<AiInfo | null>(null);
   const aiFirstEditFired = useRef(false);
   const sceneRef = useRef(scene);
   const importRequest = useRef(0);
   const copyRequest = useRef(0);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pluginJsonTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
   // continuous edits (drag/typing/nudge) commit on a debounced timer so a
@@ -447,17 +450,29 @@ export function Editor({
     if (!info || aiRegenerating) return;
     setAiRegenerating(true);
     setAiRegenerateError(null);
+    setAiUpgradeSuggested(false);
     try {
+      const proToken = loadClientProStatus()?.token;
       const response = await fetch("/api/generate-gui", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(proToken ? { "x-pro-token": proToken } : {}),
+        },
         body: JSON.stringify({ prompt: info.prompt, locale: "en" }),
       });
       const data = (await response.json().catch(() => null)) as {
         scene?: unknown;
         meta?: AiHandoff["meta"];
         error?: string;
+        upgradeSuggested?: boolean;
       } | null;
+      if (response.status === 429 || data?.upgradeSuggested) {
+        trackEvent("ai_generate_failure", { reason: "rate_limited" });
+        setAiUpgradeSuggested(true);
+        setAiRegenerateError("Free AI quota reached (3/hr, 5/day).");
+        return;
+      }
       const scene = data?.scene ? sanitizeScene(data.scene) : null;
       if (!response.ok || !scene || !data?.meta) throw new Error("regenerate failed");
       trackEvent("ai_generate_success", {
@@ -485,6 +500,19 @@ export function Editor({
       setAiRegenerateError("Regeneration failed — your current GUI is unchanged.");
     } finally {
       setAiRegenerating(false);
+    }
+  }
+
+  async function copyPluginJson() {
+    try {
+      const payload = serializeSceneDocument(scene);
+      await navigator.clipboard.writeText(payload);
+      setPluginJsonCopied(true);
+      if (pluginJsonTimer.current) clearTimeout(pluginJsonTimer.current);
+      pluginJsonTimer.current = setTimeout(() => setPluginJsonCopied(false), 2200);
+      trackEvent("copy_plugin_json", { nodeCount: scene.length });
+    } catch {
+      setRbxmxExportError("Clipboard permission denied — unable to copy Plugin JSON.");
     }
   }
 
@@ -751,6 +779,15 @@ export function Editor({
               {aiRegenerateError}
             </span>
           )}
+          {aiUpgradeSuggested && (
+            <button
+              type="button"
+              onClick={() => setProModalOpen(true)}
+              className="rounded-md border border-focus/60 bg-raised px-2.5 py-1 font-semibold text-ink transition hover:border-focus hover:bg-raised-hi"
+            >
+              Unlock 10× AI Quota →
+            </button>
+          )}
           <button
             onClick={() => void regenerateAiScene()}
             disabled={aiRegenerating}
@@ -842,11 +879,17 @@ export function Editor({
         onExportRbxmx={() => void exportRbxmxModel()}
         exportingRbxmx={exportingRbxmx}
         exportError={rbxmxExportError}
+        onCopyPluginJson={() => void copyPluginJson()}
+        pluginJsonCopied={pluginJsonCopied}
       />
       <ProUpgradeModal
         open={proModalOpen}
         onClose={() => setProModalOpen(false)}
-        contextTitle="Export Native .rbxmx Model for Roblox Studio"
+        contextTitle={
+          aiUpgradeSuggested
+            ? "Unlock 10× AI GUI Quota + Studio .rbxmx Export"
+            : "Export Native .rbxmx Model for Roblox Studio"
+        }
         defaultPlan="starter_rbxmx"
         returnPath="/editor"
       />

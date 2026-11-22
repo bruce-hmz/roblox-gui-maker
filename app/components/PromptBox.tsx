@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { trackEvent } from "../lib/track";
 import { AI_HANDOFF_KEY, type AiHandoff } from "../lib/ai-handoff";
 import { LIMITS } from "../editor/ai/spec";
+import { loadClientProStatus } from "../lib/pro-client";
+import { ProUpgradeModal } from "./ProUpgradeModal";
 
 type Copy = {
   placeholder: string;
@@ -79,6 +81,8 @@ export function PromptBox({ locale = "en" }: { locale?: "en" | "zh" }) {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeSuggested, setUpgradeSuggested] = useState(false);
+  const [proModalOpen, setProModalOpen] = useState(false);
 
   // Recover gracefully if the user returns from the editor mid-handoff.
   useEffect(() => {
@@ -93,22 +97,35 @@ export function PromptBox({ locale = "en" }: { locale?: "en" | "zh" }) {
     const trimmed = prompt.trim();
     if (!trimmed || loading) return;
     setError(null);
+    setUpgradeSuggested(false);
     setLoading(true);
     trackEvent("ai_prompt_submit", { promptLength: trimmed.length, locale });
 
     try {
+      const proToken = loadClientProStatus()?.token;
       const response = await fetch("/api/generate-gui", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(proToken ? { "x-pro-token": proToken } : {}),
+        },
         body: JSON.stringify({ prompt: trimmed, locale }),
       });
       const data = (await response.json().catch(() => null)) as
-        | { scene: unknown; meta?: AiHandoff["meta"]; error?: string }
+        | {
+            scene: unknown;
+            meta?: AiHandoff["meta"];
+            error?: string;
+            upgradeSuggested?: boolean;
+          }
         | null;
 
       if (!response.ok || !data?.scene || !data.meta) {
         const reason = data?.error ?? "network";
         setError(copy.errors[reason] ?? copy.errors.generation_failed);
+        if (response.status === 429 || data?.upgradeSuggested) {
+          setUpgradeSuggested(true);
+        }
         trackEvent("ai_generate_failure", { reason });
         setLoading(false);
         return;
@@ -203,13 +220,37 @@ export function PromptBox({ locale = "en" }: { locale?: "en" | "zh" }) {
       </div>
 
       {error && (
-        <p role="alert" className="mt-3 text-sm text-danger">
-          {error}{" "}
-          <a href={copy.fallbackLink.href} className="underline underline-offset-2">
-            {copy.fallbackLink.label}
-          </a>
-        </p>
+        <div role="alert" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-danger">
+          <span>
+            {error}{" "}
+            <a href={copy.fallbackLink.href} className="underline underline-offset-2">
+              {copy.fallbackLink.label}
+            </a>
+          </span>
+          {upgradeSuggested && (
+            <button
+              type="button"
+              onClick={() => setProModalOpen(true)}
+              className="rounded-md border border-focus/60 bg-raised px-3 py-1 text-xs font-semibold text-ink transition hover:border-focus hover:bg-raised-hi"
+            >
+              {locale === "zh"
+                ? "升级 Pro 解锁 10× AI 配额 + .rbxmx →"
+                : "Unlock 10× AI Quota + .rbxmx →"}
+            </button>
+          )}
+        </div>
       )}
+      <ProUpgradeModal
+        open={proModalOpen}
+        onClose={() => setProModalOpen(false)}
+        contextTitle={
+          locale === "zh"
+            ? "解锁 Pro：10× AI 生成额度 + 原生 .rbxmx 导出"
+            : "Unlock Pro: 10× AI GUI Quota + Studio .rbxmx Export"
+        }
+        defaultPlan="pro_all_access"
+        returnPath={locale === "zh" ? "/zh" : "/"}
+      />
     </div>
   );
 }

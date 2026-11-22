@@ -68,13 +68,17 @@ describe("checkAndRecord", () => {
 describe("guardConfigFromEnv", () => {
   it("reads env with sane defaults", () => {
     expect(guardConfigFromEnv({})).toEqual({
-      hourLimit: 8,
-      dayLimit: 25,
+      hourLimit: 3,
+      dayLimit: 5,
       dailyBudget: 1500,
     });
     expect(
       guardConfigFromEnv({ AI_RATE_HOUR: "3", AI_RATE_DAY: "10", AI_DAILY_BUDGET: "40" })
     ).toEqual({ hourLimit: 3, dayLimit: 10, dailyBudget: 40 });
-    expect(guardConfigFromEnv({ AI_RATE_HOUR: "abc" }).hourLimit).toBe(8);
+    expect(guardConfigFromEnv({ AI_RATE_HOUR: "abc" }).hourLimit).toBe(3);
+
+    const state = createGuardState();
+    const first = checkAndRecord(state, "10.0.0.1", guardConfigFromEnv({}));
+    expect(first).toEqual({ ok: true, remainingHour: 2, remainingDay: 4 });
   });
 });

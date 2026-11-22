@@ -72,6 +72,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       files: ["app/gamepass-icon-maker/page.tsx", "app/editor/gamepass-icons.ts"],
       zh: "/zh/gamepass-icon-maker",
     }),
+    entry("/roblox-shirt-tester", {
+      files: ["app/roblox-shirt-tester/page.tsx", "app/tools/shirt/shirt-uv.ts"],
+      zh: "/zh/roblox-shirt-tester",
+    }),
+    entry("/roblox-shirt-template-maker", {
+      files: ["app/roblox-shirt-template-maker/page.tsx", "app/tools/shirt/shirt-uv.ts"],
+      zh: "/zh/roblox-shirt-template-maker",
+    }),
+    entry("/roblox-thumbnail-maker", {
+      files: ["app/roblox-thumbnail-maker/page.tsx", "app/tools/thumbnail/thumbnail-spec.ts"],
+      zh: "/zh/roblox-thumbnail-maker",
+    }),
+    entry("/roblox-ui-sizer", {
+      files: ["app/roblox-ui-sizer/page.tsx", "app/tools/ui-sizer/udim2-math.ts"],
+      zh: "/zh/roblox-ui-sizer",
+    }),
+    entry("/studio-plugin", {
+      files: ["app/studio-plugin/page.tsx", "public/studio-plugin/RobloxGuiMakerSync.lua"],
+      zh: "/zh/studio-plugin",
+    }),
     entry("/pricing", {
       files: ["app/pricing/page.tsx"],
       zh: "/zh/pricing",

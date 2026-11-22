@@ -106,6 +106,54 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
               </Link>
             </li>
             <li>
+              <Link
+                className="hover:text-ink"
+                href={zh ? "/zh/roblox-shirt-tester" : "/roblox-shirt-tester"}
+              >
+                {zh ? "3D 服装测试器" : "3D Shirt Tester"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="hover:text-ink"
+                href={zh ? "/zh/roblox-shirt-template-maker" : "/roblox-shirt-template-maker"}
+              >
+                {zh ? "585×559 服装模板器" : "Shirt Template Maker"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="hover:text-ink"
+                href={zh ? "/zh/roblox-thumbnail-maker" : "/roblox-thumbnail-maker"}
+              >
+                {zh ? "游戏封面生成器" : "Thumbnail Maker"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="hover:text-ink"
+                href={zh ? "/zh/roblox-ui-sizer" : "/roblox-ui-sizer"}
+              >
+                {zh ? "UDim2 尺寸换算器" : "UDim2 UI Sizer"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="hover:text-ink"
+                href={zh ? "/zh/studio-plugin" : "/studio-plugin"}
+              >
+                {zh ? "离线 Studio 插件" : "Offline Studio Plugin"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="hover:text-ink"
+                href={zh ? "/zh/showcase" : "/showcase"}
+              >
+                {zh ? "作品展示" : "Showcase"}
+              </Link>
+            </li>
+            <li>
               <Link className="hover:text-ink" href={zh ? "/zh/pricing" : "/pricing"}>
                 {zh ? "Studio .rbxmx 与价格" : "Studio .rbxmx & Pricing"}
               </Link>

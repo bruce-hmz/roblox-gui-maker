@@ -160,6 +160,14 @@ export function ProUpgradeModal({
                 <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                 <span>
                   {zh
+                    ? "10× AI 生成配额（每小时 30 次 / 每天 150 次）"
+                    : "10× AI GUI quota (30/hr & 150/day vs 3/hr free)"}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                <span>
+                  {zh
                     ? "编辑器无限导出原生 .rbxmx 模型文件"
                     : "Unlimited native .rbxmx exports in /editor"}
                 </span>
@@ -237,6 +245,14 @@ export function ProUpgradeModal({
               {zh ? "一次性买断全站成品资产" : "Pay once · unlock every kit & icon"}
             </p>
             <ul className="mt-3 space-y-1.5 text-xs text-ink-dim">
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                <span>
+                  {zh
+                    ? "10× AI 生成配额（每小时 30 次 / 每天 150 次）"
+                    : "10× AI GUI quota (30/hr & 150/day vs 3/hr free)"}
+                </span>
+              </li>
               <li className="flex items-start gap-2">
                 <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                 <span>

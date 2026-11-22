@@ -97,6 +97,14 @@ export function PricingCards({ locale = "en" }: { locale?: Locale }) {
                   : "Free single 512×512 Gamepass icon PNG & SVG exports"}
               </span>
             </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+              <span>
+                {zh
+                  ? "免费 AI GUI 生成额度（每小时 3 次 / 每天 5 次）与离线 Studio 插件同步"
+                  : "Free AI GUI quota (3/hr & 5/day) + Offline Studio Plugin JSON sync"}
+              </span>
+            </li>
           </ul>
           <Link
             href="/editor"
@@ -123,6 +131,14 @@ export function PricingCards({ locale = "en" }: { locale?: Locale }) {
             </span>
           </div>
           <ul className="mt-6 flex-1 space-y-2.5 text-sm text-ink-dim">
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+              <span>
+                {zh
+                  ? "10× AI GUI 生成配额（每小时 30 次 / 每天 150 次）"
+                  : "10× AI GUI quota (30/hr & 150/day vs 3/hr free)"}
+              </span>
+            </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               <span>
@@ -201,6 +217,14 @@ export function PricingCards({ locale = "en" }: { locale?: Locale }) {
             </span>
           </div>
           <ul className="mt-6 flex-1 space-y-2.5 text-sm text-ink-dim">
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+              <span>
+                {zh
+                  ? "10× AI GUI 生成配额（每小时 30 次 / 每天 150 次）"
+                  : "10× AI GUI quota (30/hr & 150/day vs 3/hr free)"}
+              </span>
+            </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               <span>

@@ -22,6 +22,11 @@ import { LIMITS, parseGuiDesignSpec } from "../../editor/ai/spec";
 import { getTemplate } from "../../editor/templates";
 import { sanitizeScene } from "../../editor/persistence";
 import type { SceneNode } from "../../editor/catalog";
+import {
+  readProTokenFromRequest,
+  resolveProPassSecret,
+  verifyProPassToken,
+} from "../../lib/pro-access";
 
 // Closest hand-built template per screen type — fallback ladder level 3.
 const TEMPLATE_BY_SCREEN: Record<string, string> = {
@@ -67,17 +72,38 @@ export async function POST(request: Request): Promise<Response> {
   guardState = guardState ?? createGuardState();
   guardConfig = guardConfig ?? guardConfigFromEnv(process.env);
 
-  const verdict = checkAndRecord(
-    guardState,
-    clientIp(request),
-    guardConfig
-  );
+  let proSessionId: string | null = null;
+  const rawProToken = readProTokenFromRequest(request);
+  if (rawProToken) {
+    try {
+      const proSecret = resolveProPassSecret(process.env);
+      const claims = await verifyProPassToken(rawProToken, proSecret);
+      if (claims) proSessionId = claims.sessionId;
+    } catch {
+      // Missing or invalid PRO_PASS_SECRET degrades cleanly to free quota.
+    }
+  }
+
+  const isPro = proSessionId !== null;
+  const effectiveConfig = isPro
+    ? {
+        ...guardConfig,
+        hourLimit: Math.max(guardConfig.hourLimit * 10, 30),
+        dayLimit: Math.max(guardConfig.dayLimit * 20, 150),
+      }
+    : guardConfig;
+  const quotaKey = proSessionId ? `pro:${proSessionId}` : clientIp(request);
+
+  const verdict = checkAndRecord(guardState, quotaKey, effectiveConfig);
   if (!verdict.ok) {
     if (verdict.reason === "rate_limited") {
       return json(
         {
           error: "rate_limited",
-          message: "You've hit the free generation limit for now. Try again soon — the editor and templates stay free.",
+          message: isPro
+            ? "You've hit your Pro burst limit for now. Try again soon — the editor and templates stay open."
+            : "You've hit the free generation limit (3/hr, 5/day) for now. Upgrade to Pro for 10× AI quota + .rbxmx exports, or keep editing templates free.",
+          ...(!isPro ? { upgradeSuggested: true } : {}),
         },
         429,
         { "Retry-After": String(verdict.retryAfterSeconds) }
@@ -128,6 +154,9 @@ export async function POST(request: Request): Promise<Response> {
           fallbackReason: reason,
           warnings: [],
           latencyMs: Date.now() - startedAt,
+          remainingHour: verdict.remainingHour,
+          remainingDay: verdict.remainingDay,
+          isPro,
         },
       });
     }
@@ -179,6 +208,9 @@ export async function POST(request: Request): Promise<Response> {
         fallbackUsed: false as const,
         warnings: parsed.warnings.slice(0, 5),
         latencyMs: generated.latencyMs,
+        remainingHour: verdict.remainingHour,
+        remainingDay: verdict.remainingDay,
+        isPro,
         ...(generated.usage
           ? { tokenUsage: generated.usage }
           : {}),

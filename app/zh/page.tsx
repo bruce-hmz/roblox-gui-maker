@@ -190,10 +190,24 @@ export default function ZhHome() {
         <p className="mt-4 text-xs sm:text-sm text-ink-dim">
           还提供：{" "}
           <Link
+            href="/zh/roblox-shirt-tester"
+            className="text-focus hover:underline font-medium"
+          >
+            3D 服装测试器
+          </Link>{" "}
+          ·{" "}
+          <Link
+            href="/zh/roblox-thumbnail-maker"
+            className="text-focus hover:underline font-medium"
+          >
+            1920×1080 封面生成器
+          </Link>{" "}
+          ·{" "}
+          <Link
             href="/zh/gamepass-icon-maker"
             className="text-focus hover:underline font-medium"
           >
-            免费 512×512 Gamepass 图标制作器
+            512×512 Gamepass 图标
           </Link>{" "}
           ·{" "}
           <Link
@@ -347,6 +361,77 @@ export default function ZhHome() {
               查看 512×512 尺寸指南
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* free creator tools suite */}
+      <section className="max-w-6xl mx-auto px-6 py-8">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-wider text-focus mb-1">
+              免费 Roblox 创作者工具
+            </p>
+            <h2 className="text-2xl font-semibold text-ink">
+              一站配齐服装试穿、游戏封面、UDim2 适配与 Studio 同步
+            </h2>
+          </div>
+          <Link href="/zh/showcase" className="text-sm text-focus hover:underline">
+            浏览作品展示 →
+          </Link>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            {
+              href: "/zh/roblox-shirt-tester",
+              badge: "3D R6 · 省 10 Robux",
+              title: "3D 服装预览测试器",
+              desc: "拖入 585×559 PNG 在网页 360° 试穿检查衣领、背面与衣袖接缝，确认无误再付费上传。",
+            },
+            {
+              href: "/zh/roblox-shirt-template-maker",
+              badge: "585×559 PNG & SVG",
+              title: "服装模板生成器",
+              desc: "定制圆领/V领/连帽领口、袖边条纹与 UV 参考线，一键导出标准透明底板。",
+            },
+            {
+              href: "/zh/roblox-thumbnail-maker",
+              badge: "1920×1080 + 512×512",
+              title: "游戏封面与安全区检查器",
+              desc: "设计高点击率封面并模拟 Discover 220px 小卡效果，同时导出 512×512 方形游戏图标。",
+            },
+            {
+              href: "/zh/roblox-ui-sizer",
+              badge: "UDim2 + rbxassetid://",
+              title: "UDim2 尺寸换算与贴图预览",
+              desc: "像素转 UDim2.fromScale + UIAspectRatioConstraint，即时反查 Asset ID 贴图。",
+            },
+            {
+              href: "/zh/gamepass-icon-maker",
+              badge: "512×512 圆形安全区",
+              title: "Gamepass 图标制作器",
+              desc: "针对商店圆形裁切优化，在线配色并一键导出 512×512 通行证徽章。",
+            },
+            {
+              href: "/zh/studio-plugin",
+              badge: "100% 离线免 HTTP 权限",
+              title: "离线 Studio 同步插件",
+              desc: "安装单文件 RobloxGuiMakerSync.lua，粘贴剪贴板 JSON 即可导入并支持撤销。",
+            },
+          ].map((tool) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className="group rounded-xl border border-line bg-panel p-5 transition hover:border-focus hover:bg-raised"
+            >
+              <p className="text-[11px] font-mono uppercase tracking-wider text-focus mb-1.5">
+                {tool.badge}
+              </p>
+              <h3 className="text-base font-semibold text-ink group-hover:text-focus transition">
+                {tool.title} →
+              </h3>
+              <p className="mt-1.5 text-sm text-ink-dim leading-relaxed">{tool.desc}</p>
+            </Link>
+          ))}
         </div>
       </section>
 

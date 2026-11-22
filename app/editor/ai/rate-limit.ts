@@ -27,7 +27,7 @@ function todayKey(date: Date): string {
 }
 
 export type GuardVerdict =
-  | { ok: true }
+  | { ok: true; remainingHour: number; remainingDay: number }
   | { ok: false; reason: "rate_limited" | "budget_exhausted"; retryAfterSeconds: number };
 
 // Check + record in one step so a pass always consumes quota atomically.
@@ -91,7 +91,11 @@ export function checkAndRecord(
       if (nowMs - value.dayWindowStart >= DAY_MS) state.perIp.delete(key);
     }
   }
-  return { ok: true };
+  return {
+    ok: true,
+    remainingHour: Math.max(0, config.hourLimit - entry.hourCount),
+    remainingDay: Math.max(0, config.dayLimit - entry.dayCount),
+  };
 }
 
 export function guardConfigFromEnv(
@@ -102,8 +106,8 @@ export function guardConfigFromEnv(
     return Number.isFinite(n) && n >= 0 ? n : fallback;
   };
   return {
-    hourLimit: parse(env.AI_RATE_HOUR, 8),
-    dayLimit: parse(env.AI_RATE_DAY, 25),
+    hourLimit: parse(env.AI_RATE_HOUR, 3),
+    dayLimit: parse(env.AI_RATE_DAY, 5),
     dailyBudget: parse(env.AI_DAILY_BUDGET, 1500),
   };
 }
