@@ -32,7 +32,9 @@ export default function PrivacyPage() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
           Privacy Policy
         </h1>
-        <p className="text-sm text-ink-mute mb-10">Last updated: July 4, 2026</p>
+        <p className="text-sm text-ink-mute mb-10">
+          Last updated: November 23, 2026
+        </p>
 
         <section className="mb-10">
           <h2 className="text-xl font-semibold text-ink mb-3">In one sentence</h2>
@@ -89,6 +91,29 @@ export default function PrivacyPage() {
               </li>
             ))}
           </ul>
+          <p className="text-ink-dim leading-relaxed mt-4">
+            <span className="font-medium text-ink">
+              PVUV.ai browser analytics (when enabled):
+            </span>{" "}
+            We may load PVUV&apos;s analytics script from{" "}
+            <code className="text-ink">www.pvuv.ai/f.js</code>, which sends
+            aggregate page-view and tool-interaction events to{" "}
+            <code className="text-ink">in.pvuv.ai</code> along with standard
+            request metadata (such as your IP address and user agent). No GUI
+            project content or Roblox credentials are collected or sent.
+          </p>
+          <p className="text-ink-dim leading-relaxed mt-3">
+            <span className="font-medium text-ink">
+              Server-side AI &amp; search crawler telemetry (when enabled):
+            </span>{" "}
+            For automated search and AI crawler requests only (such as
+            Googlebot, Bingbot, GPTBot, ChatGPT-User, ClaudeBot, and
+            PerplexityBot), our Cloudflare edge worker forwards the crawler User-Agent,
+            pathname without any query string, Cloudflare client IP header,
+            HTTP status code, and timestamp to{" "}
+            <code className="text-ink">api.pvuv.ai</code>. Normal human browser
+            traffic is never sent to this endpoint.
+          </p>
         </section>
 
         <section className="mb-10">
@@ -96,28 +121,75 @@ export default function PrivacyPage() {
             Third-party processors
           </h2>
           <p className="text-ink-dim leading-relaxed">
-            The only third-party service this site uses is{" "}
-            <span className="font-medium text-ink">Google Analytics</span>{" "}
-            (operated by Google LLC). Google processes the aggregate traffic data
-            described above as a processor on our behalf. Their privacy
-            practices are governed by their own privacy policy at{" "}
-            <a
-              href="https://policies.google.com/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-focus hover:underline"
-            >
-              policies.google.com/privacy
-            </a>
-            . We have not enabled Google Advertising features, so your data is
-            not used to show you personalized ads.
+            Depending on which features you use, this site relies on the
+            following third-party services:
           </p>
-          <p className="text-ink-dim leading-relaxed mt-3">
-            When a template includes a Roblox item image, the image is fetched
-            from Roblox's public thumbnail service. This may cause Roblox to see
-            a request from your browser for that image, which is governed by
-            Roblox's privacy policy.
-          </p>
+          <ul className="space-y-2 text-ink-dim mt-3">
+            {[
+              {
+                name: "Google Analytics (Google LLC)",
+                detail:
+                  "processes the aggregate traffic statistics described above. We have not enabled Google Advertising features, so your data is not used for personalized ads.",
+                href: "https://policies.google.com/privacy",
+                linkText: "policies.google.com/privacy",
+              },
+              {
+                name: "PVUV.ai (when enabled)",
+                detail:
+                  "processes aggregate browser analytics (www.pvuv.ai/f.js -> in.pvuv.ai) and server-side automated crawler telemetry (api.pvuv.ai).",
+                href: "https://www.pvuv.ai/privacy",
+                linkText: "pvuv.ai/privacy",
+              },
+            ].map((item) => (
+              <li key={item.name} className="flex gap-2.5">
+                <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
+                <span className="leading-relaxed">
+                  <span className="font-medium text-ink">{item.name}</span>:{" "}
+                  {item.detail} See{" "}
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-focus hover:underline"
+                  >
+                    {item.linkText}
+                  </a>
+                  .
+                </span>
+              </li>
+            ))}
+            <li className="flex gap-2.5">
+              <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
+              <span className="leading-relaxed">
+                <span className="font-medium text-ink">Stripe</span>: processes
+                hosted Checkout payments if you choose to buy a one-time Studio
+                Pro Pass; we only verify the Stripe session ID to issue a signed
+                unlock cookie.
+              </span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
+              <span className="leading-relaxed">
+                <span className="font-medium text-ink">
+                  Configured AI provider
+                </span>
+                : receives only the text prompt you submit when intentionally
+                using the AI GUI generator (never your saved browser projects or
+                Roblox credentials).
+              </span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
+              <span className="leading-relaxed">
+                <span className="font-medium text-ink">
+                  Roblox public thumbnail service
+                </span>{" "}
+                (<code className="text-ink">thumbnails.roblox.com</code>): when
+                a template or asset preview includes a Roblox item image, the
+                image is fetched from Roblox&apos;s public thumbnail service.
+              </span>
+            </li>
+          </ul>
         </section>
 
         <section className="mb-10">
@@ -139,9 +211,8 @@ export default function PrivacyPage() {
             ))}
           </ul>
           <p className="text-ink-dim leading-relaxed mt-3">
-            Because we collect only aggregate analytics through Google Analytics
-            and we cannot tie it back to you as an individual, the most direct
-            way to exercise these rights is to{" "}
+            Because we collect only aggregate analytics and do not maintain user
+            accounts, the most direct way to exercise these rights is to{" "}
             <span className="font-medium text-ink">
               opt out of Google Analytics
             </span>{" "}
@@ -154,9 +225,12 @@ export default function PrivacyPage() {
             >
               browser add-on
             </a>
-            , or to enable your browser's Do-Not-Track / global privacy control
-            setting. You can also use ad/tracker blockers, which will prevent
-            the analytics script from loading.
+            , clear cookies and site data for{" "}
+            <code className="text-ink">robloxguimaker.app</code> in your browser
+            settings to remove PVUV.ai browser identifiers, or enable your
+            browser's Do-Not-Track / global privacy control setting. You can also
+            use ad/tracker blockers, which will prevent browser analytics scripts
+            from loading.
           </p>
         </section>
 

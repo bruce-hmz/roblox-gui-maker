@@ -1,5 +1,7 @@
 // Cloudflare Workers config — deployed via @opennextjs/cloudflare
 // (`npm run deploy`). Domain: robloxguimaker.app (zone already on Cloudflare).
+// Once a PVUV site is provisioned, add `"vars": { "PVUV_SITE": "<site_id>" }`
+// here and set `PVUV_INGEST_TOKEN` via `wrangler secret put PVUV_INGEST_TOKEN`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "roblox-gui-maker",

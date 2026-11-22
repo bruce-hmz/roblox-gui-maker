@@ -14,6 +14,10 @@ import "./globals.css";
 // page source), so hardcoding is fine; override with NEXT_PUBLIC_GA_ID if needed.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-BWJ7NSR55P";
 
+// Optional PVUV.ai site ID (public). Set NEXT_PUBLIC_PVUV_SITE at build time
+// once robloxguimaker.app is registered in PVUV.
+const PVUV_SITE = process.env.NEXT_PUBLIC_PVUV_SITE?.trim() || "";
+
 const SITE_URL = "https://robloxguimaker.app";
 
 export const metadata: Metadata = {
@@ -99,6 +103,15 @@ export default function RootLayout({
               `}
             </Script>
             <Analytics />
+            {PVUV_SITE && (
+              <Script
+                id="pvuv-analytics"
+                src="https://www.pvuv.ai/f.js"
+                data-site={PVUV_SITE}
+                data-api="https://in.pvuv.ai"
+                strategy="afterInteractive"
+              />
+            )}
           </>
         )}
       </body>

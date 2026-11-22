@@ -3,6 +3,7 @@
 // OpenNext runtime rewrites redirect URLs from proxy/next.config to the
 // request's own host, which would loop www back to itself.
 import worker from "./.open-next/worker.js";
+import { reportCrawlerHit } from "./app/lib/pvuv-crawler";
 
 const APEX = "robloxguimaker.app";
 
@@ -13,13 +14,17 @@ export default {
       request.headers.get("host") ??
       ""
     ).replace(/:\d+$/, "");
+    let response;
     if (host === `www.${APEX}`) {
       const url = new URL(request.url);
-      return new Response(null, {
+      response = new Response(null, {
         status: 308,
         headers: { Location: `https://${APEX}${url.pathname}${url.search}` },
       });
+    } else {
+      response = await worker.fetch(request, env, ctx);
     }
-    return worker.fetch(request, env, ctx);
+    reportCrawlerHit(request, response, env, ctx);
+    return response;
   },
 };

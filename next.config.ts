@@ -2,18 +2,19 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// CSP: GA's gtag loads from googletagmanager and beacons to google-analytics;
-// the inline config + Next bootstrap need 'unsafe-inline'; dev (HMR/eval) gets
+// CSP: GA's gtag loads from googletagmanager and beacons to google-analytics,
+// and PVUV loads from www.pvuv.ai and beacons to in.pvuv.ai; the inline
+// config + Next bootstrap need 'unsafe-inline'; dev (HMR/eval) gets
 // 'unsafe-eval', which is dropped in production.
 const csp = [
   "default-src 'self'",
   isProd
-    ? "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com"
+    ? "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.pvuv.ai"
     : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://thumbnails.roblox.com https://www.google.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net",
+  "connect-src 'self' https://thumbnails.roblox.com https://www.google.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://in.pvuv.ai",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
