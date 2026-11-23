@@ -23,11 +23,11 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
 
   await page.goto("/");
   await expect(page).toHaveTitle(
-    "Free Roblox GUI Maker with AI | Visual Editor, Luau & .rbxmx Export"
+    "Free Roblox GUI Maker with AI | Visual Editor, Luau, .rbxmx"
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    /real editable ScreenGui instances|Studio \.rbxmx models/
+    /generate editable ScreenGui instances.*export Luau or \.rbxmx/
   );
   await expect(
     page.getByRole("heading", { level: 1, name: "Free Roblox GUI Maker with AI" })
