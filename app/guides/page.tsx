@@ -5,9 +5,9 @@ import { SiteFooter } from "../components/SiteFooter";
 import { GUIDES } from "./guides-data";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Guides — How to Make Menus, Shops, Gamepasses & Studio UI",
+  title: "Roblox GUI Guides — How to Make Menus, Shops and Studio UI",
   description:
-    "Step-by-step Roblox Studio UI tutorials: how to make main menus, coin & Game Pass shops, loading screens, responsive Scale layouts, TweenService animations, 512x512 Gamepass icons, and .rbxmx imports.",
+    "Step-by-step Roblox Studio UI tutorials: main menus, Game Pass shops, loading screens, responsive layouts, TweenService animations, Gamepass icons and more.",
   openGraph: {
     title: "Roblox GUI Guides — How to Make Menus, Shops, Gamepasses & Studio UI",
     description:

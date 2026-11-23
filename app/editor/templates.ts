@@ -13,6 +13,8 @@ export type Template = {
   title: string;
   category: TemplateCategory;
   tagline: string;
+  // <meta name="description"> override; `description` is also page copy.
+  metaDescription?: string;
   description: string;
   scene: SceneNode[];
   // Explicit guide cross-links for templates no guide targets via
@@ -779,6 +781,8 @@ export function enrichScene(scene: SceneNode[]): SceneNode[] {
 const RAW_TEMPLATES: Template[] = [
   {
     slug: "main-menu",
+    metaDescription:
+      "A clean centered Roblox main menu: game title, an Electric Blue Play button and secondary buttons, stacked with a UIListLayout so it stays tidy on any screen.",
     title: "Roblox Main Menu GUI",
     category: "Menus",
     tagline: "Title screen with Play / Settings / Quit",
@@ -792,6 +796,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "shop",
+    metaDescription:
+      "A Roblox shop GUI panel with a header and a ScrollingFrame whose items auto-arrange into a grid via UIGridLayout. Add as many items as you want and they tile.",
     title: "Roblox Shop GUI",
     category: "Shop",
     tagline: "Item grid with a scrollable UIGridLayout",
@@ -831,6 +837,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "loading-screen",
+    metaDescription:
+      "A full-screen Roblox loading screen with a gradient background, big title, animated progress bar and a tip line. A great first impression while the game loads.",
     title: "Roblox Loading Screen GUI",
     category: "Menus",
     tagline: "Title, progress bar and rotating tip",
@@ -857,6 +865,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "game-pass-shop",
+    metaDescription:
+      "A polished Roblox game pass storefront with three editable offers and RemoteEvent purchase requests. Connect a trusted server handler to your Marketplace flow.",
     title: "Roblox Game Pass Shop GUI",
     category: "Shop",
     tagline: "Premium pass cards with purchase requests",
@@ -870,6 +880,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "code-redeem",
+    metaDescription:
+      "A focused Roblox code redeem panel with editable input, feedback and reward examples. Connect TextBox reading, validation, rate limits and rewards in Studio.",
     title: "Roblox Code Redeem GUI",
     category: "Menus",
     tagline: "Code input, reward examples, and status states",
@@ -896,6 +908,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "quest-tracker",
+    metaDescription:
+      "A compact Roblox quest HUD with editable objective, progress, reward and a details toggle. Connect live quest data and completion rewards in your game code.",
     title: "Roblox Quest Tracker GUI",
     category: "HUD",
     tagline: "Expandable objective and progress HUD",
@@ -909,6 +923,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "health-bar",
+    metaDescription:
+      "A Roblox player HUD with green health, blue mana and thin XP bars — pill backgrounds with fills driven by game state — plus a coin counter for your ScreenGui.",
     title: "Roblox Health Bar GUI",
     category: "HUD",
     tagline: "Health, mana and XP bars with a coin counter",
@@ -922,6 +938,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "notification-toast",
+    metaDescription:
+      "Color-coded Roblox toast notifications — success, info, warning and error — stacked with a UIListLayout. Fire a RemoteEvent from the server to show live alerts.",
     title: "Roblox Notification GUI",
     category: "HUD",
     tagline: "Stacked, color-coded toast alerts",
@@ -935,6 +953,8 @@ const RAW_TEMPLATES: Template[] = [
   },
   {
     slug: "chat",
+    metaDescription:
+      "A custom Roblox chat GUI: a ScrollingFrame message log with colored names, plus a TextBox and Send button wired to a RemoteEvent. Add a team channel in Studio.",
     title: "Roblox Chat GUI",
     category: "HUD",
     tagline: "Scrolling message log with input and send",

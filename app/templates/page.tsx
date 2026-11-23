@@ -7,7 +7,7 @@ import { templatePreviewSrc } from "../editor/preview-images";
 import { TEMPLATES, CATEGORIES } from "../editor/templates";
 
 export const metadata: Metadata = {
-  title: "Free Roblox GUI Templates — Menus, Shops, HUDs | Roblox GUI Maker",
+  title: "Free Roblox GUI Templates — Menus, Shops, HUDs and More",
   description:
     "Free Roblox GUI templates for menus, shops, settings, inventory, loading screens and leaderboards. Customize responsive layouts, then export Luau, JSON, or ZIP.",
   openGraph: {

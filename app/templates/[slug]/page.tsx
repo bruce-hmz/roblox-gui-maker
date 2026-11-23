@@ -23,7 +23,7 @@ export async function generateMetadata({
   if (!t) return { title: "Template not found — Roblox GUI Maker" };
   return {
     title: `${t.title} — Free Template | Roblox GUI Maker`,
-    description: t.description,
+    description: t.metaDescription ?? t.description,
     openGraph: {
       title: `${t.title} — Free Roblox GUI Template`,
       description: t.description,

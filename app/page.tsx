@@ -14,9 +14,9 @@ import { USE_CASES } from "./for/usecases";
 import { GUIDES } from "./guides/guides-data";
 
 export const metadata: Metadata = {
-  title: "Free Roblox GUI Maker with AI | Visual Editor, Luau & .rbxmx Export",
+  title: "Free Roblox GUI Maker with AI | Visual Editor, Luau, .rbxmx",
   description:
-    "Free AI Roblox GUI maker: describe your interface to generate real editable ScreenGui instances, preview desktop/tablet/mobile layouts, make 512×512 Gamepass icons, and export clean Luau or Studio .rbxmx models.",
+    "Free AI Roblox GUI maker: describe your interface to generate editable ScreenGui instances, preview device layouts, make Gamepass icons, export Luau or .rbxmx.",
   keywords: [
     "Roblox GUI Maker",
     "AI Roblox GUI Generator",

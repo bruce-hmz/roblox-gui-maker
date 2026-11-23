@@ -7,9 +7,9 @@ import { templatePreviewSrc } from "../editor/preview-images";
 import { TEMPLATES, getTemplate } from "../editor/templates";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Examples & Gallery — Real UI Designs | Roblox GUI Maker",
+  title: "Roblox GUI Examples and Gallery — Real UI Designs",
   description:
-    "Browse real Roblox GUI examples — main menus, shops, HUDs, game pass stores, daily rewards, leaderboards and more. Designed visually and exported as clean Luau, free.",
+    "Browse real Roblox GUI examples — main menus, shops, HUDs, game pass stores, daily rewards and leaderboards. Designed visually, exported as clean Luau, free.",
   openGraph: {
     title: "Roblox GUI Examples & Gallery — Real UI Designs",
     description:

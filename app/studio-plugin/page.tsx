@@ -7,9 +7,9 @@ const PAGE_URL = "https://robloxguimaker.app/studio-plugin";
 const ZH_URL = "https://robloxguimaker.app/zh/studio-plugin";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Maker Offline Studio Plugin — Zero-Permission Paste Sync (.lua)",
+  title: "Roblox GUI Maker Offline Studio Plugin — Paste Sync (.lua)",
   description:
-    "Download the open-source, 100% offline Roblox Studio companion plugin for robloxguimaker.app. Paste v1 scene JSON from the web editor to build native ScreenGui instances with full Undo support—zero HTTP permissions needed.",
+    "Open-source, 100% offline Roblox Studio plugin for Roblox GUI Maker: paste scene JSON from the web editor to build native ScreenGui. No HTTP permissions needed.",
   keywords: [
     "roblox gui maker studio plugin",
     "roblox studio offline gui plugin",

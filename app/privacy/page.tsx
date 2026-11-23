@@ -5,7 +5,7 @@ import { SiteFooter } from "../components/SiteFooter";
 export const metadata: Metadata = {
   title: "Privacy Policy — Roblox GUI Maker",
   description:
-    "What Roblox GUI Maker does and does not collect: browser-local projects, no account, and only privacy-respecting aggregate analytics. Your rights under GDPR, CCPA, and PIPL.",
+    "What Roblox GUI Maker does and does not collect: browser-local projects, no account, only aggregate traffic analytics. Your rights under GDPR, CCPA and PIPL.",
   openGraph: {
     title: "Privacy Policy — Roblox GUI Maker",
     description:

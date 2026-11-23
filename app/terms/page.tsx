@@ -5,7 +5,7 @@ import { SiteFooter } from "../components/SiteFooter";
 export const metadata: Metadata = {
   title: "Terms of Service — Roblox GUI Maker",
   description:
-    "The terms for using Roblox GUI Maker: a free, unofficial tool that exports Luau you are responsible for. Disclaimer of warranty, trademark notice, and acceptable use.",
+    "Terms for using Roblox GUI Maker, a free, unofficial tool that exports Luau you are responsible for: warranty disclaimer, trademark notice and acceptable use.",
   openGraph: {
     title: "Terms of Service — Roblox GUI Maker",
     description:

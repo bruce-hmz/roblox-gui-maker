@@ -8,6 +8,7 @@ type UseCaseZhProse = {
   title: string;
   noun: string;
   blurb: string;
+  metaDescription?: string;
   needs: string[];
   howTo: string[];
   tips: string[];
@@ -38,6 +39,8 @@ const USE_CASES_ZH_PROSE: Record<string, UseCaseZhProse> = {
   },
 
   "shop-menus": {
+    metaDescription:
+      "用 Roblox GUI Maker 做商店菜单:一个可滚动区域,物品在里面排成网格,每个带图标和价格,外加一种让购买真正到达服务器的途径。",
     title: "Roblox GUI Maker:商店菜单",
     noun: "商店菜单",
     blurb:
@@ -130,6 +133,8 @@ const USE_CASES_ZH_PROSE: Record<string, UseCaseZhProse> = {
   },
 
   "loading-screens": {
+    metaDescription:
+      "用 Roblox GUI Maker 做加载界面:资源流入时盖住整个视口 —— 标题、一条会填满的进度条和一条轮播提示。游戏就绪后它消失。",
     title: "Roblox GUI Maker:加载界面",
     noun: "加载界面",
     blurb:
@@ -153,6 +158,8 @@ const USE_CASES_ZH_PROSE: Record<string, UseCaseZhProse> = {
   },
 
   "leaderboards": {
+    metaDescription:
+      "用 Roblox GUI Maker 做排行榜:按某项属性给玩家排名、激发竞争。每行显示名次、名字和分数,首位高亮,并随玩家增多而增长。",
     title: "Roblox GUI Maker:排行榜",
     noun: "排行榜",
     blurb:
@@ -209,6 +216,8 @@ export function getUseCaseZh(slug: string): UseCase | undefined {
     title: zh.title,
     noun: zh.noun,
     blurb: zh.blurb,
+    // Per locale, like the other prose: never inherit the English override.
+    metaDescription: zh.metaDescription,
     needs: zh.needs,
     howTo: zh.howTo,
     tips: zh.tips,

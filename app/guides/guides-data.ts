@@ -24,6 +24,9 @@ export type Guide = {
   // Maker") would make the page claim the homepage's head term instead of
   // its own keyword family — doc-intent guide pages anchor their own terms.
   metaTitle?: string;
+  // Per-guide <meta name="description"> override. `description` is also page
+  // copy (guide index cards), so search-snippet edits go here instead.
+  metaDescription?: string;
   description: string;
   category: string;
   relatedTemplate?: string;
@@ -41,6 +44,9 @@ export type Guide = {
 export const GUIDES: Guide[] = [
   {
     slug: "how-to-design-polished-roblox-ui",
+    metaTitle: "How to Design Polished Roblox UI (Gradients, Strokes, Depth)",
+    metaDescription:
+      "Make modern, premium-feeling Roblox UI with multi-stop UIGradient, glowing UIStroke borders, and depth — with copy-paste Luau. No Photoshop or image assets.",
     title: "How to Design Polished Roblox UI (Gradients, Strokes & Depth)",
     description:
       "Make modern, premium-feeling Roblox UI with multi-stop UIGradient, glowing UIStroke borders, and depth — with copy-paste Luau. No Photoshop or image assets required.",
@@ -246,6 +252,8 @@ end`,
   },
   {
     slug: "how-to-make-a-roblox-code-redeem-gui",
+    metaDescription:
+      "How to build a Roblox Twitter/promo code redeem GUI: TextBox input, server-side RemoteFunction validation, DataStore duplicate protection and error feedback.",
     title: "How to Make a Roblox Code Redeem GUI",
     description:
       "How to build a working Roblox Twitter/promo code redeem GUI with TextBox input, server-side RemoteFunction validation, DataStore duplicate protection, and error feedback.",
@@ -930,6 +938,8 @@ loadingGui:Destroy()`,
   },
   {
     slug: "how-to-use-uilistlayout-in-roblox",
+    metaDescription:
+      "A complete UIListLayout guide for Roblox: Padding and alignment, LayoutOrder sorting, AbsoluteContentSize auto-sizing and position overrides. Copy-paste Luau.",
     title: "How to Use UIListLayout in Roblox",
     metaTitle: "Roblox UIListLayout: LayoutOrder, AbsoluteContentSize, Position",
     description:
@@ -1105,6 +1115,7 @@ row(30, "Rejoin server")`,
   },
   {
     slug: "how-to-make-a-roblox-global-leaderboard-gui",
+    metaTitle: "How to Make a Roblox Global Leaderboard GUI",
     title: "How to Make a Roblox Global Leaderboard GUI",
     description:
       "How to make a cross-server Roblox global leaderboard GUI using OrderedDataStore, GetNameFromUserIdAsync caching, SurfaceGui or ScreenGui rows, and UIListLayout.",
@@ -1235,6 +1246,9 @@ end)`,
   },
   {
     slug: "how-to-animate-roblox-guis-with-tweenservice",
+    metaTitle: "How to Animate Roblox GUIs with TweenService",
+    metaDescription:
+      "How to animate Roblox GUIs with TweenService: slide-in panels, CanvasGroup whole-UI fades, UIScale button hover/press bounce, and cancelling overlapping tweens.",
     title: "How to Animate Roblox GUIs with TweenService",
     description:
       "How to animate Roblox GUIs cleanly with TweenService: slide-in panels, CanvasGroup whole-UI fades, UIScale button hover/press bounce, and cancelling overlapping tweens.",
@@ -1340,6 +1354,8 @@ end`,
   },
   {
     slug: "how-to-make-a-draggable-roblox-gui",
+    metaDescription:
+      "How to make a smooth draggable Roblox GUI window on PC and mobile: UserInputService title-bar drag script, grab-offset fix, viewport clamping, UIDragDetector.",
     title: "How to Make a Draggable Roblox GUI",
     description:
       "How to make a smooth draggable Roblox GUI window on PC and mobile: UserInputService title-bar drag script, grab-offset fix, screen viewport clamping, and UIDragDetector note.",
@@ -1447,6 +1463,8 @@ end)`,
   },
   {
     slug: "how-to-make-a-responsive-roblox-gui",
+    metaDescription:
+      "How to scale Roblox GUIs on PC, phone, tablet and 4K screens: Scale vs Offset UDim2, AnchorPoint, UIAspectRatioConstraint, UITextSizeConstraint and UIScale.",
     title: "How to Make a Responsive Roblox GUI",
     description:
       "How to scale Roblox GUIs accurately on PC, phone, tablet, and 4K screens: Scale vs Offset UDim2, AnchorPoint centering, UIAspectRatioConstraint, UITextSizeConstraint, and UIScale.",
@@ -1528,6 +1546,8 @@ textCap.Parent = label`,
   },
   {
     slug: "roblox-gui-script-generator",
+    metaDescription:
+      "Use a visual Roblox GUI script generator to build responsive interfaces, preview interactions and export client Luau, server handlers, JSON or a ZIP project.",
     title: "Roblox GUI Script Generator",
     description:
       "Use a visual Roblox GUI script generator to build responsive interfaces, preview interactions, and export client Luau, server handlers, JSON, or a complete ZIP project.",
@@ -1615,6 +1635,8 @@ menuPanel.Parent = screenGui`,
   },
   {
     slug: "how-to-make-a-gui-in-roblox",
+    metaDescription:
+      "Learn how to make a GUI in Roblox: plan the player task, build a ScreenGui hierarchy, make responsive layouts, wire buttons, preview states and test in Studio.",
     title: "How to Make a GUI in Roblox",
     description:
       "Learn how to make a GUI in Roblox: plan the player task, build a ScreenGui hierarchy, create responsive layouts, wire buttons, preview states, and test in Studio.",
@@ -1703,6 +1725,9 @@ panel.AnchorPoint = Vector2.new(0.5, 0.5)`,
   },
   {
     slug: "roblox-ui-design",
+    metaTitle: "Roblox UI Design — Layout, Color, and Sizing Guide",
+    metaDescription:
+      "Roblox UI design fundamentals: UDim2 sizing, AnchorPoint alignment, color palettes, font pairing, UIListLayout spacing and responsive mobile/desktop patterns.",
     title: "Roblox UI Design — Layout, Color, and Sizing Guide",
     description:
       "Roblox UI design fundamentals: UDim2 sizing, AnchorPoint alignment, color palettes, font pairing, spacing with UIListLayout, and responsive patterns for mobile and desktop.",
@@ -1823,6 +1848,9 @@ panel.AnchorPoint = Vector2.new(0.5, 0.5)`,
   },
   {
     slug: "roblox-gui-code-structure",
+    metaTitle: "Roblox GUI Code Explained: Instance.new, UDim2 and Parenting",
+    metaDescription:
+      "How Roblox GUI Luau is structured: each element is an Instance.new, positioned with UDim2 scale and parented into a tree, plus button handlers. Copy-paste Luau.",
     title: "Roblox GUI Code Explained: Instance.new, UDim2 & Parenting",
     description:
       "How clean Roblox GUI Luau is structured: every element is an Instance.new, positioned with UDim2 scale, parented into a tree, with the properties and button handlers that make it run. With copy-paste Luau.",
@@ -1962,6 +1990,9 @@ end)`,
   },
   {
     slug: "how-to-script-a-roblox-gui",
+    metaTitle: "How to Script a Roblox GUI (Clicks, Toggles and Tweens)",
+    metaDescription:
+      "Roblox GUI scripting for beginners: where LocalScripts live, TextButton clicks, toggling visibility and animating panels with TweenService. Copy-paste Luau.",
     title: "How to Script a Roblox GUI (Clicks, Toggles & Tweens)",
     description:
       "GUI scripting in Roblox explained for beginners: where LocalScripts live, connecting TextButton clicks, toggling visibility, and animating panels with TweenService — with copy-paste Luau.",
@@ -2070,6 +2101,9 @@ open:Play()`,
   },
   {
     slug: "how-to-open-a-gui-with-a-key-in-roblox",
+    metaTitle: "How to Open a GUI with a Key Press in Roblox",
+    metaDescription:
+      "Bind a key like M or B to open a Roblox GUI: UserInputService.InputBegan toggling, the gameProcessedEvent guard, and gamepad support via ContextActionService.",
     title: "How to Open a GUI with a Key Press in Roblox",
     description:
       "Bind a key like M or B to open a Roblox GUI: UserInputService.InputBegan toggling, the gameProcessedEvent guard against double-fires, and gamepad support with ContextActionService.",
@@ -2171,6 +2205,9 @@ ContextActionService:SetTitle("OpenMenu", "Menu")`,
   },
   {
     slug: "how-to-import-rbxmx-into-roblox-studio",
+    metaTitle: "How to Import .rbxmx GUI Files into Roblox Studio",
+    metaDescription:
+      "How to import .rbxmx Roblox XML GUI models into Roblox Studio StarterGui without plugins: Explorer steps, .rbxmx vs .lua comparison, and common UI fixes.",
     title: "How to Import .rbxmx GUI Files into Roblox Studio",
     description:
       "How to import .rbxmx Roblox XML GUI models into Roblox Studio StarterGui without plugins: step-by-step Explorer steps, .rbxmx vs .lua comparison, and common UI fixes.",
@@ -2243,6 +2280,9 @@ ContextActionService:SetTitle("OpenMenu", "Menu")`,
   },
   {
     slug: "how-to-make-roblox-gamepass-icons",
+    metaTitle: "How to Make and Upload Roblox Gamepass Icons (512×512)",
+    metaDescription:
+      "How to size, design and upload crisp 512x512 Roblox Gamepass and Badge icons: circular crop safe zones, Creator Dashboard upload steps and ImageLabel tips.",
     title: "How to Make & Upload Roblox Gamepass Icons (512×512)",
     description:
       "How to size, design, and upload crisp 512x512 Roblox Gamepass and Badge icons: circular crop safe zones, Creator Dashboard pass upload steps, and in-game ImageLabel tips.",
@@ -2316,6 +2356,8 @@ Instance.new("UIAspectRatioConstraint", icon).AspectRatio = 1`,
   },
   {
     slug: "how-to-make-a-roblox-gamepass-shop-gui",
+    metaDescription:
+      "How to build and script a Roblox Game Pass Shop GUI: UIGridLayout pass cards, MarketplaceService:PromptGamePassPurchase, Owned state sync and server checks.",
     title: "How to Make a Roblox Game Pass Shop GUI",
     description:
       "How to build and script a Roblox Game Pass Shop GUI: UIGridLayout pass cards, MarketplaceService:PromptGamePassPurchase, Owned state sync, and server entitlement checks.",

@@ -20,7 +20,7 @@ export async function generateMetadata({
   const fullTitle = g.metaTitle ?? `${g.title} | Roblox GUI Maker`;
   return {
     title: fullTitle,
-    description: g.description,
+    description: g.metaDescription ?? g.description,
     openGraph: {
       title: fullTitle,
       description: g.description,
