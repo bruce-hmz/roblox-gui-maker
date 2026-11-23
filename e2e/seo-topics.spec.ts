@@ -15,7 +15,7 @@ test("@smoke @full exposes distinct core SEO topic pages", async ({
 
   await page.goto("/templates");
   await expect(page).toHaveTitle(
-    "Free Roblox GUI Templates — Menus, Shops, HUDs | Roblox GUI Maker"
+    "Free Roblox GUI Templates — Menus, Shops, HUDs and More"
   );
   await expect(
     page.getByRole("heading", { level: 1, name: "Free Roblox GUI Templates" })
