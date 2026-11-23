@@ -2,6 +2,7 @@
 // No React, no side effects.
 
 import type { Gradient, RobloxClass, SceneNode, Transition } from "./catalog";
+import { gridLayoutFor } from "./grid-layout";
 import { collectRemoteEventBindings, luauString } from "./remote-events";
 import {
   collectTeleportPlaceIds,
@@ -520,9 +521,15 @@ export function generateLuau(scene: SceneNode[]): string {
     }
     if (node.layout === "grid") {
       out.push("");
+      // Cell size/padding reproduce the editor's grid (see grid-layout.ts).
+      const grid = gridLayoutFor(node, scene);
       out.push(`local ${v}_grid = Instance.new("UIGridLayout")`);
-      out.push(`${v}_grid.CellSize = UDim2.fromOffset(100, 100)`);
-      out.push(`${v}_grid.CellPadding = UDim2.fromOffset(8, 8)`);
+      // Full precision: rounding the scales could push 3 cells past the row.
+      const exact = (u: typeof grid.cellSize) =>
+        `UDim2.new(${u.scale.x}, ${u.offset.x}, ${u.scale.y}, ${u.offset.y})`;
+      out.push(`${v}_grid.CellSize = ${exact(grid.cellSize)}`);
+      out.push(`${v}_grid.CellPadding = ${exact(grid.cellPadding)}`);
+      out.push(`${v}_grid.FillDirectionMaxCells = ${grid.maxCells}`);
       out.push(`${v}_grid.SortOrder = Enum.SortOrder.LayoutOrder`);
       out.push(`${v}_grid.Parent = ${v}`);
     }

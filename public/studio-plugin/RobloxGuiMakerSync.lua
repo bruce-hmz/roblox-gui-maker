@@ -290,6 +290,17 @@ local function buildSceneFromJson(rawJson)
 			elseif rawNode.layout == "grid" then
 				local gridLayout = Instance.new("UIGridLayout")
 				gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+				-- gridLayout is computed by the web editor so cells land where the
+				-- canvas draws them; older JSON without it keeps Roblox defaults.
+				local computed = rawNode.gridLayout
+				if type(computed) == "table" and type(computed.cellSize) == "table" and type(computed.cellPadding) == "table" then
+					gridLayout.CellSize = makeUDim2(computed.cellSize.scale, computed.cellSize.offset)
+					gridLayout.CellPadding = makeUDim2(computed.cellPadding.scale, computed.cellPadding.offset)
+					local maxCells = tonumber(computed.maxCells)
+					if maxCells and maxCells > 0 then
+						gridLayout.FillDirectionMaxCells = math.floor(maxCells)
+					end
+				end
 				gridLayout.Parent = inst
 			end
 

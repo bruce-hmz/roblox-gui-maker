@@ -34,6 +34,13 @@ describe("RobloxGuiMakerSync.lua", () => {
     expect(source).toContain("ChangeHistoryService");
   });
 
+  it("applies the editor-computed UIGridLayout values when the JSON has them", () => {
+    expect(source).toContain("rawNode.gridLayout");
+    expect(source).toContain("gridLayout.CellSize = makeUDim2(");
+    expect(source).toContain("gridLayout.CellPadding = makeUDim2(");
+    expect(source).toContain("gridLayout.FillDirectionMaxCells");
+  });
+
   it("stays strictly offline with zero remote requests or external requires", () => {
     expect(source).not.toMatch(/GetAsync|PostAsync|RequestAsync|require\s*\(/);
   });

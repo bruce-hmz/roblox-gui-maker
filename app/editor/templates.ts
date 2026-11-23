@@ -66,10 +66,12 @@ const shop = (() => {
   const panel = mk("Frame", { name: "ShopPanel", parentId: root.id, pos: { x: 0.18, y: 0.12 }, size: { x: 0.64, y: 0.76 }, color: "#15171f", cornerRadius: 16, layout: "list", padding: 16 });
   const header = mk("Frame", { name: "Header", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.12 }, color: "#000000", transparency: 1, layout: "list" });
   const title = mk("TextLabel", { name: "Title", parentId: header.id, pos: FLOW, size: { x: 1, y: 1 }, color: "#000000", transparency: 1, text: "🛒  SHOP", font: "GothamBold", textSize: 26, textColor: "#e1e1ef" });
+  // Grid children are sized relative to their cell (UIGridLayout CellSize), so
+  // { x: 1, y: 1 } fills the cell.
   const grid = mk("ScrollingFrame", { name: "ItemGrid", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.7 }, color: "#0e0f16", cornerRadius: 10, layout: "grid", padding: 8 });
   const colors = ["#00a2ff", "#4cddb1", "#c50005", "#99cbff", "#ffb4a9", "#b083ff"];
   const items = colors.map((c, i) =>
-    mk("Frame", { name: `Item${i}`, parentId: grid.id, pos: FLOW, size: { x: 0.3, y: 0.3 }, color: c, cornerRadius: 8, transparency: 0.15 })
+    mk("Frame", { name: `Item${i}`, parentId: grid.id, pos: FLOW, size: { x: 1, y: 1 }, color: c, cornerRadius: 8, transparency: 0.15 })
   );
   return [root, panel, header, title, grid, ...items];
 })();
@@ -93,7 +95,7 @@ const inventory = (() => {
   const title = mk("TextLabel", { name: "Title", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.12 }, color: "#000000", transparency: 1, text: "INVENTORY", font: "GothamBold", textSize: 22, textColor: "#99cbff" });
   const grid = mk("Frame", { name: "Slots", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.82 }, color: "#000000", transparency: 1, layout: "grid", padding: 6 });
   const slots = Array.from({ length: 8 }, (_, i) =>
-    mk("Frame", { name: `Slot${i}`, parentId: grid.id, pos: FLOW, size: { x: 0.3, y: 0.22 }, color: i % 3 === 0 ? "#243042" : "#1d1f29", cornerRadius: 8 })
+    mk("Frame", { name: `Slot${i}`, parentId: grid.id, pos: FLOW, size: { x: 1, y: 1 }, color: i % 3 === 0 ? "#243042" : "#1d1f29", cornerRadius: 8 })
   );
   return [root, panel, title, grid, ...slots];
 })();
