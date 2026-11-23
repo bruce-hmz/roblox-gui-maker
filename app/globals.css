@@ -4,8 +4,11 @@
    Mapped from the Stitch DESIGN.md: dark tonal layering, Electric Blue
    (creation / focus), Roblox Red (destructive only), Mint (success). */
 @theme {
-  /* surfaces — tonal layering, dark */
-  --color-base: #0c0e17;
+  /* surfaces — tonal layering, dark.
+     The page background is named "page", not "base": a --color-base token
+     makes Tailwind's `text-base` resolve to this colour instead of the 1rem
+     font size, which turned `md:text-base` copy invisible on desktop. */
+  --color-page: #0c0e17;
   --color-surface: #11131c;
   --color-panel: #191b24;
   --color-panel-raised: #1d1f29;
@@ -46,7 +49,7 @@
     height: 100%;
   }
   body {
-    background-color: var(--color-base);
+    background-color: var(--color-page);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

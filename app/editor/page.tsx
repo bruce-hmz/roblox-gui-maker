@@ -109,7 +109,7 @@ export default async function EditorPage({
       />
       <main
         aria-labelledby="editor-guide-heading"
-        className="border-t border-line bg-base text-ink"
+        className="border-t border-line bg-page text-ink"
       >
         <script
           type="application/ld+json"

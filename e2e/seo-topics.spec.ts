@@ -90,10 +90,15 @@ test("@smoke @full exposes distinct core SEO topic pages", async ({
   await page.setViewportSize({ width: 375, height: 900 });
   await page.goto("/templates");
   await expect(
+    page.getByRole("link", { name: "Launch Editor" })
+  ).toBeVisible();
+  // Below lg every nav item sits in the native <details> menu.
+  await page.locator("header summary").click();
+  await expect(
     page.getByRole("link", { name: "Templates", exact: true })
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Launch Editor" })
+    page.getByRole("banner").getByRole("link", { name: "Guides", exact: true })
   ).toBeVisible();
   expect(
     await page.evaluate(() => ({

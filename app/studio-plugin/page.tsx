@@ -134,7 +134,7 @@ export default function StudioPluginPage() {
                   click <span className="text-ink">Plugins Folder</span>, or navigate manually:
                 </p>
               </div>
-              <div className="rounded-lg border border-line bg-base p-3 font-mono text-xs text-ink space-y-1.5">
+              <div className="rounded-lg border border-line bg-page p-3 font-mono text-xs text-ink space-y-1.5">
                 <p>
                   <span className="text-ink-mute">Windows:</span> %LOCALAPPDATA%\Roblox\Plugins
                 </p>

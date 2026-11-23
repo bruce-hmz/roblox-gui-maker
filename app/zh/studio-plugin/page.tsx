@@ -121,7 +121,7 @@ export default function ZhStudioPluginPage() {
                 <p className="font-medium text-ink mb-1">1. 打开 Studio 本地插件目录</p>
                 <p>在 Roblox Studio 顶部打开「Plugins（插件）」页签并点击「Plugins Folder」，或手动进入：</p>
               </div>
-              <div className="rounded-lg border border-line bg-base p-3 font-mono text-xs text-ink space-y-1.5">
+              <div className="rounded-lg border border-line bg-page p-3 font-mono text-xs text-ink space-y-1.5">
                 <p>
                   <span className="text-ink-mute">Windows:</span> %LOCALAPPDATA%\Roblox\Plugins
                 </p>
