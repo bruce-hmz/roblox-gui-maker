@@ -136,6 +136,30 @@ const FAQS = [
       "No download or installation is required. Roblox GUI Maker runs 100% in your browser as a free online Roblox GUI designer — design your ScreenGui visually, preview interactions live, and copy clean Luau straight into Roblox Studio (or optionally download .lua scripts, editable JSON/ZIP packages, our offline Studio plugin, or native .rbxmx files).",
   },
   {
+    question:
+      "Are my GUI designs and files uploaded to a server, or processed locally in my browser?",
+    answer:
+      "Visual editing, saved project drafts (browser localStorage), and Client/Server Luau, JSON, and ZIP exports run 100% locally in your browser — your GUI scenes are never uploaded to our servers. We have no login and never ask for your Roblox password or .ROBLOSECURITY cookie, and our source code is public on GitHub. Only text prompts you explicitly submit to the optional AI generator are sent to /api/generate-gui; see our Trust & Security page (/trust) and Privacy Policy (/privacy) for full details.",
+  },
+  {
+    question:
+      "Are there any usage limits, daily caps, or export limits on the free plan?",
+    answer:
+      "Manual visual editing, all 13 starter templates, all 6 interactive 5-screen Game UI Kit previews, and Client/Server Luau, JSON, ZIP, offline Studio plugin JSON, and single 512×512 Gamepass icon exports are unlimited and free with no account required. The optional free AI prompt-to-GUI generator has a fair-use quota of up to 3 prompts per hour and 5 prompts per day without signing up. Optional Studio Pro Passes (USD 9.90 or USD 19.90 one-time buyout, zero recurring subscription) unlock native .rbxmx Studio model exports and full multi-screen kit bundles.",
+  },
+  {
+    question:
+      "Can I use Roblox GUI Maker on an iPhone, Android phone, or iPad — or do I need a desktop?",
+    answer:
+      "On an iPhone, Android phone, or tablet browser you can browse all 13 templates, generate AI UI starting points from the homepage, preview Game UI Kits, and use mobile-friendly tools like the UDim2 UI Sizer and Gamepass Icon Maker. The full drag-and-drop /editor canvas is built for wider screens (desktop, laptop, or landscape tablet at 768px+) for accurate UDim2 positioning and property editing, and Roblox Studio itself requires Windows or Mac to import and publish your exported GUI.",
+  },
+  {
+    question:
+      "What Roblox UI instances and customization options are supported without a paid subscription?",
+    answer:
+      "Without any subscription or sign-up, you can customize 7 core Roblox UI classes (ScreenGui, Frame, ScrollingFrame, TextLabel, TextButton, TextBox, ImageLabel), responsive UDim2 Scale and Offset, AnchorPoint, ZIndex, BackgroundColor3, BackgroundTransparency, 9 Roblox fonts, UICorner, UIStroke, UIGradient, UIListLayout, UIGridLayout, UIAspectRatioConstraint, UISizeConstraint, and 5 interactive button actions (Show, Hide, Toggle, RemoteEvent, Teleport), starting from a blank canvas, an AI prompt, 13 starter templates, or 6 multi-screen Game UI Kit previews.",
+  },
+  {
     question: "Is this an official Roblox product?",
     answer:
       "No. Roblox GUI Maker is an independent, unofficial creator tool and is not affiliated with or endorsed by Roblox Corporation.",
@@ -346,6 +370,130 @@ export default function Home() {
               Launch the Editor →
             </Link>
           </div>
+        </section>
+
+        {/* comparison vs alternatives */}
+        <section className="max-w-5xl mx-auto px-6 py-12">
+          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-3">
+            How Roblox GUI Maker (robloxguimaker.app) compares to alternatives
+          </h2>
+          <p className="text-ink-dim text-center max-w-2xl mx-auto mb-8 text-sm md:text-base">
+            Most Roblox UI workflows trade off between speed, real Roblox Studio
+            compatibility, and zero setup. Here is how{" "}
+            <strong className="text-ink">robloxguimaker.app</strong> compares to
+            building directly in Studio, converting from Figma, or using AI image
+            mockups.
+          </p>
+          <div className="overflow-x-auto rounded-xl border border-line bg-panel">
+            <table className="w-full min-w-[640px] text-left text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-line bg-raised/60 text-xs uppercase tracking-wider text-ink-mute">
+                  <th className="px-4 py-3 font-semibold">Feature</th>
+                  <th className="px-4 py-3 font-semibold text-focus">
+                    Roblox GUI Maker (robloxguimaker.app)
+                  </th>
+                  <th className="px-4 py-3 font-semibold">
+                    Roblox Studio UI Editor
+                  </th>
+                  <th className="px-4 py-3 font-semibold">
+                    Figma + Importer Plugin
+                  </th>
+                  <th className="px-4 py-3 font-semibold">
+                    AI Image Generators
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line text-ink-dim">
+                <tr>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    Cost &amp; Account
+                  </td>
+                  <td className="px-4 py-3 text-ink">
+                    Free forever, no sign-up; optional one-time Pro pass (no
+                    subscription)
+                  </td>
+                  <td className="px-4 py-3">Free, Roblox account required</td>
+                  <td className="px-4 py-3">
+                    Account required; some plugins paid
+                  </td>
+                  <td className="px-4 py-3">Usually credits or subscription</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    No Download / Browser
+                  </td>
+                  <td className="px-4 py-3 text-ink">
+                    100% browser-based; no software or Studio plugin required
+                  </td>
+                  <td className="px-4 py-3">
+                    Windows / Mac desktop install required
+                  </td>
+                  <td className="px-4 py-3">
+                    Browser + Studio importer plugin needed
+                  </td>
+                  <td className="px-4 py-3">Browser-based</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    Editable ScreenGui + AI
+                  </td>
+                  <td className="px-4 py-3 text-ink">
+                    AI prompt → editable ScreenGui, drag-and-drop canvas, 13
+                    templates + 6 UI kits
+                  </td>
+                  <td className="px-4 py-3">Manual inspector editing</td>
+                  <td className="px-4 py-3">
+                    Manual vector design; image slicing needed
+                  </td>
+                  <td className="px-4 py-3">Flat PNG mockup only (not editable)</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    Roblox Studio Exports
+                  </td>
+                  <td className="px-4 py-3 text-ink">
+                    Unlimited free Client + Server Luau, JSON/ZIP, offline sync
+                    JSON; Pro native <code>.rbxmx</code>
+                  </td>
+                  <td className="px-4 py-3">Native inside Studio</td>
+                  <td className="px-4 py-3">Plugin import / image assets</td>
+                  <td className="px-4 py-3">None (manual rebuild required)</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    Privacy &amp; Free Limits
+                  </td>
+                  <td className="px-4 py-3 text-ink">
+                    Browser-local storage &amp; export, open-source on GitHub;
+                    unlimited manual edits/exports, 3/hr &amp; 5/day free AI
+                  </td>
+                  <td className="px-4 py-3">Roblox cloud / local .rbxl</td>
+                  <td className="px-4 py-3">Cloud account storage</td>
+                  <td className="px-4 py-3">
+                    Prompts/images uploaded; daily credit caps
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-center text-xs text-ink-mute">
+            Read the full{" "}
+            <Link
+              href="/guides/roblox-gui-maker-alternatives"
+              className="text-focus hover:underline"
+            >
+              Roblox GUI Maker alternatives comparison
+            </Link>
+            , verify local processing on{" "}
+            <Link href="/trust" className="text-focus hover:underline">
+              Trust &amp; Security
+            </Link>
+            , or compare free vs one-time Pro deliverables on{" "}
+            <Link href="/pricing" className="text-focus hover:underline">
+              Pricing
+            </Link>
+            .
+          </p>
         </section>
 
         {/* how it works */}

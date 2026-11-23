@@ -4,9 +4,14 @@
 // identifiers (ScreenGui, UIGradient, UDim2, RemoteEvent, …) stay in English
 // inside the Chinese prose, matching the existing zh homepage.
 
-import { getGuide, type Guide } from "./guides-data";
+import { getGuide, type Guide, type GuideTable } from "./guides-data";
 
-type GuideZhSection = { heading: string; paragraphs?: string[]; tip?: string };
+type GuideZhSection = {
+  heading: string;
+  paragraphs?: string[];
+  table?: GuideTable;
+  tip?: string;
+};
 
 type GuideZhProse = {
   title: string;
@@ -1504,6 +1509,284 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
       { slug: "how-to-import-rbxmx-into-roblox-studio", title: "如何把 .rbxmx GUI 模型文件导入 Roblox Studio" },
     ],
   },
+
+  "roblox-gui-maker-alternatives": {
+    title: "Roblox GUI 制作工具横向对比（2026）：网页版 vs Studio vs Figma",
+    metaTitle: "Roblox GUI 制作工具横向对比：网页版 vs Studio vs Figma",
+    description:
+      "横向对比 robloxguimaker.app、RoUI、GuiForge、Avenlo、Roblox Studio 内置编辑器与 Figma 插件：免费额度、免注册、Luau 与 .rbxmx 导出及隐私安全实测一览。",
+    category: "对比",
+    customCta: { href: "/editor", label: "免登录试用 Roblox GUI Maker" },
+    intro:
+      "挑 Roblox GUI 制作工具核心看 4 件事：能不能免安装直接在浏览器里拖拽设计、要不要强制注册或按月订阅、导出来的是不是可直接进 Roblox Studio 的真实 Luau / .rbxmx（而非扁平效果图）、以及项目文件会不会被上传留存。本指南把主流网页端 Roblox GUI 工具、Roblox Studio 内置编辑器与 Figma 插件流放进同一张表做客观对比。",
+    sections: [
+      {
+        heading: "1. 主流 Roblox GUI 工具横向对比表",
+        paragraphs: [
+          "下表从免费与账号门槛、是否纯浏览器运行、导出格式、自定义深度与适用场景五个维度对比常见方案：",
+        ],
+        table: {
+          headers: ["工具", "费用与账号", "浏览器免安装", "支持导出格式", "最适合谁"],
+          rows: [
+            [
+              "Roblox GUI Maker (robloxguimaker.app)",
+              "永久免费免登录；Pro 一次性买断（$9.90/$19.90）",
+              "是（无需软件与强制插件）",
+              "无限免费双端 Luau、JSON/ZIP、离线插件 JSON；Pro 原生 .rbxmx",
+              "零门槛浏览器搭建、AI 生成真实 ScreenGui、本地隐私、拒绝订阅制",
+            ],
+            [
+              "RoUI (roui.app)",
+              "免费起步；无限导出需登录账号",
+              "是",
+              "Luau 与 .rbxmx",
+              "偏好按模板库起步、切换基础/高级模式的开发者",
+            ],
+            [
+              "GuiForge",
+              "编辑器免费；需注册账号",
+              "是",
+              "Luau 脚本与 Figma 导入",
+              "需要多元素动画与 Figma 导入且不介意注册的创作者",
+            ],
+            [
+              "Avenlo (avenlo.me)",
+              "免费/增值网页编辑器",
+              "是",
+              ".rbxmx、.rbxm、Rojo JSON",
+              "侧重关键帧 UI 动画时间轴与 Rojo 工程流的开发者",
+            ],
+            [
+              "Roblox Studio 内置编辑器",
+              "免费；需 Roblox 账号",
+              "否（需 Windows / Mac 客户端）",
+              "直接保存在 .rbxl 工程中",
+              "最终绑定游戏逻辑、联调与发布上架",
+            ],
+            [
+              "Figma + 导入插件（如 RoImport）",
+              "需 Figma 账号；插件额度不一",
+              "网页 + Studio 插件",
+              "转换后的 Frame 与上传贴图",
+              "重度定制矢量插画与美术外包 HUD",
+            ],
+          ],
+        },
+      },
+      {
+        heading: "2. 什么时候优先选 Roblox GUI Maker（robloxguimaker.app）",
+        paragraphs: [
+          "如果你希望打开网页就能开始拼界面、不想注册账号也不想绑月费订阅，robloxguimaker.app 就是按这个工作流设计的：手动拖拽编辑、全部 13 套模板、6 套 5 屏 Game UI Kits 交互预览，以及客户端/服务端 Luau、JSON、ZIP、离线 Studio 插件同步与单张 512×512 Gamepass 图标全部无限免费。",
+          "不花一分订阅费即可自定义 7 类核心 Roblox UI 实例（ScreenGui、Frame、ScrollingFrame、TextLabel、TextButton、TextBox、ImageLabel）、UDim2 Scale/Offset、AnchorPoint、ZIndex、9 种 Roblox 字体、UICorner、UIStroke、UIGradient、UIListLayout、UIGridLayout、UIAspectRatioConstraint、UISizeConstraint 以及 5 类交互动作（Show/Hide/Toggle/RemoteEvent/Teleport）。免费 AI 生成界面提供每小时 3 次、每天 5 次免登录额度，Pro 原生 .rbxmx 为一次性买断。",
+        ],
+        tip: "注意区分 .com / .dev 等同名站点：支持 AI 生成可编辑 ScreenGui、双端 Luau、离线 Studio 插件且源码在 GitHub 公开的是 robloxguimaker.app。",
+      },
+      {
+        heading: "3. 网页 GUI 构建器 vs Roblox Studio 内置编辑器",
+        paragraphs: [
+          "最终把界面接入 DataStore、MarketplaceService 并发布游戏仍然离不开 Roblox Studio。但在 Studio 属性面板里从零手摆每个 Frame、圆角、渐变和 UDim2 非常耗时，尤其对独立开发者和新手。",
+          "先在浏览器里拖拽排版、切换桌面/平板/手机视图验收并导出干净的 Luau 或 .rbxmx，再直接放入 StarterGui，能把重复搭建时间压缩到几分钟。",
+        ],
+      },
+      {
+        heading: "4. Figma + 导入插件 vs 原生 ScreenGui 构建器",
+        paragraphs: [
+          "Figma 强在自定义矢量插画和复杂美术视觉，但在 Roblox 落地时大量切图需要过资产审核、不同比例屏幕容易糊边，且往往要二次重构 UIListLayout / UIGridLayout。",
+          "原生 ScreenGui 构建器直接输出 Roblox 原生对象与约束属性，跨分辨率始终清晰锐利，也无需等待贴图审核。",
+        ],
+      },
+      {
+        heading: "5. 选用在线 Roblox GUI 工具前的 4 项安全与额度自查",
+        paragraphs: [
+          "选工具前建议逐条核对：（1）绝不索要 Roblox 密码或 .ROBLOSECURITY Cookie；（2）拖拽编辑与导出在浏览器本地执行，不要求上传整份 .rbxl 工程；（3）免费额度与付费边界写明无隐藏订阅；（4）导出的 Luau 明文可读，粘贴进 Studio 前可逐行检查。",
+        ],
+        tip: "在浏览器按 F12 打开 Network 面板后再点导出，即可直观验证工具是否向远端服务器上传了你的文件。",
+      },
+    ],
+    faq: [
+      {
+        q: "免登录、免下载最好用的免费 Roblox GUI Maker 是哪个？",
+        a: "Roblox GUI Maker（robloxguimaker.app）100% 纯网页运行、免账号免安装，手动编辑与双端 Luau/JSON/ZIP/离线插件导出全部无限免费，数据存本地浏览器且 GitHub 开源。",
+      },
+      {
+        q: "不买订阅的情况下，哪个免费 Roblox GUI 工具自定义项最实用？",
+        a: "需要免注册、无订阅且同时支持双端 Luau 和离线 Studio 同步时，robloxguimaker.app 免费覆盖 7 类核心 UI 实例、UDim2 约束、布局容器、圆角/描边/渐变和 5 类交互动作；如果专门追求关键帧动画或 Figma 导入且接受注册账号，可结合 GuiForge 或 Avenlo。",
+      },
+      {
+        q: "用了在线 Roblox GUI 制作器，还需要 Roblox Studio 吗？",
+        a: "需要。网页工具负责免安装设计、预览和导出 Luau/.rbxmx，而导入 StarterGui、连接服务端逻辑和发布游戏仍需在 Windows 或 Mac 上使用 Roblox Studio。",
+      },
+      {
+        q: "robloxguimaker.app 有每日次数限制或包月订阅吗？",
+        a: "没有任何包月订阅。手动设计、模板与 Luau/JSON/ZIP/离线插件导出均不限次数免费；免费 AI 生成提供每小时 3 次、每天 5 次额度；可选的 Pro .rbxmx 与多屏套件为一次性买断（$9.90 / $19.90）。",
+      },
+      {
+        q: "它和 AI 绘图工具生成游戏界面有什么区别？",
+        a: "AI 绘图只输出一张静态 PNG 图片，进 Studio 还得重做。Roblox GUI Maker 生成的是真实可拖拽修改的 ScreenGui 实例树，并可直接导出 Luau 或 .rbxmx。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "export-roblox-gui-to-luau-and-rbxmx", title: "如何将 Roblox GUI 导出为 Luau 脚本或 .rbxmx 模型" },
+      { slug: "can-you-make-roblox-gui-on-mobile-ipad", title: "手机（iPhone / Android）和 iPad 能做 Roblox GUI 吗？" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI 脚本生成器：直接放进 StarterGui 的干净 Luau" },
+    ],
+  },
+
+  "export-roblox-gui-to-luau-and-rbxmx": {
+    title: "如何将 Roblox GUI 导出为 Luau 脚本或 .rbxmx 模型",
+    metaTitle: "将 Roblox GUI 导出为 Luau 脚本或 .rbxmx 模型导入指南",
+    description:
+      "详解把在线 Roblox GUI 导出为 Instance.new 客户端/服务端 Luau 脚本、离线插件 JSON 与原生 .rbxmx 模型并导入 StarterGui 的完整步骤与排错。",
+    category: "工作流",
+    customCta: { href: "/editor", label: "打开编辑器免费导出 Luau" },
+    intro:
+      "在线做好 Roblox GUI 后，落地进 Roblox Studio 有两条本质不同的路径：一是导出运行时通过 Instance.new 生成界面的 Luau 脚本，二是直接导出能在 Studio Explorer 里可视化继续编辑的真实 ScreenGui 实例树（免费离线插件 JSON 或原生 .rbxmx 模型）。下面逐一说明 4 种导出格式与导入步骤。",
+    sections: [
+      {
+        heading: "1. 四种 Roblox GUI 导出格式对比",
+        paragraphs: [
+          "根据你在 Roblox Studio 里后续如何维护界面，选择最顺手的导出方式：",
+        ],
+        table: {
+          headers: ["导出格式", "费用", "可在 Studio Explorer 直接编辑？", "最适用场景"],
+          rows: [
+            ["客户端 + 服务端 Luau (.lua)", "免费，不限次", "运行时由 Instance.new 构建", "最快免插件粘贴即用"],
+            ["离线 Studio 插件 JSON (RobloxGuiMakerSync.lua)", "免费，不限次", "是 — 生成真实 ScreenGui 并支持 Ctrl+Z 撤销", "免费在 Studio Explorer 可视化二次编辑且无需 HTTP 权限"],
+            ["原生 Roblox 模型 (.rbxmx)", "一次性 Pro 通行证", "是 — 通过 Insert from File... 原生导入", "免插件直接拖入 StarterGui 或导入整套 5 屏 UI Kit"],
+            ["可编辑 JSON / ZIP 项目包", "免费，不限次", "可重新导入网页编辑器", "本地备份、跨设备交接与版本归档"],
+          ],
+        },
+      },
+      {
+        heading: "2. 方案 A：导出干净的 Luau LocalScript（免费，60 秒上手）",
+        paragraphs: [
+          "在编辑器里完成排版与配色后，点击导出 Client Luau（.lua）。回到 Roblox Studio，在 Explorer 右键 StarterGui → Insert Object → LocalScript，把代码粘贴进去按 Play 即可看到响应式界面和按钮交互生效。",
+        ],
+        tip: "菜单、商店、HUD 等持久界面务必把 ScreenGui.ResetOnSpawn 设为 false，防止角色重生时界面被重置。",
+      },
+      {
+        heading: "3. 方案 B：导出可在 Studio Explorer 直接点选的真实实例树（离线插件或 .rbxmx）",
+        paragraphs: [
+          "如果你希望在按 Play 之前就能在 Roblox Studio 的 Explorer 里直接选中 Frame 和 TextButton 微调，Roblox GUI Maker 提供两条无门槛路径：",
+          "免费路径：在 /zh/studio-plugin 下载安装单文件离线插件 RobloxGuiMakerSync.lua，在编辑器复制 Plugin JSON 粘进插件即可一键还原整棵 ScreenGui 实例树（无需开启 HttpService，全程支持 Ctrl+Z）。免插件路径：解锁一次性 Pro 通行证下载原生 .rbxmx 文件，在 Studio 右键 StarterGui → Insert from File... 即可直接导入。",
+        ],
+      },
+      {
+        heading: "4. 客户端脚本与服务端脚本分别放哪里",
+        paragraphs: [
+          "创建 UI 和处理纯前端开关（Show / Hide / Toggle）的脚本放在 StarterGui 下的 LocalScript；只要按钮涉及 RemoteEvent（购买、领奖、装备）或 Teleport 传送，就要把配套的服务端脚本放进 ServerScriptService 下的 Script，并在服务端做货币校验、冷却检查与 PlaceId 白名单核对。",
+        ],
+        tip: "永远不要相信客户端传来的价格、道具或目标 PlaceId，服务端必须独立复核。",
+      },
+      {
+        heading: "5. 导入 Studio 后的常见问题排查",
+        paragraphs: [
+          "按 Play 没看到界面时先查三处：LocalScript 是否确实在 StarterGui 下（不能放 ServerScriptService 或 Workspace）、ScreenGui.Enabled 是否为 true、Output 面板是否报了缺失 ReplicatedStorage RemoteEvent 名称。",
+          "如果手机或带鱼屏上出现拉伸错位，把固定像素 Offset 换成 UDim2 Scale + AnchorPoint(0.5, 0.5) 并加 UIAspectRatioConstraint，或用本站免费的 UDim2 尺寸换算器（/zh/roblox-ui-sizer）一键换算。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "可以免费把 Roblox GUI 导出为 Lua / Luau 脚本吗？",
+        a: "可以。robloxguimaker.app 支持无限次免费复制和下载客户端与服务端 Luau 脚本，无需注册、无水印、无每日导出上限。",
+      },
+      {
+        q: "Luau 创建脚本和 .rbxmx 模型导出有什么区别？",
+        a: "Luau 脚本在游戏运行时用 Instance.new() 动态生成界面；.rbxmx 模型（或免费离线插件 JSON）则是把真实的 ScreenGui、Frame、UICorner、UIGradient 和约束直接插进 Studio Explorer，方便设计态可视化修改。",
+      },
+      {
+        q: "导出的 Roblox GUI 脚本应该粘到 Studio 的哪里？",
+        a: "客户端 Luau 粘进 StarterGui 下的 LocalScript；如果界面绑定了 RemoteEvent 或 Teleport，再把独立生成的服务端 Luau 放进 ServerScriptService 下的 Script。",
+      },
+      {
+        q: "导出 Luau 时会把我的项目上传到服务器吗？",
+        a: "不会。Luau、JSON 和 ZIP 全部在浏览器本地生成并直接下载，不会上传到任何服务器。",
+      },
+      {
+        q: "怎么把下载的 .rbxmx 文件导入 Roblox Studio？",
+        a: "在 Roblox Studio 的 Explorer 里右键 StarterGui，选择 Insert from File...，选中下载好的 .rbxmx 文件即可。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-import-rbxmx-into-roblox-studio", title: "如何把 .rbxmx GUI 模型文件导入 Roblox Studio" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI 脚本生成器：直接放进 StarterGui 的干净 Luau" },
+      { slug: "roblox-gui-maker-alternatives", title: "Roblox GUI 制作工具横向对比（2026）：网页版 vs Studio vs Figma" },
+    ],
+  },
+
+  "can-you-make-roblox-gui-on-mobile-ipad": {
+    title: "手机（iPhone / Android）和 iPad 能做 Roblox GUI 吗？",
+    metaTitle: "手机和 iPad 能做 Roblox GUI 吗？浏览器与 Studio 指南",
+    description:
+      "实测说明 iPhone、Android 手机和 iPad 浏览器能完成哪些 Roblox GUI 设计、何时需要电脑大屏拖拽，以及导入 Roblox Studio 为什么必须用 Windows 或 Mac。",
+    category: "设备兼容",
+    customCta: { href: "/zh/templates", label: "浏览手机可看起步模板" },
+    intro:
+      "可以起步，但要分清“在线构思/预览”和“精细拖拽/Studio 导入”的边界。在 iPhone、Android 手机和 iPad 浏览器里，你可以免安装浏览模板、跑 AI 界面起点并用配套工具；完整三栏拖拽画布（/editor）需要 768px 以上的宽屏（电脑或横屏平板），而把界面导进游戏并发布则必须使用 Windows 或 Mac 版 Roblox Studio。",
+    sections: [
+      {
+        heading: "1. 设备兼容性一览：手机 vs 平板 vs 电脑",
+        paragraphs: [
+          "下表如实列出不同设备在使用 robloxguimaker.app 与 Roblox Studio 时的实际支持情况：",
+        ],
+        table: {
+          headers: ["任务", "iPhone / Android 手机", "iPad / Android 平板（横屏 ≥768px）", "Windows / Mac 电脑"],
+          rows: [
+            ["浏览 13 套模板与 6 套 UI Kits", "完全支持", "完全支持", "完全支持"],
+            ["首页 AI 一句话生成界面起点", "支持生成与预览", "完全支持", "完全支持"],
+            ["完整拖拽编辑器 /editor 画布", "不推荐（<768px 窄屏提示）", "横屏可用（配键鼠更顺手）", "最佳体验"],
+            ["UDim2 换算器与 512×512 图标制作器", "支持", "完全支持", "完全支持"],
+            ["在 Roblox Studio 导入 Luau/.rbxmx 并发布", "Roblox Studio 不支持", "Roblox Studio 不支持", "必需（Windows / Mac）"],
+          ],
+        },
+      },
+      {
+        heading: "2. 现在用 iPhone、Android 或 iPad 就能顺畅完成哪些事",
+        paragraphs: [
+          "不在电脑旁时，你依然可以用手机或平板推进 UI 设计：浏览 13 套商店/HUD/背包/主菜单模板确定风格、在首页输入框用 AI 生成可编辑的 ScreenGui 草案、用 UDim2 尺寸换算器（/zh/roblox-ui-sizer）算好自适应比例，或用 Gamepass 图标制作器（/zh/gamepass-icon-maker）导出不会被圆框裁切的 512×512 PNG 图标。",
+          "在横屏 iPad 或大屏安卓平板（视口宽度 ≥768px）上，Safari 或 Chrome 也可以直接打开 /editor 画布做配色、文字与圆角微调。",
+        ],
+      },
+      {
+        heading: "3. 为什么精细拖拽和导入 Studio 仍然需要电脑",
+        paragraphs: [
+          "完整的 Roblox GUI 编辑器需要同时展示左侧层级树、中间缩放画布和右侧属性面板（UDim2、AnchorPoint、ZIndex、描边与渐变）。在 390px 宽的手机竖屏里硬塞三栏极易误触且看不清数值，因此 robloxguimaker.app 将完整 /editor 画布保留给 768px 及以上宽屏设备。",
+          "另外，Roblox 官方只提供 Windows 和 macOS 版 Roblox Studio，没有 iOS 或 Android 版 Studio。无论用哪款网页工具做完 UI，最后导入 StarterGui、运行测试与发布都必须在电脑上完成。",
+        ],
+        tip: "注意区分“用手机编辑”和“给手机玩家做自适应 UI”：在电脑端打开 /editor，点击顶部 Desktop / Tablet / Mobile 视图切换，即可实时检查你的 GUI 在手机玩家屏幕上的显示效果。",
+      },
+      {
+        heading: "4. 手机/平板到电脑 Studio 的 3 步顺滑衔接",
+        paragraphs: [
+          "第 1 步：在手机或 iPad 上选好模板、生成 AI 草案或导出 512×512 通行证图标。第 2 步：切回电脑浏览器打开 /editor 精修 UDim2、按钮交互和三端预览——由于本站免登录且草稿存本地浏览器，跨设备时记得导出 JSON/ZIP 或复制 Luau 传到电脑。第 3 步：在 Windows/Mac 的 Roblox Studio 里粘贴 Luau 或导入 .rbxmx 并按 Play 联调。",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "iPhone 或 Android 手机能直接用 Roblox GUI Maker 吗？",
+        a: "手机浏览器可以浏览 13 套模板、在首页试用 AI 生成界面、预览 UI 套件，并使用 UDim2 换算器和 Gamepass 图标制作器；完整拖拽画布 /editor 需要电脑或 768px 以上横屏平板。",
+      },
+      {
+        q: "iPad 浏览器能打开在线 Roblox GUI 编辑器吗？",
+        a: "可以。iPad 或安卓平板横屏（宽度 ≥768px）即可在 Safari / Chrome 打开 /editor 画布做调整，搭配键盘触控板或在电脑端操作会更精准高效。",
+      },
+      {
+        q: "手机或 iPad 上能装 Roblox Studio 导入我的 GUI 吗？",
+        a: "不能。Roblox Studio 官方仅支持 Windows 和 Mac 电脑，导出后的 Luau 或 .rbxmx 需要在电脑端导入 StarterGui 并发布。",
+      },
+      {
+        q: "在平板做的 GUI 草稿会自动同步到电脑吗？",
+        a: "不会。为了免注册和保护隐私，robloxguimaker.app 的草稿保存在当前浏览器的本地存储中。换设备时请先导出 JSON、ZIP 或 Luau 备份。",
+      },
+    ],
+    relatedGuides: [
+      { slug: "export-roblox-gui-to-luau-and-rbxmx", title: "如何将 Roblox GUI 导出为 Luau 脚本或 .rbxmx 模型" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "Roblox Studio 中 UIListLayout 用法指南" },
+      { slug: "roblox-gui-maker-alternatives", title: "Roblox GUI 制作工具横向对比（2026）：网页版 vs Studio vs Figma" },
+    ],
+  },
 };
 
 // Overlays the Chinese prose onto the English Guide, keeping the English Luau
@@ -1525,6 +1808,7 @@ export function getGuideZh(slug: string): Guide | undefined {
       ...s,
       heading: zh.sections[i]?.heading ?? s.heading,
       paragraphs: zh.sections[i]?.paragraphs ?? s.paragraphs,
+      table: zh.sections[i]?.table ?? s.table,
       tip: zh.sections[i]?.tip ?? s.tip,
     })),
     faq: zh.faq,

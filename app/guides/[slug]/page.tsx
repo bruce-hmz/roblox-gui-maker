@@ -168,6 +168,39 @@ export default async function GuidePage({
                   {p}
                 </p>
               ))}
+              {s.table && (
+                <div className="overflow-x-auto rounded-xl border border-line bg-panel mb-4">
+                  <table className="w-full min-w-[540px] text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="border-b border-line bg-raised/60 text-xs uppercase tracking-wider text-ink-mute">
+                        {s.table.headers.map((header) => (
+                          <th key={header} className="px-3.5 py-2.5 font-semibold">
+                            {header}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line text-ink-dim">
+                      {s.table.rows.map((row, rIdx) => (
+                        <tr key={rIdx}>
+                          {row.map((cell, cIdx) => (
+                            <td
+                              key={cIdx}
+                              className={
+                                cIdx === 0
+                                  ? "px-3.5 py-2.5 font-medium text-ink"
+                                  : "px-3.5 py-2.5"
+                              }
+                            >
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
               {s.code && (
                 <pre className="rounded-lg bg-input border border-line p-4 overflow-x-auto scroll-thin mb-3">
                   <code className="font-mono text-[12.5px] leading-relaxed text-ink-dim">

@@ -2,9 +2,15 @@
 // lands on YouTube ("how to make a roblox shop gui", etc.) and pairs with a
 // template you can open in the editor. SSG'd at /guides/<slug>.
 
+export type GuideTable = {
+  headers: string[];
+  rows: string[][];
+};
+
 export type GuideSection = {
   heading: string;
   paragraphs?: string[];
+  table?: GuideTable;
   code?: string;
   tip?: string;
 };
@@ -2424,6 +2430,382 @@ end)`,
       { slug: "how-to-make-roblox-gamepass-icons", title: "How to Make & Upload Roblox Gamepass Icons (512×512)" },
       { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
       { slug: "how-to-import-rbxmx-into-roblox-studio", title: "How to Import .rbxmx GUI Files into Roblox Studio" },
+    ],
+  },
+  {
+    slug: "roblox-gui-maker-alternatives",
+    title: "Best Roblox GUI Maker Alternatives Compared (2026)",
+    metaTitle: "Roblox GUI Maker Alternatives Compared: Browser vs Studio",
+    description:
+      "Compare browser Roblox GUI makers (robloxguimaker.app, RoUI, GuiForge, Avenlo), Roblox Studio, and Figma plugins by price, no-login access, and Luau/.rbxmx.",
+    category: "Comparison",
+    hideTemplateCta: true,
+    customCta: { href: "/editor", label: "Try Roblox GUI Maker Free (No Login)" },
+    intro:
+      "Choosing a Roblox GUI maker comes down to four practical questions: can you design visually without installing software, do you have to create an account or pay a subscription, does it export real editable Roblox UI (Luau or .rbxmx) instead of flat images, and do your project files stay private? This guide compares the major browser-based Roblox GUI editors alongside Roblox Studio's built-in editor and Figma workflows so you can pick the right tool for your project.",
+    sections: [
+      {
+        heading: "1. Side-by-side comparison: browser editors vs Roblox Studio vs Figma",
+        paragraphs: [
+          "The table below compares the most frequently recommended Roblox UI tools across pricing model, sign-up friction, export formats, customization controls, and privacy.",
+        ],
+        table: {
+          headers: [
+            "Tool",
+            "Free & Account",
+            "Runs in Browser",
+            "Export Formats",
+            "Best For",
+          ],
+          rows: [
+            [
+              "Roblox GUI Maker (robloxguimaker.app)",
+              "Free forever, no account; optional one-time Pro ($9.90/$19.90)",
+              "Yes (no download or plugin required)",
+              "Unlimited Client + Server Luau, JSON/ZIP, offline sync JSON; Pro .rbxmx",
+              "Zero-friction browser design, AI editable ScreenGui, local privacy, no subscription",
+            ],
+            [
+              "RoUI (roui.app)",
+              "Free starter; sign-in needed for unlimited exports",
+              "Yes",
+              "Luau & .rbxmx",
+              "Template-first browsing with basic/advanced modes",
+            ],
+            [
+              "GuiForge",
+              "Free features; registration required",
+              "Yes",
+              "Luau scripts & Figma import",
+              "Creators wanting multi-element animations and Figma import",
+            ],
+            [
+              "Avenlo (avenlo.me)",
+              "Free/freemium web editor",
+              "Yes",
+              ".rbxmx, .rbxm, Rojo JSON",
+              "Keyframe UI animation timelines and Rojo pipelines",
+            ],
+            [
+              "Roblox Studio UI Editor",
+              "Free; Roblox account required",
+              "No (Windows / Mac desktop app)",
+              "Native inside .rbxl place",
+              "Final gameplay wiring, Playtest, and publishing",
+            ],
+            [
+              "Figma + Importer Plugins (e.g. RoImport)",
+              "Figma account required; plugin limits vary",
+              "Browser + Studio plugin",
+              "Converted Frames & uploaded image assets",
+              "Custom vector illustrations and brand-heavy HUD art",
+            ],
+          ],
+        },
+      },
+      {
+        heading: "2. When to choose Roblox GUI Maker (robloxguimaker.app)",
+        paragraphs: [
+          "If your priority is opening a browser tab and shipping a clean, editable Roblox interface with zero sign-up and zero subscription, robloxguimaker.app is built specifically for that workflow. Manual visual editing, all 13 starter templates, 6 interactive 5-screen Game UI Kit previews, and Client + Server Luau, JSON, ZIP, offline Studio plugin JSON, and single 512×512 Gamepass icon exports are unlimited and free.",
+          "Without paying for any subscription, you can customize 7 core Roblox UI classes (ScreenGui, Frame, ScrollingFrame, TextLabel, TextButton, TextBox, ImageLabel), responsive UDim2 Scale and Offset, AnchorPoint, ZIndex, 9 Roblox fonts, UICorner, UIStroke, UIGradient, UIListLayout, UIGridLayout, UIAspectRatioConstraint, UISizeConstraint, and 5 interactive button actions (Show, Hide, Toggle, RemoteEvent, Teleport). Free AI prompt-to-GUI generation includes 3 prompts/hour and 5 prompts/day without logging in, and optional one-time Studio Pro passes unlock native .rbxmx exports.",
+        ],
+        tip: "Watch out for lookalike domains (.com / .dev). The open-source browser editor with AI-generated editable ScreenGui, Client + Server Luau, offline Studio plugin sync, and public GitHub code lives at robloxguimaker.app.",
+      },
+      {
+        heading: "3. Browser GUI builders vs Roblox Studio's built-in UI editor",
+        paragraphs: [
+          "Roblox Studio is still required to test gameplay logic, bind DataStores or MarketplaceService, and publish your experience. However, building every Frame, UICorner, UIGradient, and UDim2 layout from scratch inside Studio's Explorer and Properties panels is slow — especially for solo developers or beginners.",
+          "Using a browser-based GUI builder first lets you scaffold layouts visually, test Desktop/Tablet/Mobile aspect ratios, and generate clean Luau or .rbxmx in minutes, then drop the result directly into StarterGui inside Roblox Studio.",
+        ],
+      },
+      {
+        heading: "4. Figma + plugins vs native Roblox ScreenGui builders",
+        paragraphs: [
+          "Figma excels at bespoke illustrations, custom icons, and complex vector art. Its tradeoff for Roblox UI is that exported PNG layers must be uploaded through Roblox asset moderation, can blur when stretched across aspect ratios, and lose native UIListLayout / UIGridLayout flexibility unless rebuilt as Roblox instances.",
+          "Native Roblox GUI builders output real ScreenGui objects (Frames, TextButtons, UICorner, UIStroke, UIGradient, constraints) that scale crisply on every device with zero image moderation wait.",
+        ],
+      },
+      {
+        heading: "5. Safety & hidden-limit checklist before picking any online GUI tool",
+        paragraphs: [
+          "Before using any online Roblox GUI editor, check four things: (1) it never asks for your Roblox password or .ROBLOSECURITY cookie, (2) visual editing and exports run locally in your browser without uploading private .rbxl places, (3) free usage limits vs paid exports are disclosed upfront, and (4) exported Luau is plain readable code you can audit before pasting into Studio.",
+        ],
+        tip: "You can verify local processing on any web tool by opening Chrome DevTools → Network, exporting a file, and confirming zero file-upload POST requests leave your browser.",
+      },
+    ],
+    faq: [
+      {
+        q: "What is the best free Roblox GUI Maker with no login and no download?",
+        a: "Roblox GUI Maker (robloxguimaker.app) runs 100% in your browser with no account, no installation, unlimited free manual editing and Client/Server Luau exports, browser-local storage, and optional AI prompt generation (3/hr & 5/day free).",
+      },
+      {
+        q: "Which free Roblox GUI maker offers the most customization without a subscription?",
+        a: "For zero-account, zero-subscription browser editing with Client + Server Luau and offline Studio plugin sync, robloxguimaker.app covers 7 core UI classes, UDim2 constraints, UIListLayout/UIGridLayout, UICorner, UIStroke, UIGradient, and interactive button actions. If you specifically want Figma import or keyframe animation timelines and do not mind registering an account, GuiForge and Avenlo are strong complements.",
+      },
+      {
+        q: "Do I still need Roblox Studio if I use an online Roblox GUI maker?",
+        a: "Yes. Browser GUI makers let you design, preview, and export Luau scripts or .rbxmx models without installing anything, but you still need Roblox Studio on Windows or Mac to import the interface into StarterGui, connect server game logic, and publish your Roblox experience.",
+      },
+      {
+        q: "Are there daily limits or subscriptions on robloxguimaker.app?",
+        a: "No recurring subscription. Manual GUI design, templates, and Luau/JSON/ZIP/offline-plugin exports are unlimited and free. Free AI prompt generation is rate-limited to 3/hour and 5/day per IP, and optional Pro .rbxmx + UI Kit passes are one-time purchases ($9.90 / $19.90).",
+      },
+      {
+        q: "How is robloxguimaker.app different from AI image generators?",
+        a: "AI image tools output flat PNG mockups you have to rebuild manually in Studio. Roblox GUI Maker generates real editable ScreenGui hierarchies with UDim2 positioning, interactive button actions, and copy-paste Luau or .rbxmx files.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "export-roblox-gui-to-luau-and-rbxmx", title: "How to Export Roblox GUI to Luau Script or .rbxmx" },
+      { slug: "can-you-make-roblox-gui-on-mobile-ipad", title: "Can You Make a Roblox GUI on iPhone, Android, or iPad?" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI Script Generator: Clean Luau for StarterGui" },
+    ],
+  },
+  {
+    slug: "export-roblox-gui-to-luau-and-rbxmx",
+    title: "How to Export Roblox GUI to Luau Script or .rbxmx",
+    metaTitle: "Export Roblox GUI to Luau Script or .rbxmx | Studio Guide",
+    description:
+      "Learn how to export a Roblox GUI design as a clean Instance.new Luau LocalScript, offline plugin JSON, or native .rbxmx model and import it into StarterGui.",
+    category: "Workflow",
+    relatedTemplate: "main-menu",
+    hideTemplateCta: true,
+    customCta: { href: "/editor", label: "Open Editor & Export Free Luau" },
+    intro:
+      "Designing a Roblox UI in a browser only saves time if the export drops cleanly into Roblox Studio. There are two fundamentally different ways to export a Roblox GUI: generating an Instance.new Luau script that constructs the UI at runtime, or exporting an actual ScreenGui instance hierarchy (.rbxmx model or offline Studio plugin JSON) you can continue editing visually inside Roblox Studio Explorer. This guide walks through every export option and how to import each one cleanly.",
+    sections: [
+      {
+        heading: "1. Compare the 4 Roblox GUI export formats",
+        paragraphs: [
+          "Pick the export format that matches how you want to maintain the interface inside Roblox Studio.",
+        ],
+        table: {
+          headers: [
+            "Export Format",
+            "Cost",
+            "Editable in Studio Explorer?",
+            "Best Use Case",
+          ],
+          rows: [
+            [
+              "Client + Server Luau (.lua)",
+              "Free, unlimited",
+              "Built at runtime via Instance.new",
+              "Fastest copy-paste import with zero plugins or file steps",
+            ],
+            [
+              "Offline Studio Plugin JSON (RobloxGuiMakerSync.lua)",
+              "Free, unlimited",
+              "Yes — creates real ScreenGui instances with Ctrl+Z undo",
+              "Visual editing in Studio Explorer without paying or enabling HTTP",
+            ],
+            [
+              "Native Roblox Model (.rbxmx)",
+              "One-time Pro pass",
+              "Yes — native XML hierarchy via Insert from File...",
+              "Zero-plugin drag-and-drop Studio models & 5-screen Game UI Kits",
+            ],
+            [
+              "Editable JSON / ZIP Project",
+              "Free, unlimited",
+              "Re-importable in browser editor",
+              "Local backups, team handoff, and version control",
+            ],
+          ],
+        },
+      },
+      {
+        heading: "2. Option A: Export & paste a clean Luau LocalScript (free, 60 seconds)",
+        paragraphs: [
+          "In the visual editor, finish arranging your Frames, TextButtons, and constraints, then click Export → Client Luau (.lua). Open your place in Roblox Studio, right-click StarterGui in Explorer, insert a LocalScript, and paste the generated Luau code. Press Play and your ScreenGui builds automatically with responsive UDim2 positioning and wired button clicks.",
+        ],
+        code: `-- LocalScript inside StarterGui (generated clean Luau pattern)
+local Players = game:GetService("Players")
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MainMenuGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local panel = Instance.new("Frame")
+panel.Size = UDim2.fromScale(0.36, 0.42)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.BackgroundColor3 = Color3.fromRGB(24, 27, 38)
+panel.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = panel
+
+local playBtn = Instance.new("TextButton")
+playBtn.Size = UDim2.fromScale(0.7, 0.2)
+playBtn.Position = UDim2.fromScale(0.5, 0.72)
+playBtn.AnchorPoint = Vector2.new(0.5, 0.5)
+playBtn.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+playBtn.Text = "PLAY"
+playBtn.Font = Enum.Font.GothamBold
+playBtn.TextScaled = true
+playBtn.Parent = panel
+
+playBtn.Activated:Connect(function()
+	panel.Visible = false
+end)`,
+        tip: "Always set ScreenGui.ResetOnSpawn = false for persistent menus, shops, and HUDs so player respawns do not reset open panels.",
+      },
+      {
+        heading: "3. Option B: Export a real editable ScreenGui hierarchy (Offline Plugin or .rbxmx)",
+        paragraphs: [
+          "If you want to click individual Frames and TextButtons inside Roblox Studio's Explorer instead of running an Instance.new script at play time, you have two clean paths in Roblox GUI Maker:",
+          "Free path: install our single-file offline Studio plugin (RobloxGuiMakerSync.lua from /studio-plugin) once, copy Plugin JSON from the editor, and paste it inside Studio. It requires zero HttpService permissions and wraps every import in ChangeHistoryService so Ctrl+Z undoes cleanly. Zero-plugin path: unlock a one-time Studio Pro pass to download native .rbxmx XML files, then right-click StarterGui → Insert from File... in Roblox Studio.",
+        ],
+      },
+      {
+        heading: "4. Where Client vs Server Luau scripts belong in Roblox Studio",
+        paragraphs: [
+          "Visual UI creation and button click listeners (Show, Hide, Toggle) belong in a LocalScript under StarterGui because only the client renders PlayerGui. Whenever a button triggers a RemoteEvent (like buying an item or claiming a reward) or a Teleport, place the matching server handler inside a Script under ServerScriptService and validate ownership, cooldowns, and allow-listed PlaceIds on the server.",
+        ],
+        tip: "Never trust client-sent prices, item grants, or arbitrary PlaceIds from a GUI button — treat every RemoteEvent as an untrusted request and verify it server-side.",
+      },
+      {
+        heading: "5. Quick troubleshooting after importing into Studio",
+        paragraphs: [
+          "If your GUI does not appear in Play mode, check three things first: confirm the LocalScript is inside StarterGui (not ServerScriptService or Workspace), confirm ScreenGui.Enabled = true, and check the Studio Output window for syntax errors or missing ReplicatedStorage RemoteEvent names.",
+          "If panels look stretched on phones or ultrawide monitors, switch fixed pixel Offsets to UDim2 Scale with AnchorPoint (0.5, 0.5) and add a UIAspectRatioConstraint — or run your dimensions through our free UDim2 UI Sizer at /roblox-ui-sizer.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Can I export a Roblox GUI design as a Lua / Luau script for free?",
+        a: "Yes. Roblox GUI Maker (robloxguimaker.app) lets you copy or download unlimited clean Client and Server Luau scripts for free with no account, no watermark, and no daily export cap.",
+      },
+      {
+        q: "What is the difference between a Luau creation script and a .rbxmx model export?",
+        a: "A Luau creation script builds your ScreenGui via Instance.new() when the game starts. A .rbxmx model file (or our free offline Studio plugin JSON) inserts real ScreenGui, Frame, UICorner, UIGradient, and constraint objects directly into Studio Explorer so you can inspect and edit them visually before pressing Play.",
+      },
+      {
+        q: "Where do I paste an exported Roblox GUI script in Roblox Studio?",
+        a: "Paste the Client Luau into a LocalScript inside StarterGui. If your UI includes RemoteEvent or Teleport button actions, paste the separate Server Luau into a Script inside ServerScriptService.",
+      },
+      {
+        q: "Is exported Luau code generated locally or uploaded to a server?",
+        a: "Luau, JSON, and ZIP exports are generated 100% locally inside your browser — your GUI layouts are never uploaded to our servers.",
+      },
+      {
+        q: "How do I import a .rbxmx file into Roblox Studio?",
+        a: "Open your experience in Roblox Studio, right-click StarterGui in the Explorer panel, click Insert from File..., and select your downloaded .rbxmx file.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-import-rbxmx-into-roblox-studio", title: "How to Import .rbxmx GUI Files into Roblox Studio" },
+      { slug: "roblox-gui-script-generator", title: "Roblox GUI Script Generator: Clean Luau for StarterGui" },
+      { slug: "roblox-gui-maker-alternatives", title: "Best Roblox GUI Maker Alternatives Compared (2026)" },
+    ],
+  },
+  {
+    slug: "can-you-make-roblox-gui-on-mobile-ipad",
+    title: "Can You Make a Roblox GUI on iPhone, Android, or iPad?",
+    metaTitle: "Make Roblox GUI on Mobile or iPad? Browser vs Studio",
+    description:
+      "Find out what you can design on iPhone, Android, and iPad in a browser Roblox GUI maker, when you need a desktop, and why Roblox Studio needs Windows/Mac.",
+    category: "Compatibility",
+    hideTemplateCta: true,
+    customCta: { href: "/templates", label: "Browse Mobile-Friendly Templates" },
+    intro:
+      "Yes — you can start designing and generating Roblox GUI layouts in a mobile or tablet browser without installing anything, as long as you know where mobile browsers shine and where a desktop takes over. Specifically, designing UI concepts, browsing templates, and running companion utilities work on iPhone, Android, and iPad, while full precision drag-and-drop editing works best on a wider screen (desktop, laptop, or landscape tablet at 768px+), and Roblox Studio itself officially requires Windows or Mac.",
+    sections: [
+      {
+        heading: "1. Device compatibility matrix: phone vs tablet vs desktop",
+        paragraphs: [
+          "Here is an honest breakdown of what works smoothly on each device when building Roblox interfaces with robloxguimaker.app and Roblox Studio.",
+        ],
+        table: {
+          headers: [
+            "Task",
+            "iPhone / Android Phone",
+            "iPad / Android Tablet (Landscape ≥768px)",
+            "Windows / Mac Desktop",
+          ],
+          rows: [
+            [
+              "Browse 13 templates & 6 Game UI Kits",
+              "Full support",
+              "Full support",
+              "Full support",
+            ],
+            [
+              "AI prompt-to-GUI generation on homepage",
+              "Supported (generate & preview)",
+              "Full support",
+              "Full support",
+            ],
+            [
+              "Full drag-and-drop /editor canvas",
+              "Not recommended (<768px screen prompt)",
+              "Supported in landscape (keyboard/mouse helps)",
+              "Best experience",
+            ],
+            [
+              "UDim2 UI Sizer & 512×512 Gamepass Icon Maker",
+              "Supported",
+              "Full support",
+              "Full support",
+            ],
+            [
+              "Import Luau / .rbxmx & publish in Roblox Studio",
+              "Not supported by Roblox Studio",
+              "Not supported by Roblox Studio",
+              "Required (Windows / Mac)",
+            ],
+          ],
+        },
+      },
+      {
+        heading: "2. What you can do right now on an iPhone, Android phone, or iPad",
+        paragraphs: [
+          "Even away from your computer, a browser-based Roblox GUI maker lets you move your UI design forward: explore all 13 starter templates (shops, HUDs, inventories, main menus, leaderboards), generate an AI ScreenGui concept directly from the homepage prompt box, calculate responsive UDim2 Scale values with the UDim2 UI Sizer (/roblox-ui-sizer), and build circular-safe 512×512 PNG badges with the Gamepass Icon Maker (/gamepass-icon-maker).",
+          "On an iPad or Android tablet in landscape mode (768px or wider), the visual /editor canvas opens directly in Safari or Chrome so you can adjust colors, text, corners, and layout containers on the go.",
+        ],
+      },
+      {
+        heading: "3. Why serious drag-and-drop editing and Studio import still need a computer",
+        paragraphs: [
+          "A precision Roblox GUI workspace has three dense panels at once: an Explorer hierarchy tree, a scaled canvas with snap guides, and a Roblox Properties inspector (UDim2 Scale/Offset, AnchorPoint, ZIndex, UIStroke, UIGradient). Squeezing all three onto a 390px phone screen causes accidental drags and unreadable inputs, which is why robloxguimaker.app intentionally reserves the full /editor canvas for screens 768px and wider.",
+          "Separately, Roblox Corporation only ships Roblox Studio for Windows and macOS — there is no native iPhone, iPad, or Android Roblox Studio app. So no matter which online GUI maker you use, importing your exported Luau or .rbxmx into StarterGui and publishing your game happens on a Windows or Mac computer.",
+        ],
+        tip: "Designing responsive GUIs FOR mobile players is different from editing ON a phone: on desktop in /editor, switch the viewport toggle between Desktop (1920×1080), Tablet, and Mobile to verify your UI fits every player's screen.",
+      },
+      {
+        heading: "4. Smooth phone-to-PC workflow in 3 steps",
+        paragraphs: [
+          "1. Brainstorm and pick a starter template or AI prompt on your phone or iPad (and export any 512×512 Gamepass PNG icons you need). 2. On your laptop or desktop browser, open /editor to fine-tune UDim2 positioning, interactive button actions, and mobile viewport previews — remember browser drafts are stored locally per device, so download a JSON/ZIP backup if switching devices. 3. Export clean Client + Server Luau (or Pro .rbxmx) and drop it into Roblox Studio on Windows or Mac.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Can I use Roblox GUI Maker on my iPhone or Android phone?",
+        a: "You can browse all 13 templates, generate AI UI prompts from the homepage, preview Game UI Kits, and use mobile-friendly utilities like the UDim2 UI Sizer and Gamepass Icon Maker on a phone. For the full drag-and-drop /editor canvas, use a desktop, laptop, or landscape tablet (768px+).",
+      },
+      {
+        q: "Does a browser-based Roblox GUI editor work on iPad?",
+        a: "Yes. On an iPad or Android tablet in landscape orientation (768px or wider), Safari and Chrome can open the /editor canvas for layout tweaks, though pairing a keyboard and trackpad or switching to a desktop gives the fastest precision.",
+      },
+      {
+        q: "Can I run Roblox Studio on iPhone, iPad, or Android to import my GUI?",
+        a: "No. Roblox Studio officially supports only Windows and Mac computers. You can design UI concepts in a mobile or tablet browser, then move your exported Luau or .rbxmx file to a Windows or Mac PC to import into StarterGui and publish.",
+      },
+      {
+        q: "Will a GUI I build on my phone or tablet sync automatically to my PC?",
+        a: "Because robloxguimaker.app has no accounts and stores projects locally in your browser for privacy, drafts do not sync automatically across devices. Export your project as JSON, ZIP, or Luau to transfer it between devices safely.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "export-roblox-gui-to-luau-and-rbxmx", title: "How to Export Roblox GUI to Luau Script or .rbxmx" },
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox Studio" },
+      { slug: "roblox-gui-maker-alternatives", title: "Best Roblox GUI Maker Alternatives Compared (2026)" },
     ],
   },
 ];

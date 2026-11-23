@@ -66,7 +66,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
   const faq = page.getByRole("region", {
     name: "Frequently asked questions",
   });
-  await expect(faq.locator("summary")).toHaveCount(10);
+  await expect(faq.locator("summary")).toHaveCount(14);
   await faq
     .getByText("How is this different from AI image generators?")
     .click();
@@ -89,7 +89,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
       acceptedAnswer: { text: string };
     }>;
   };
-  expect(faqSchema.mainEntity).toHaveLength(10);
+  expect(faqSchema.mainEntity).toHaveLength(14);
   expect(
     faqSchema.mainEntity?.find(
       (item) => item.name === "Is Roblox GUI Maker free to use?"

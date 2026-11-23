@@ -112,6 +112,26 @@ const FAQS = [
       "不需要下载安装（No download）。Roblox GUI Maker 是一款纯网页运行的免费在线 Roblox GUI 设计器（Roblox GUI designer），打开浏览器就能搭建与预览界面，并免费复制干净的 Luau 或按需下载 .lua、JSON/ZIP、离线 Studio 插件或原生 .rbxmx 文件。",
   },
   {
+    question: "我的 GUI 项目和文件会上传到服务器，还是在浏览器本地处理？",
+    answer:
+      "可视化编辑、草稿保存（浏览器 localStorage）以及客户端/服务端 Luau、JSON、ZIP 导出全部在浏览器本地完成，不会上传你的界面项目文件。本站无登录系统，绝不索要 Roblox 密码或 .ROBLOSECURITY Cookie，源码在 GitHub 公开；仅当你主动点击 AI 生成时，输入的文字提示词会发往 /api/generate-gui。详见安全与信任说明（/trust）和隐私政策（/privacy）。",
+  },
+  {
+    question: "免费版有创建数量、导出次数或每天 AI 生成次数限制吗？",
+    answer:
+      "手动拖拽设计、全部 13 套模板、6 套 5 屏 Game UI Kits 交互预览，以及客户端/服务端 Luau、JSON、ZIP、离线 Studio 插件同步与单张 512×512 Gamepass 图标导出均无限次数免费且免登录。免费 AI 一句话生成界面提供每小时 3 次、每天 5 次的合理使用额度；如需原生 .rbxmx 模型导出与完整多屏套件包，可按需选择一次性买断的 Studio Pro 通行证（9.90 / 19.90 美元，无订阅续费）。",
+  },
+  {
+    question: "手机（iPhone / Android）或 iPad 能用吗，还是必须用电脑？",
+    answer:
+      "在手机和平板浏览器里可以浏览全部模板、在首页试用 AI 生成界面起点、预览 UI 套件，以及使用 UDim2 尺寸换算器和 Gamepass 图标制作器。完整拖拽画布 /editor 需要较宽屏幕（电脑或 768px 以上横屏平板）以保证精准拖拽和属性微调；将导出的 Luau 或 .rbxmx 导入并发布游戏则需在 Windows 或 Mac 上使用 Roblox Studio。",
+  },
+  {
+    question: "不付费订阅的情况下支持哪些 Roblox UI 实例和自定义选项？",
+    answer:
+      "无需任何付费订阅或注册，即可自由组合 7 类核心 Roblox UI 实例（ScreenGui、Frame、ScrollingFrame、TextLabel、TextButton、TextBox、ImageLabel），调整响应式 UDim2 Scale/Offset、AnchorPoint、ZIndex、BackgroundColor3、透明度、9 种 Roblox 字体、UICorner、UIStroke、UIGradient、UIListLayout、UIGridLayout、UIAspectRatioConstraint、UISizeConstraint，以及 5 类按钮交互动作（Show/Hide/Toggle/RemoteEvent/Teleport）。",
+  },
+  {
     question: "这是 Roblox 官方产品吗？",
     answer:
       "不是。Roblox GUI Maker 是独立的非官方创作工具，与 Roblox Corporation 无关，也未获其认可。",
@@ -272,6 +292,87 @@ export default function ZhHome() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* comparison vs alternatives */}
+      <section className="max-w-5xl mx-auto px-6 py-12">
+        <h2 className="text-2xl md:text-3xl font-semibold text-center mb-3">
+          Roblox GUI Maker（robloxguimaker.app）与常见制作方案对比
+        </h2>
+        <p className="text-ink-dim text-center max-w-2xl mx-auto mb-8 text-sm md:text-base">
+          相比直接在 Studio 手调属性、用 Figma 配合导入插件，或用 AI 绘图生成静态效果图，
+          <strong className="text-ink">robloxguimaker.app</strong> 兼顾免安装零门槛与真实可导出的 Roblox 实例结构。
+        </p>
+        <div className="overflow-x-auto rounded-xl border border-line bg-panel">
+          <table className="w-full min-w-[640px] text-left text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-line bg-raised/60 text-xs uppercase tracking-wider text-ink-mute">
+                <th className="px-4 py-3 font-semibold">对比项</th>
+                <th className="px-4 py-3 font-semibold text-focus">
+                  Roblox GUI Maker (robloxguimaker.app)
+                </th>
+                <th className="px-4 py-3 font-semibold">Roblox Studio 内置编辑器</th>
+                <th className="px-4 py-3 font-semibold">Figma + 导入插件</th>
+                <th className="px-4 py-3 font-semibold">AI 图像生成工具</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line text-ink-dim">
+              <tr>
+                <td className="px-4 py-3 font-medium text-ink">费用与账号</td>
+                <td className="px-4 py-3 text-ink">永久免费免登录；Pro 一次性买断无订阅</td>
+                <td className="px-4 py-3">免费，需登录 Roblox 账号</td>
+                <td className="px-4 py-3">需账号；部分插件收费</td>
+                <td className="px-4 py-3">通常按积分或月费计费</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-ink">是否免安装</td>
+                <td className="px-4 py-3 text-ink">100% 浏览器运行，免下载免装插件</td>
+                <td className="px-4 py-3">需安装 Windows / Mac 客户端</td>
+                <td className="px-4 py-3">网页设计 + Studio 导入插件</td>
+                <td className="px-4 py-3">浏览器运行</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-ink">AI 与可视化编辑</td>
+                <td className="px-4 py-3 text-ink">AI 生成真实可编辑 ScreenGui + 拖拽画布 + 13 套模板</td>
+                <td className="px-4 py-3">纯手动属性面板调整</td>
+                <td className="px-4 py-3">手动矢量排版与切图</td>
+                <td className="px-4 py-3">仅出扁平图片，无法直接编辑</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-ink">Studio 导出格式</td>
+                <td className="px-4 py-3 text-ink">无限免费双端 Luau、JSON/ZIP、离线插件 JSON；Pro 原生 <code>.rbxmx</code></td>
+                <td className="px-4 py-3">直接在 Studio 内保存</td>
+                <td className="px-4 py-3">插件转换与图片贴图</td>
+                <td className="px-4 py-3">无（需手工重做）</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-ink">隐私与免费额度</td>
+                <td className="px-4 py-3 text-ink">本地存储与导出、GitHub 开源；手动编辑/导出不限次，免费 AI 3次/小时、5次/天</td>
+                <td className="px-4 py-3">Roblox 云端 / 本地 .rbxl</td>
+                <td className="px-4 py-3">云端账号存储</td>
+                <td className="px-4 py-3">素材上传云端；每日积分受限</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-4 text-center text-xs text-ink-mute">
+          阅读完整{" "}
+          <Link
+            href="/zh/guides/roblox-gui-maker-alternatives"
+            className="text-focus hover:underline"
+          >
+            Roblox GUI 工具横向对比
+          </Link>
+          ，查看{" "}
+          <Link href="/trust" className="text-focus hover:underline">
+            安全与隐私说明
+          </Link>{" "}
+          或{" "}
+          <Link href="/zh/pricing" className="text-focus hover:underline">
+            免费版与 Pro 买断对比
+          </Link>
+          。
+        </p>
       </section>
 
       {/* use cases */}
