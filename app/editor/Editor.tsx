@@ -724,12 +724,12 @@ export function Editor({
 
   return (
     <>
-      <main className="flex min-h-screen flex-col items-center justify-center gap-5 px-6 text-center md:hidden">
+      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-5 px-6 py-12 text-center md:hidden">
         <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-xl font-bold text-on-primary">
           R
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Open the editor on a larger screen</h1>
+          <p className="text-2xl font-bold">Open the editor on a larger screen</p>
           <p className="mx-auto max-w-sm text-sm leading-6 text-ink-dim">
             The editor needs room for the component palette, canvas, and properties. Use a tablet or desktop to build and export your GUI.
           </p>
@@ -748,8 +748,8 @@ export function Editor({
             Roblox GUI Maker home
           </Link>
         </div>
-      </main>
-      <div className="hidden h-screen w-screen flex-col overflow-hidden md:flex">
+      </div>
+      <div className="hidden h-screen w-full flex-col overflow-hidden md:flex">
       <Toolbar
         device={device}
         onDevice={setDevice}

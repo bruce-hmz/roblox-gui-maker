@@ -572,22 +572,81 @@ for (const file of allHtmlFiles) {
   else gfsNativePaths.push(path);
 }
 
-// Mirror /editor (dynamic route in Next.js, served by legacy Worker in prod) so
-// GFS internal links to /editor pass dead_link and /sitemap.xml includes /editor.
+// Mirror /editor (dynamic route in Next.js, served by legacy Worker in prod)
+// with the exact same title, description, H1, supporting copy, and FAQ as
+// app/editor/page.tsx so GFS mirrors stay 100% aligned with live /editor,
+// GFS internal links pass dead_link, and /sitemap.xml includes /editor.
+const editorFaqJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is Roblox GUI Editor free to use?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. Visual editing, all 13 templates, interactive preview, clean client and server Luau exports, editable JSON and ZIP downloads, and the offline Roblox Studio paste-sync plugin are free with no account required. Optional Studio Pro unlocks native .rbxmx export and 10x AI generation quota.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do I need to download anything to use this Roblox GUI designer?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No download or installer is required. Roblox GUI Editor runs 100% in your web browser as a free online Roblox GUI designer, so you can build and preview interfaces from any desktop or tablet before moving files into Roblox Studio.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What export formats does the editor support for Roblox Studio?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can copy or download a client LocalScript (.lua) for StarterGui, download an optional server Script (.lua) for RemoteEvent or Teleport handlers, save versioned JSON or ZIP packages, copy Plugin JSON for RobloxGuiMakerSync.lua, or export native .rbxmx models with Studio Pro.",
+      },
+    },
+  ],
+}).replace(/</g, "\\u003c");
+
 pages.push({
   path: "/editor",
   kind: "page",
-  title: "Roblox GUI Editor — Visual Drag & Drop Builder | Roblox GUI Maker",
+  title: "Roblox GUI Editor — Drag, Drop & Export Luau | Roblox GUI Maker",
   description:
-    "Build Roblox ScreenGui interfaces visually with Frame, TextLabel, TextButton, and real Roblox layout constraints, then export clean Luau or Studio JSON.",
+    "Free online Roblox GUI editor. Drag and drop ScreenGui, Frame, TextButton, preview interactions, and export clean Luau for Roblox Studio. No login required.",
   template: "page.html",
   content: {
     lang: "en",
     head_extra: "",
-    body_html: `<main class="max-w-3xl mx-auto px-6 py-16">
-  <h1 class="text-3xl font-bold mb-4">Roblox GUI Editor</h1>
-  <p class="text-ink-dim mb-6">Launch the interactive visual Roblox GUI builder to drag, drop, preview, and export clean Luau for Roblox Studio.</p>
-  <p><a href="/" class="text-focus underline">Back to Roblox GUI Maker</a> · <a href="/templates" class="text-focus underline">Browse Templates</a></p>
+    body_html: `<main aria-labelledby="editor-guide-heading" class="border-t border-line bg-base text-ink">
+  <script type="application/ld+json">${editorFaqJsonLd}</script>
+  <div class="max-w-5xl mx-auto px-6 py-16 space-y-12">
+    <header class="space-y-4 max-w-3xl">
+      <p class="text-xs font-semibold uppercase tracking-wider text-focus">Free Online Tool · No Download · Browser-Based Roblox GUI Designer</p>
+      <h1 id="editor-guide-heading" class="text-3xl md:text-4xl font-bold tracking-tight text-ink">Roblox GUI Editor — Drag, Drop &amp; Export Clean Luau</h1>
+      <p class="text-base text-ink-dim leading-relaxed">Build production-ready Roblox interfaces visually without fighting nested Explorer panels. This free online <strong class="text-ink">Roblox GUI designer</strong> runs directly in your browser with <strong class="text-ink">no download</strong> and no account required: place real <code class="text-focus">ScreenGui</code>, <code class="text-focus">Frame</code>, <code class="text-focus">TextButton</code>, <code class="text-focus">TextLabel</code>, and layout instances, test responsive screen sizes, and export clean Luau or Studio models in seconds.</p>
+    </header>
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold text-ink">How to use the Roblox GUI Editor</h2>
+      <p class="text-sm text-ink-dim leading-relaxed">1. Start from a prompt, one of 13 starter templates, or a blank canvas. 2. Configure real Roblox properties including UDim2 Scale and Offset, AnchorPoint, BackgroundColor3, UICorner, UIStroke, UIGradient, UIListLayout, and UIGridLayout. 3. Preview Desktop (1920x1080), Tablet, and Mobile layouts plus Show, Hide, Toggle, RemoteEvent, and Teleport button actions. 4. Export clean client and server Luau scripts, editable JSON or ZIP packages, offline Studio plugin JSON, or native Studio Pro .rbxmx models.</p>
+    </section>
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold text-ink">Frequently asked questions</h2>
+      <div class="space-y-3">
+        <details class="rounded-xl border border-line bg-panel"><summary class="cursor-pointer px-5 py-4 font-semibold text-ink">Is Roblox GUI Editor free to use?</summary><p class="px-5 pb-5 text-sm leading-relaxed text-ink-dim">Yes. Visual editing, all 13 templates, interactive preview, clean client and server Luau exports, editable JSON and ZIP downloads, and the offline Roblox Studio paste-sync plugin are free with no account required. Optional Studio Pro unlocks native .rbxmx export and 10x AI generation quota.</p></details>
+        <details class="rounded-xl border border-line bg-panel"><summary class="cursor-pointer px-5 py-4 font-semibold text-ink">Do I need to download anything to use this Roblox GUI designer?</summary><p class="px-5 pb-5 text-sm leading-relaxed text-ink-dim">No download or installer is required. Roblox GUI Editor runs 100% in your web browser as a free online Roblox GUI designer, so you can build and preview interfaces from any desktop or tablet before moving files into Roblox Studio.</p></details>
+        <details class="rounded-xl border border-line bg-panel"><summary class="cursor-pointer px-5 py-4 font-semibold text-ink">What export formats does the editor support for Roblox Studio?</summary><p class="px-5 pb-5 text-sm leading-relaxed text-ink-dim">You can copy or download a client LocalScript (.lua) for StarterGui, download an optional server Script (.lua) for RemoteEvent or Teleport handlers, save versioned JSON or ZIP packages, copy Plugin JSON for RobloxGuiMakerSync.lua, or export native .rbxmx models with Studio Pro.</p></details>
+      </div>
+    </section>
+    <nav class="flex flex-wrap gap-4 pt-6 border-t border-line text-sm">
+      <a href="/" class="text-focus hover:underline">Roblox GUI Maker Home</a>
+      <a href="/templates" class="text-focus hover:underline">13 Free GUI Templates</a>
+      <a href="/guides" class="text-focus hover:underline">Roblox UI Guides</a>
+      <a href="/roblox-ui-sizer" class="text-focus hover:underline">UDim2 UI Sizer</a>
+      <a href="/studio-plugin" class="text-focus hover:underline">Offline Studio Plugin</a>
+      <a href="/pricing" class="text-focus hover:underline">Studio Pro Pricing</a>
+      <a href="/kits" class="text-focus hover:underline">Game UI Kits</a>
+    </nav>
+  </div>
 </main>`,
   },
   noindex: false,

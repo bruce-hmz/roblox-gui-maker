@@ -131,6 +131,11 @@ const FAQS = [
       "Roblox automatically crops square Gamepass thumbnails into a circle on the experience Store page. Open our free Gamepass Icon Maker, preview the live circular safe zone overlay so badges and text stay inside the inner margin, and export a crisp 512×512 PNG ready for Creator Hub.",
   },
   {
+    question: "Do I need to download Roblox GUI Maker?",
+    answer:
+      "No download or installation is required. Roblox GUI Maker runs 100% in your browser as a free online Roblox GUI designer — design your ScreenGui visually, preview interactions live, and copy clean Luau straight into Roblox Studio (or optionally download .lua scripts, editable JSON/ZIP packages, our offline Studio plugin, or native .rbxmx files).",
+  },
+  {
     question: "Is this an official Roblox product?",
     answer:
       "No. Roblox GUI Maker is an independent, unofficial creator tool and is not affiliated with or endorsed by Roblox Corporation.",
@@ -225,17 +230,17 @@ export default function Home() {
           <p className="mt-4 text-xs sm:text-sm text-ink-dim">
             Also included:{" "}
             <Link
-              href="/roblox-shirt-tester"
+              href="/roblox-ui-sizer"
               className="text-focus hover:underline font-medium"
             >
-              3D Shirt Tester
+              UDim2 UI Sizer
             </Link>{" "}
             ·{" "}
             <Link
-              href="/roblox-thumbnail-maker"
+              href="/studio-plugin"
               className="text-focus hover:underline font-medium"
             >
-              1920×1080 Thumbnail Maker
+              Offline Studio Plugin
             </Link>{" "}
             ·{" "}
             <Link
@@ -267,9 +272,9 @@ export default function Home() {
                 key={proof.title}
                 className="rounded-xl border border-line bg-panel p-4"
               >
-                <h3 className="mb-1.5 text-sm font-semibold text-ink">
+                <h2 className="mb-1.5 text-sm font-semibold text-ink">
                   {proof.title}
-                </h3>
+                </h2>
                 <p className="text-xs leading-relaxed text-ink-dim">
                   {proof.body}
                 </p>
@@ -460,15 +465,15 @@ export default function Home() {
           </div>
         </section>
 
-        {/* free creator tools suite */}
+        {/* free gui workflow tools */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
             <div>
               <p className="text-xs font-mono uppercase tracking-wider text-focus mb-1">
-                Free Roblox Creator Tools
+                Free Roblox GUI Companion Tools
               </p>
               <h2 className="text-2xl font-semibold text-ink">
-                Every asset helper alongside your GUI workflow
+                Every GUI helper alongside your Roblox Studio workflow
               </h2>
             </div>
             <Link href="/showcase" className="text-sm text-focus hover:underline">
@@ -477,24 +482,6 @@ export default function Home() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              {
-                href: "/roblox-shirt-tester",
-                badge: "3D R6 · Save 10 Robux",
-                title: "3D Shirt & Pants Tester",
-                desc: "Drop any 585×559 PNG to orbit an R6 avatar 360° and verify collar, back, and sleeve seams before uploading.",
-              },
-              {
-                href: "/roblox-shirt-template-maker",
-                badge: "585×559 PNG & SVG",
-                title: "Shirt Template Maker",
-                desc: "Generate upload-ready transparent clothing templates with collar cutouts, trim stripes, and UV labels.",
-              },
-              {
-                href: "/roblox-thumbnail-maker",
-                badge: "1920×1080 + 512×512",
-                title: "Thumbnail & Safe-Zone Studio",
-                desc: "Compose high-CTR game banners, inspect Discover 220px card readability, and crop matching 1:1 icons.",
-              },
               {
                 href: "/roblox-ui-sizer",
                 badge: "UDim2 + rbxassetid://",
@@ -529,6 +516,20 @@ export default function Home() {
               </Link>
             ))}
           </div>
+          <p className="mt-4 text-xs text-ink-mute">
+            More Roblox creator utilities:{" "}
+            <Link href="/roblox-shirt-tester" className="hover:text-ink underline underline-offset-2">
+              3D Shirt Tester
+            </Link>{" "}
+            ·{" "}
+            <Link href="/roblox-shirt-template-maker" className="hover:text-ink underline underline-offset-2">
+              Shirt Template Maker
+            </Link>{" "}
+            ·{" "}
+            <Link href="/roblox-thumbnail-maker" className="hover:text-ink underline underline-offset-2">
+              Thumbnail Maker
+            </Link>
+          </p>
         </section>
 
         {/* templates strip */}

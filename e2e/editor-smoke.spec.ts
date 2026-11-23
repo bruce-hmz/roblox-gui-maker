@@ -42,7 +42,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
     "Luau, ZIP & .rbxmx",
   ]) {
     await expect(
-      page.getByRole("heading", { level: 3, name: heading })
+      page.getByRole("heading", { level: 2, name: heading })
     ).toBeVisible();
   }
   const structuredData = (
@@ -66,7 +66,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
   const faq = page.getByRole("region", {
     name: "Frequently asked questions",
   });
-  await expect(faq.locator("summary")).toHaveCount(9);
+  await expect(faq.locator("summary")).toHaveCount(10);
   await faq
     .getByText("How is this different from AI image generators?")
     .click();
@@ -89,7 +89,7 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
       acceptedAnswer: { text: string };
     }>;
   };
-  expect(faqSchema.mainEntity).toHaveLength(9);
+  expect(faqSchema.mainEntity).toHaveLength(10);
   expect(
     faqSchema.mainEntity?.find(
       (item) => item.name === "Is Roblox GUI Maker free to use?"

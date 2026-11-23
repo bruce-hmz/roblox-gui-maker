@@ -171,7 +171,7 @@ test("@smoke mobile marketing page can prompt without the flow dying", async ({
   await page.waitForURL(/\/editor/);
   // The editor needs a larger screen — that's a clear dead-end-free message.
   await expect(
-    page.getByRole("heading", { name: "Open the editor on a larger screen" })
+    page.getByText("Open the editor on a larger screen")
   ).toBeVisible();
 });
 

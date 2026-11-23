@@ -107,6 +107,11 @@ const FAQS = [
       "Roblox Store 会把正方形图标自动裁成圆形。用本站免费的 Gamepass 图标制作器，开启实时圆形安全区辅助线，确保角标和文字都在内圈以内，导出 512×512 PNG 后直接上传 Creator Hub。",
   },
   {
+    question: "需要下载安装 Roblox GUI Maker 吗？",
+    answer:
+      "不需要下载安装（No download）。Roblox GUI Maker 是一款纯网页运行的免费在线 Roblox GUI 设计器（Roblox GUI designer），打开浏览器就能搭建与预览界面，并免费复制干净的 Luau 或按需下载 .lua、JSON/ZIP、离线 Studio 插件或原生 .rbxmx 文件。",
+  },
+  {
     question: "这是 Roblox 官方产品吗？",
     answer:
       "不是。Roblox GUI Maker 是独立的非官方创作工具，与 Roblox Corporation 无关，也未获其认可。",
@@ -190,17 +195,17 @@ export default function ZhHome() {
         <p className="mt-4 text-xs sm:text-sm text-ink-dim">
           还提供：{" "}
           <Link
-            href="/zh/roblox-shirt-tester"
+            href="/zh/roblox-ui-sizer"
             className="text-focus hover:underline font-medium"
           >
-            3D 服装测试器
+            UDim2 尺寸换算器
           </Link>{" "}
           ·{" "}
           <Link
-            href="/zh/roblox-thumbnail-maker"
+            href="/zh/studio-plugin"
             className="text-focus hover:underline font-medium"
           >
-            1920×1080 封面生成器
+            离线 Studio 插件
           </Link>{" "}
           ·{" "}
           <Link
@@ -237,7 +242,7 @@ export default function ZhHome() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
           {PRODUCT_PROOFS.map((proof) => (
             <article key={proof.title} className="rounded-xl border border-line bg-panel p-4">
-              <h3 className="mb-1.5 text-sm font-semibold text-ink">{proof.title}</h3>
+              <h2 className="mb-1.5 text-sm font-semibold text-ink">{proof.title}</h2>
               <p className="text-xs leading-relaxed text-ink-dim">{proof.body}</p>
             </article>
           ))}
@@ -364,15 +369,15 @@ export default function ZhHome() {
         </div>
       </section>
 
-      {/* free creator tools suite */}
+      {/* free gui workflow tools */}
       <section className="max-w-6xl mx-auto px-6 py-8">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
           <div>
             <p className="text-xs font-mono uppercase tracking-wider text-focus mb-1">
-              免费 Roblox 创作者工具
+              免费 Roblox GUI 配套工具
             </p>
             <h2 className="text-2xl font-semibold text-ink">
-              一站配齐服装试穿、游戏封面、UDim2 适配与 Studio 同步
+              一站配齐 UDim2 适配、通行证图标与 Studio 离线同步
             </h2>
           </div>
           <Link href="/zh/showcase" className="text-sm text-focus hover:underline">
@@ -381,24 +386,6 @@ export default function ZhHome() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            {
-              href: "/zh/roblox-shirt-tester",
-              badge: "3D R6 · 省 10 Robux",
-              title: "3D 服装预览测试器",
-              desc: "拖入 585×559 PNG 在网页 360° 试穿检查衣领、背面与衣袖接缝，确认无误再付费上传。",
-            },
-            {
-              href: "/zh/roblox-shirt-template-maker",
-              badge: "585×559 PNG & SVG",
-              title: "服装模板生成器",
-              desc: "定制圆领/V领/连帽领口、袖边条纹与 UV 参考线，一键导出标准透明底板。",
-            },
-            {
-              href: "/zh/roblox-thumbnail-maker",
-              badge: "1920×1080 + 512×512",
-              title: "游戏封面与安全区检查器",
-              desc: "设计高点击率封面并模拟 Discover 220px 小卡效果，同时导出 512×512 方形游戏图标。",
-            },
             {
               href: "/zh/roblox-ui-sizer",
               badge: "UDim2 + rbxassetid://",
@@ -433,6 +420,20 @@ export default function ZhHome() {
             </Link>
           ))}
         </div>
+        <p className="mt-4 text-xs text-ink-mute">
+          更多创作者小工具：{" "}
+          <Link href="/zh/roblox-shirt-tester" className="hover:text-ink underline underline-offset-2">
+            3D 服装测试器
+          </Link>{" "}
+          ·{" "}
+          <Link href="/zh/roblox-shirt-template-maker" className="hover:text-ink underline underline-offset-2">
+            服装模板生成器
+          </Link>{" "}
+          ·{" "}
+          <Link href="/zh/roblox-thumbnail-maker" className="hover:text-ink underline underline-offset-2">
+            游戏封面生成器
+          </Link>
+        </p>
       </section>
 
       {/* templates strip */}
