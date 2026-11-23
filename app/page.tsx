@@ -6,7 +6,8 @@ import { HeroDemo } from "./components/HeroDemo";
 import { KitCard } from "./components/KitCard";
 import { PromptBox } from "./components/PromptBox";
 import { AiExamples } from "./components/AiExamples";
-import { ScenePreview } from "./editor/ScenePreview";
+import { SceneThumb } from "./components/SceneThumb";
+import { templatePreviewSrc } from "./editor/preview-images";
 import { KITS } from "./editor/kits";
 import { TEMPLATES, getTemplate } from "./editor/templates";
 import { USE_CASES } from "./for/usecases";
@@ -532,7 +533,12 @@ export default function Home() {
                   href={`/for/${u.slug}`}
                   className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
                 >
-                  {tpl && <ScenePreview scene={tpl.scene} />}
+                  {tpl && (
+                    <SceneThumb
+                      src={templatePreviewSrc(tpl.slug)}
+                      alt={`${tpl.title} template preview`}
+                    />
+                  )}
                   <div className="p-3 bg-panel">
                     <p className="text-sm font-medium text-ink capitalize">
                       {u.noun}
@@ -700,7 +706,10 @@ export default function Home() {
                 href={`/templates/${t.slug}`}
                 className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
               >
-                <ScenePreview scene={t.scene} />
+                <SceneThumb
+                  src={templatePreviewSrc(t.slug)}
+                  alt={`${t.title} template preview`}
+                />
                 <div className="p-3 bg-panel">
                   <p className="text-sm font-medium text-ink">
                     {t.title.replace("Roblox ", "").replace(" GUI", "")}

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { KitProDownloadCard } from "../../components/KitProDownloadCard";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import {
   kitGamepassIcons,
   renderGamepassIconSvg,
@@ -123,7 +124,10 @@ export function KitDetailView({ slug }: { slug: string }) {
                   </Link>
                 </div>
                 <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-xl shadow-black/40">
-                  <ScenePreview scene={scene} />
+                  <SceneThumb
+                    src={templatePreviewSrc(screen.template, kit.theme)}
+                    alt={`${kit.name}:${screen.role}界面预览`}
+                  />
                 </div>
               </section>
             );

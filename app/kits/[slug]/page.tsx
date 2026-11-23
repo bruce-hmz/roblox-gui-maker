@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
 import { KitProDownloadCard } from "../../components/KitProDownloadCard";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import {
   kitGamepassIcons,
   renderGamepassIconSvg,
@@ -171,7 +172,10 @@ export default async function KitDetailPage({
                   </Link>
                 </div>
                 <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-xl shadow-black/40">
-                  <ScenePreview scene={scene} />
+                  <SceneThumb
+                    src={templatePreviewSrc(screen.template, kit.theme)}
+                    alt={`${kit.name}: ${screen.role} screen preview`}
+                  />
                 </div>
               </section>
             );
