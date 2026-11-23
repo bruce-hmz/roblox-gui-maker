@@ -82,9 +82,8 @@ const LEGACY_WORKER_ROUTES = [
   { pattern: "robloxguimaker.app/kits/*", purpose: "EN Kit detail pages with interactive KitProDownloadCard" },
   { pattern: "robloxguimaker.app/studio-plugin/RobloxGuiMakerSync.lua*", purpose: "Offline Roblox Studio companion plugin download" },
   { pattern: "robloxguimaker.app/logo.png*", purpose: "Brand logo asset" },
-  { pattern: "robloxguimaker.app/favicon.ico*", purpose: "Favicon asset" },
-  { pattern: "robloxguimaker.app/icon.png*", purpose: "Icon asset" },
-  { pattern: "robloxguimaker.app/apple-icon.png*", purpose: "Apple touch icon asset" },
+  { pattern: "robloxguimaker.app/icon.png*", purpose: "Legacy icon asset (for Next.js legacy routes)" },
+  { pattern: "robloxguimaker.app/apple-icon.png*", purpose: "Legacy apple touch icon asset (for Next.js legacy routes)" },
   { pattern: "robloxguimaker.app/android-chrome-*", purpose: "PWA icon assets" },
   { pattern: "robloxguimaker.app/opengraph-image*", purpose: "Dynamic/static OpenGraph image" },
   { pattern: "robloxguimaker.app/manifest.webmanifest*", purpose: "Web app manifest" },
@@ -151,7 +150,8 @@ function extractHeadMeta(headHtml, pagePath) {
     );
   const noindex = robotsMatch ? /\bnoindex\b/i.test(robotsMatch[2]) : false;
 
-  // Preserve hreflang alternates and site icon/manifest links for head_extra.
+  // Preserve hreflang alternates and web app manifest for head_extra.
+  // Icons and apple-touch-icon are owned by GFS brand_set via {{@head}}.
   const keptLinks = [];
   for (const m of headHtml.matchAll(/<link\b[^>]*>/gi)) {
     const tag = m[0];
@@ -160,9 +160,7 @@ function extractHeadMeta(headHtml, pagePath) {
       /\bhreflang=/i.test(tag)
     ) {
       keptLinks.push(tag.replace(/\bhrefLang=/g, "hreflang="));
-    } else if (
-      /\brel=["'](?:icon|shortcut icon|apple-touch-icon|manifest)["']/i.test(tag)
-    ) {
+    } else if (/\brel=["']manifest["']/i.test(tag)) {
       keptLinks.push(tag);
     }
   }
@@ -632,8 +630,7 @@ const redirects = [
   { from: "/index", to: "/", status: 301 },
 ];
 
-const gaHeadHtml = `<meta property="og:image" content="${ORIGIN}/opengraph-image">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BWJ7NSR55P"></script>
+const gaHeadHtml = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-BWJ7NSR55P"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-BWJ7NSR55P');</script>`;
 
 const siteSettings = {

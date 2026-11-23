@@ -10,9 +10,10 @@ Cutover completed on **2026-11-23**. `https://robloxguimaker.app` now runs on a 
 | Cloudflare Account | `Firstdraft.ai.app@gmail.com` (`81bd3096d693d39b65e49832c357c315`) |
 | Cloudflare Zone ID | `c73c81c027d7bf9cd5970bc7752b83cb` |
 | GFS Sub-Engine Admin | `https://gefeisites.firstdraft-ai-app.workers.dev/admin` |
-| GFS Site ID | `s_1u111j60366q3y` (`live_version: 3`, `migration.state: switched`, `domain.ready: true`) |
+| GFS Site ID | `s_1u111j60366q3y` (`migration.state: switched`, `domain.ready: true`, GFS `brand_set` icon + 1200×630 share image) |
 | PVUV Site ID | `3QGneU7d` (shared across GFS pages + legacy Worker pages + GFS edge crawler sync) |
-| Legacy Worker | `roblox-gui-maker` (serves 29 explicit Cloudflare Zone Worker Routes) |
+| Email Routing | `contact@robloxguimaker.app` & `support@robloxguimaker.app` → `firstdraft.ai.app@gmail.com` (`state: ready`, MX + SPF active) |
+| Legacy Worker | `roblox-gui-maker` (serves 28 explicit Cloudflare Zone Worker Routes; `/favicon.ico` is served by GFS) |
 
 ## Hybrid Traffic Split
 
@@ -25,7 +26,7 @@ Cutover completed on **2026-11-23**. `https://robloxguimaker.app` now runs on a 
   - `/showcase`, `/zh/showcase`
   - `/studio-plugin`, `/zh/studio-plugin` (progressive `.lua` download button)
   - `/about`, `/zh/about`, `/privacy`, `/terms`, `/trust`
-- **Legacy OpenNext Worker (`roblox-gui-maker`, 29 Zone Worker Routes)**:
+- **Legacy OpenNext Worker (`roblox-gui-maker`, 28 Zone Worker Routes)**:
   - `/api/*` (GLM GUI generation, Stripe checkout/verify, Pro `.rbxmx`/kit bundles, Roblox thumbnail proxy)
   - `/_next/*` (Next.js JS chunks and `.woff2`/`.woff` fonts referenced by GFS CSS)
   - `/editor*`, `/pro/*`
@@ -35,7 +36,7 @@ Cutover completed on **2026-11-23**. `https://robloxguimaker.app` now runs on a 
   - `/roblox-ui-sizer*`, `/zh/roblox-ui-sizer*`
   - `/gamepass-icon-maker*`, `/zh/gamepass-icon-maker*`
   - `/pricing*`, `/zh/pricing*`, `/avatar*`, `/zh/avatar*`, `/kits/*`
-  - `/studio-plugin/RobloxGuiMakerSync.lua*` and static brand icons/images (`/logo.png*`, `/favicon.ico*`, `/icon.png*`, `/apple-icon.png*`, `/android-chrome-*`, `/opengraph-image*`, `/manifest.webmanifest*`, `/screenshot.png*`, `/gallery/*`)
+  - `/studio-plugin/RobloxGuiMakerSync.lua*` and static brand/legacy assets (`/logo.png*`, `/icon.png*`, `/apple-icon.png*`, `/android-chrome-*`, `/opengraph-image*`, `/manifest.webmanifest*`, `/screenshot.png*`, `/gallery/*`)
 
 > The 29 legacy interactive pages are also mirrored in GFS `pages.json` so GFS `check` reports 0 `dead_link` errors and GFS `/sitemap.xml` retains all 130 canonical URLs.
 
