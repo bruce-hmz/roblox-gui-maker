@@ -227,7 +227,19 @@ assert.equal(
 );
 const rawCss = await readFile(cssFiles[0], "utf8");
 assert(!rawCss.includes("{{"), "Compiled CSS contains GFS template delimiter {{");
-const styleCss = rawCss.replaceAll("url(../media/", "url(/_next/static/media/");
+// GFS-only: lift the 9/10/11px micro labels to 12px on engine-served pages,
+// as GFS v9 did by hand (its check flags text under 12px). The legacy Worker
+// pages (editor, tools) keep the compact sizes from the Next.js CSS.
+const MIN_FONT_RULES = [
+  [".text-\\[9px\\]{font-size:9px}", ".text-\\[9px\\]{font-size:12px}"],
+  [".text-\\[10px\\]{font-size:10px}", ".text-\\[10px\\]{font-size:12px}"],
+  [".text-\\[11px\\]{font-size:11px}", ".text-\\[11px\\]{font-size:12px}"],
+];
+let styleCss = rawCss.replaceAll("url(../media/", "url(/_next/static/media/");
+for (const [from, to] of MIN_FONT_RULES) {
+  assert(styleCss.includes(from), `Compiled CSS no longer contains ${from}`);
+  styleCss = styleCss.replace(from, to);
+}
 assert(
   Buffer.byteLength(styleCss, "utf8") < 300_000,
   "Compiled CSS exceeds GFS 300KB theme limit"
