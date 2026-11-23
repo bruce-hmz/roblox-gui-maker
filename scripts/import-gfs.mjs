@@ -52,6 +52,7 @@ async function callMcp(name, args = {}) {
       authorization: `Bearer ${rawToken}`,
       "content-type": "application/json",
       accept: "application/json, text/event-stream",
+      "user-agent": "GeFeiSites-MCP-Client/1.0",
     },
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(30_000),

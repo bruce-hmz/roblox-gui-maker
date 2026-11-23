@@ -632,7 +632,8 @@ const redirects = [
   { from: "/index", to: "/", status: 301 },
 ];
 
-const gaHeadHtml = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-BWJ7NSR55P"></script>
+const gaHeadHtml = `<meta property="og:image" content="${ORIGIN}/opengraph-image">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BWJ7NSR55P"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-BWJ7NSR55P');</script>`;
 
 const siteSettings = {

@@ -20,15 +20,9 @@
   },
   "vars": {
     "PVUV_SITE": "3QGneU7d"
-  },
-  "routes": [
-    {
-      "pattern": "robloxguimaker.app",
-      "custom_domain": true
-    },
-    {
-      "pattern": "www.robloxguimaker.app",
-      "custom_domain": true
-    }
-  ]
+  }
+  // Intentionally no `routes` / `custom_domain` here: after GFS cutover
+  // (2026-11-23), apex + www custom domains belong to `gefeisites`, while
+  // interactive routes (/api/*, /_next/*, /editor*, tools, etc.) are managed
+  // separately via Cloudflare Zone Worker Routes (`scripts/setup-gfs-routes.mjs`).
 }
