@@ -689,7 +689,8 @@ const redirects = [
   { from: "/index", to: "/", status: 301 },
 ];
 
-const gaHeadHtml = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-BWJ7NSR55P"></script>
+const gaHeadHtml = `<meta name="msvalidate.01" content="4E8F39340F2231F9711A6DC34C13F360" />
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BWJ7NSR55P"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-BWJ7NSR55P');</script>`;
 
 const siteSettings = {
