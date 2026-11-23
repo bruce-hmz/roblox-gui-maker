@@ -1,5 +1,6 @@
 import type { RobloxClass, SceneNode } from "./catalog";
 import { sanitizeResponsiveGeometry } from "./geometry";
+import { gridLayoutFor } from "./grid-layout";
 import { sanitizeRemoteEventAction } from "./remote-events";
 import { sanitizeTeleportAction } from "./teleports";
 import { FONTS } from "./scene";
@@ -229,8 +230,14 @@ export function parseSceneDocument(text: string): SceneNode[] {
 }
 
 export function serializeSceneDocument(scene: SceneNode[]): string {
+  // Grid containers carry their computed UIGridLayout values so the offline
+  // Studio plugin can match the editor without re-implementing the math. The
+  // field is derived: parseSceneDocument ignores it.
+  const withGrid = scene.map((node) =>
+    node.layout === "grid" ? { ...node, gridLayout: gridLayoutFor(node, scene) } : node
+  );
   return JSON.stringify(
-    { format: PROJECT_FORMAT, version: PROJECT_VERSION, scene },
+    { format: PROJECT_FORMAT, version: PROJECT_VERSION, scene: withGrid },
     null,
     2
   );

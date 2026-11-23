@@ -4,6 +4,7 @@
 // StarterGui — no runtime builder script, fully deterministic referent ids.
 
 import type { Gradient, NodeAction, SceneNode, Transition } from "./catalog";
+import { gridLayoutFor } from "./grid-layout";
 import { kitScene, type Kit } from "./kits";
 import { collectRemoteEventBindings, luauString } from "./remote-events";
 import { orderedChildren } from "./scene";
@@ -276,14 +277,17 @@ function emitSceneNode(
     lines.push(`${indent}  </Item>`);
   }
   if (node.layout === "grid") {
+    // Cell size/padding reproduce the editor's grid (see grid-layout.ts).
+    const grid = gridLayoutFor(node, scene);
     lines.push(`${indent}  <Item class="UIGridLayout" referent="${referentCounter.next()}">`);
     lines.push(`${indent}    <Properties>`);
     lines.push(
-      `${propIndent}${udim2Xml("CellSize", { x: 0, y: 0 }, { x: 100, y: 100 }, "")}`
+      `${propIndent}${udim2Xml("CellSize", grid.cellSize.scale, grid.cellSize.offset, "")}`
     );
     lines.push(
-      `${propIndent}${udim2Xml("CellPadding", { x: 0, y: 0 }, { x: 8, y: 8 }, "")}`
+      `${propIndent}${udim2Xml("CellPadding", grid.cellPadding.scale, grid.cellPadding.offset, "")}`
     );
+    lines.push(`${propIndent}<int name="FillDirectionMaxCells">${grid.maxCells}</int>`);
     lines.push(`${propIndent}<token name="SortOrder">2</token>`);
     lines.push(`${indent}    </Properties>`);
     lines.push(`${indent}  </Item>`);
