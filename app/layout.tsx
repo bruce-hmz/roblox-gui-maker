@@ -14,9 +14,9 @@ import "./globals.css";
 // page source), so hardcoding is fine; override with NEXT_PUBLIC_GA_ID if needed.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-BWJ7NSR55P";
 
-// Optional PVUV.ai site ID (public). Set NEXT_PUBLIC_PVUV_SITE at build time
-// once robloxguimaker.app is registered in PVUV.
-const PVUV_SITE = process.env.NEXT_PUBLIC_PVUV_SITE?.trim() || "";
+// Public PVUV.ai site ID for robloxguimaker.app; override with
+// NEXT_PUBLIC_PVUV_SITE if needed (empty string disables browser SDK).
+const PVUV_SITE = (process.env.NEXT_PUBLIC_PVUV_SITE ?? "3QGneU7d").trim();
 
 const SITE_URL = "https://robloxguimaker.app";
 
