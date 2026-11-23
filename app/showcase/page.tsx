@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteNav } from "../components/SiteNav";
 import { SiteFooter } from "../components/SiteFooter";
-import { ScenePreview } from "../editor/ScenePreview";
+import { SceneThumb } from "../components/SceneThumb";
+import { templatePreviewSrc } from "../editor/preview-images";
 import { TEMPLATES, getTemplate } from "../editor/templates";
 
 export const metadata: Metadata = {
@@ -70,7 +71,11 @@ export default function ShowcasePage() {
         {/* featured anchor piece */}
         <section className="max-w-5xl mx-auto px-6 pb-14">
           <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40">
-            <ScenePreview scene={FEATURED.scene} />
+            <SceneThumb
+              src={templatePreviewSrc(FEATURED.slug)}
+              alt={`${FEATURED.title} template preview`}
+              priority
+            />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
             <div>
@@ -105,7 +110,10 @@ export default function ShowcasePage() {
                 href={`/templates/${t.slug}`}
                 className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
               >
-                <ScenePreview scene={t.scene} />
+                <SceneThumb
+                  src={templatePreviewSrc(t.slug)}
+                  alt={`${t.title} template preview`}
+                />
                 <div className="p-3 bg-panel">
                   <p className="text-sm font-medium text-ink">
                     {t.title.replace("Roblox ", "").replace(" GUI", "")}

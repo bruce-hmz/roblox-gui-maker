@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import { TEMPLATES, getTemplate } from "../../editor/templates";
 import { getTemplateZh } from "../../editor/templates.zh";
 import { USE_CASES } from "../../for/usecases";
@@ -93,7 +94,11 @@ export function TemplateDetailView({ slug }: { slug: string }) {
         <p className="text-ink-dim mb-6">{zh.tagline}</p>
 
         <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40 mb-6">
-          <ScenePreview scene={en.scene} />
+          <SceneThumb
+            src={templatePreviewSrc(en.slug)}
+            alt={`${zh.title} 模板预览`}
+            priority
+          />
         </div>
 
         <div className="flex flex-wrap gap-3 mb-10">
@@ -213,7 +218,10 @@ export function TemplateDetailView({ slug }: { slug: string }) {
                 href={`/zh/templates/${r.slug}`}
                 className="rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
               >
-                <ScenePreview scene={r.scene} />
+                <SceneThumb
+                  src={templatePreviewSrc(r.slug)}
+                  alt={`${rz?.title ?? r.title} 模板预览`}
+                />
                 <div className="p-3 bg-panel">
                   <p className="text-sm font-medium text-ink">
                     {(rz?.title ?? r.title).replace("Roblox ", "").replace(" GUI", "")}

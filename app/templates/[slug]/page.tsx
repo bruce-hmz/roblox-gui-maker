@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import { TEMPLATES, getTemplate } from "../../editor/templates";
 import { getGuide, guidesForTemplate } from "../../guides/guides-data";
 import { USE_CASES } from "../../for/usecases";
@@ -133,7 +134,11 @@ export default async function TemplatePage({
         <p className="text-ink-dim mb-6">{t.tagline}</p>
 
         <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40 mb-6">
-          <ScenePreview scene={t.scene} />
+          <SceneThumb
+            src={templatePreviewSrc(t.slug)}
+            alt={`${t.title} template preview`}
+            priority
+          />
         </div>
 
         <div className="flex flex-wrap gap-3 mb-10">
@@ -261,7 +266,10 @@ export default async function TemplatePage({
               href={`/templates/${r.slug}`}
               className="rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
             >
-              <ScenePreview scene={r.scene} />
+              <SceneThumb
+                src={templatePreviewSrc(r.slug)}
+                alt={`${r.title} template preview`}
+              />
               <div className="p-3 bg-panel">
                 <p className="text-sm font-medium text-ink">
                   {r.title.replace("Roblox ", "").replace(" GUI", "")}

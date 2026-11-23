@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import { getTemplate } from "../../editor/templates";
 import { CATEGORIES_ZH, TEMPLATES_ZH } from "../../editor/templates.zh";
 import { ZhShell } from "../_components/ZhShell";
@@ -56,7 +57,12 @@ export default function TemplatesPage() {
                       href={`/zh/templates/${t.slug}`}
                       className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
                     >
-                      {en && <ScenePreview scene={en.scene} />}
+                      {en && (
+                        <SceneThumb
+                          src={templatePreviewSrc(en.slug)}
+                          alt={`${t.title} 模板预览`}
+                        />
+                      )}
                       <div className="p-3 bg-panel">
                         <p className="text-sm font-medium text-ink">
                           {t.title.replace("Roblox ", "").replace(" GUI", "")}

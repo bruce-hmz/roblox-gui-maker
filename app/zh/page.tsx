@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ScenePreview } from "../editor/ScenePreview";
+import { SceneThumb } from "../components/SceneThumb";
+import { templatePreviewSrc } from "../editor/preview-images";
 import { KITS } from "../editor/kits";
 import { getKitZh } from "../editor/kits.zh";
 import { getTemplate } from "../editor/templates";
@@ -256,7 +257,13 @@ export default function ZhHome() {
         <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40">
           {(() => {
             const first = getTemplate(TEMPLATES_ZH[0].slug);
-            return first ? <ScenePreview scene={first.scene} /> : null;
+            return first ? (
+              <SceneThumb
+                src={templatePreviewSrc(first.slug)}
+                alt={`${TEMPLATES_ZH[0].title} 模板预览`}
+                priority
+              />
+            ) : null;
           })()}
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
@@ -393,7 +400,12 @@ export default function ZhHome() {
                 href={`/zh/for/${u.slug}`}
                 className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
               >
-                {tpl && <ScenePreview scene={tpl.scene} />}
+                {tpl && (
+                  <SceneThumb
+                    src={templatePreviewSrc(tpl.slug)}
+                    alt={`${localized.noun} 模板预览`}
+                  />
+                )}
                 <div className="p-3 bg-panel">
                   <p className="text-sm font-medium text-ink">
                     {localized.noun}
@@ -559,7 +571,12 @@ export default function ZhHome() {
                 href={`/zh/templates/${t.slug}`}
                 className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
               >
-                {en && <ScenePreview scene={en.scene} />}
+                {en && (
+                  <SceneThumb
+                    src={templatePreviewSrc(en.slug)}
+                    alt={`${t.title} 模板预览`}
+                  />
+                )}
                 <div className="p-3 bg-panel">
                   <p className="text-sm font-medium text-ink">
                     {t.title.replace("Roblox ", "").replace(" GUI", "")}

@@ -15,6 +15,10 @@ export type Kit = {
   tagline: string;
   description: string;
   theme: string; // Theme.name
+  // Template slug of the screen shown on the kit's card. Kits share most
+  // templates and themes only recolor accents, so each kit gets a different
+  // cover screen to keep the gallery cards distinguishable.
+  cover: string;
   screens: KitScreen[];
 };
 
@@ -26,6 +30,7 @@ export const KITS: Kit[] = [
     description:
       "A complete simulator interface set: a main menu, a coin shop, a game pass storefront, a daily rewards calendar, and a settings panel — all sharing one warm theme so they look like one game.",
     theme: "sunset",
+    cover: "daily-rewards",
     screens: [
       { role: "Main menu", template: "main-menu" },
       { role: "Coin shop", template: "shop" },
@@ -41,6 +46,7 @@ export const KITS: Kit[] = [
     description:
       "A role-playing interface set: a main menu, an inventory grid, a shop, a leaderboard, and a quest tracker — unified under one cool theme and ready to drop into an adventure game.",
     theme: "arctic",
+    cover: "quest-tracker",
     screens: [
       { role: "Main menu", template: "main-menu" },
       { role: "Inventory", template: "inventory" },
@@ -56,6 +62,7 @@ export const KITS: Kit[] = [
     description:
       "A tycoon empire interface set: a main menu, a VIP & game pass store, a cash & dropper upgrade shop, a promo code panel, and a top tycoons leaderboard — unified under one deep emerald theme.",
     theme: "emerald",
+    cover: "code-redeem",
     screens: [
       { role: "Main menu", template: "main-menu" },
       { role: "VIP & pass store", template: "game-pass-shop" },
@@ -71,6 +78,7 @@ export const KITS: Kit[] = [
     description:
       "A luck-based roller interface set: a roll hub menu, an aura storage inventory, a luck & auto-roll pass store, a streak rewards calendar, and a rare-drop notification stack — unified under one royal violet theme.",
     theme: "royal",
+    cover: "game-pass-shop",
     screens: [
       { role: "Roll hub menu", template: "main-menu" },
       { role: "Aura storage", template: "inventory" },
@@ -86,6 +94,7 @@ export const KITS: Kit[] = [
     description:
       "A parkour monetization set: a stage menu, a skip-stage & speed-coil pass store, a playtime & daily gifts calendar, a boost code panel, and a stage HUD health bar — unified under one obsidian crimson theme.",
     theme: "crimson",
+    cover: "main-menu",
     screens: [
       { role: "Stage menu", template: "main-menu" },
       { role: "Skip stage & coil passes", template: "game-pass-shop" },
@@ -101,6 +110,7 @@ export const KITS: Kit[] = [
     description:
       "A tower defense command set: a lobby menu, a unit loadout inventory, a summon & crate shop, a wave missions tracker, and an endless wave leaderboard — unified under the classic electric nexus theme.",
     theme: "nexus",
+    cover: "leaderboard",
     screens: [
       { role: "Lobby menu", template: "main-menu" },
       { role: "Unit loadout", template: "inventory" },

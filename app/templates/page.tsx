@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteNav } from "../components/SiteNav";
 import { SiteFooter } from "../components/SiteFooter";
-import { ScenePreview } from "../editor/ScenePreview";
+import { SceneThumb } from "../components/SceneThumb";
+import { templatePreviewSrc } from "../editor/preview-images";
 import { TEMPLATES, CATEGORIES } from "../editor/templates";
 
 export const metadata: Metadata = {
@@ -57,7 +58,10 @@ export default function TemplatesPage() {
                     href={`/templates/${t.slug}`}
                     className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
                   >
-                    <ScenePreview scene={t.scene} />
+                    <SceneThumb
+                      src={templatePreviewSrc(t.slug)}
+                      alt={`${t.title} template preview`}
+                    />
                     <div className="p-3 bg-panel">
                       <p className="text-sm font-medium text-ink">
                         {t.title.replace("Roblox ", "").replace(" GUI", "")}

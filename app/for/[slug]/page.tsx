@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import { getTemplate } from "../../editor/templates";
 import { getGuide } from "../../guides/guides-data";
 import { USE_CASES, getUseCase } from "../usecases";
@@ -128,7 +129,10 @@ export default async function UseCasePage({
         {tpl ? (
           <>
             <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40 mb-6">
-              <ScenePreview scene={tpl.scene} />
+              <SceneThumb
+                src={templatePreviewSrc(tpl.slug)}
+                alt={`${tpl.title} template preview`}
+              />
             </div>
             <div className="flex flex-wrap gap-3 mb-10">
               <Link

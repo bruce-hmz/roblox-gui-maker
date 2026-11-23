@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ScenePreview } from "../../editor/ScenePreview";
+import { SceneThumb } from "../../components/SceneThumb";
+import { templatePreviewSrc } from "../../editor/preview-images";
 import { TEMPLATES, getTemplate } from "../../editor/templates";
 import { getTemplateZh } from "../../editor/templates.zh";
 import { ZhShell } from "../_components/ZhShell";
@@ -68,7 +69,11 @@ export default function ShowcasePage() {
       {/* featured anchor piece */}
       <section className="max-w-5xl mx-auto px-6 pb-14">
         <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40">
-          <ScenePreview scene={FEATURED.scene} />
+          <SceneThumb
+            src={templatePreviewSrc(FEATURED.slug)}
+            alt={`${getTemplateZh(FEATURED.slug)?.title ?? FEATURED.title} 模板预览`}
+            priority
+          />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
           <div>
@@ -103,7 +108,10 @@ export default function ShowcasePage() {
                 href={`/zh/templates/${t.slug}`}
                 className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
               >
-                <ScenePreview scene={t.scene} />
+                <SceneThumb
+                  src={templatePreviewSrc(t.slug)}
+                  alt={`${tz?.title ?? t.title} 模板预览`}
+                />
                 <div className="p-3 bg-panel">
                   <p className="text-sm font-medium text-ink">
                     {(tz?.title ?? t.title).replace("Roblox ", "").replace(" GUI", "")}
