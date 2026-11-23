@@ -27,7 +27,7 @@ export function ScenePreview({
 
   return (
     <div
-      className={`relative w-full ${ASPECT[device]} rounded-xl overflow-hidden bg-base ring-1 ring-line-soft`}
+      className={`relative w-full ${ASPECT[device]} rounded-xl overflow-hidden bg-page ring-1 ring-line-soft`}
       style={{ containerType: "inline-size" }}
     >
       {childrenOf(null).map((n) => (

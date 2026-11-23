@@ -259,7 +259,7 @@ export function UiSizerTool({ locale = "en" }: { locale?: Locale }) {
                     </p>
                     <div
                       style={{ width: Math.min(200, boxW), height: boxH }}
-                      className="relative overflow-hidden rounded-md border border-line-soft bg-base"
+                      className="relative overflow-hidden rounded-md border border-line-soft bg-page"
                     >
                       {/* Raw Offset rectangle */}
                       <div

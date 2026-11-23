@@ -531,7 +531,7 @@ export function ShirtStudio({
       ? "bg-gradient-to-b from-sky-200 to-sky-100 text-slate-900"
       : bgTheme === "midnight"
         ? "bg-gradient-to-b from-[#070912] to-[#111526] text-ink"
-        : "bg-gradient-to-b from-surface to-base text-ink canvas-grid";
+        : "bg-gradient-to-b from-surface to-page text-ink canvas-grid";
 
   const activeTorsoTextures = {
     front: shirtTextures.torsoFront ?? pantsTextures.torsoFront,
@@ -749,7 +749,7 @@ export function ShirtStudio({
               />
             </div>
 
-            <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-base/75 px-2.5 py-1 text-[11px] text-ink-dim backdrop-blur-xs">
+            <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-page/75 px-2.5 py-1 text-[11px] text-ink-dim backdrop-blur-xs">
               {zh ? "拖动旋转 · 585×559 R6 UV 映射" : "Drag to orbit · R6 585×559 UV"}
             </div>
           </div>

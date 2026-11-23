@@ -12,10 +12,16 @@ const STEP_MS = 900;
 // is the product's core differentiator, so it sits at the top of the landing
 // page. Pauses on hover (so the code can be read) and shows the finished scene
 // with no animation when the visitor prefers reduced motion.
+//
+// The initial (server-rendered) state is the FINISHED scene, not step 0. The
+// homepage is exported as static HTML to GeFeiSites and never hydrates there,
+// so whatever the first render shows is all visitors see; step 0 is only the
+// transparent ScreenGui, which rendered as an empty canvas. When the component
+// does hydrate, the loop below restarts the build from step 0.
 export function HeroDemo({ buildOrder }: { buildOrder: SceneNode[] }) {
   // Cumulative prefixes = each build step is a valid, renderable scene.
   const stages = buildOrder.map((_, i) => buildOrder.slice(0, i + 1));
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(Math.max(stages.length - 1, 0));
   const [paused, setPaused] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
   const reduceRef = useRef(false);
@@ -47,7 +53,7 @@ export function HeroDemo({ buildOrder }: { buildOrder: SceneNode[] }) {
     <div
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40 bg-base"
+      className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40 bg-page"
     >
       <div className="grid md:grid-cols-2">
         <div className="p-3 sm:p-4 border-b md:border-b-0 md:border-r border-line flex flex-col gap-2.5">

@@ -86,7 +86,7 @@ export function Canvas({
         onPointerDown={() => onSelect(null)}
       >
         <div
-          className={`relative rounded-xl overflow-hidden bg-base ring-1 ring-line-soft shadow-2xl shadow-black/50 ${FRAME_CLASS[device]}`}
+          className={`relative rounded-xl overflow-hidden bg-page ring-1 ring-line-soft shadow-2xl shadow-black/50 ${FRAME_CLASS[device]}`}
         >
           {previewNotice && (
             <div
@@ -280,7 +280,7 @@ function NodeView({
             <span
               key={h.corner}
               onPointerDown={(e) => startResize(e, node, h.corner)}
-              className={`absolute ${h.pos} w-2.5 h-2.5 rounded-sm bg-focus border-2 border-base ${h.cursor}`}
+              className={`absolute ${h.pos} w-2.5 h-2.5 rounded-sm bg-focus border-2 border-page ${h.cursor}`}
             />
           ))}
         </>
@@ -293,7 +293,7 @@ function NodeView({
             event.stopPropagation();
             onSelect(node.id);
           }}
-          className="absolute right-1 top-1 z-50 rounded bg-base/90 px-1.5 py-0.5 text-[9px] font-semibold text-warning pointer-events-auto cursor-pointer"
+          className="absolute right-1 top-1 z-50 rounded bg-page/90 px-1.5 py-0.5 text-[9px] font-semibold text-warning pointer-events-auto cursor-pointer"
         >
           Starts hidden
         </button>

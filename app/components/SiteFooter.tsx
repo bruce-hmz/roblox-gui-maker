@@ -164,6 +164,11 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
               </Link>
             </li>
             <li>
+              <Link className="hover:text-ink" href={zh ? "/zh/guides" : "/guides"}>
+                {zh ? "Roblox GUI 教程" : "Roblox GUI guides"}
+              </Link>
+            </li>
+            <li>
               <Link className="hover:text-ink" href={zh ? "/zh/about" : "/about"}>
                 {zh ? "关于" : "About"}
               </Link>

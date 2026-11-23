@@ -617,7 +617,7 @@ pages.push({
   content: {
     lang: "en",
     head_extra: "",
-    body_html: `<main aria-labelledby="editor-guide-heading" class="border-t border-line bg-base text-ink">
+    body_html: `<main aria-labelledby="editor-guide-heading" class="border-t border-line bg-page text-ink">
   <script type="application/ld+json">${editorFaqJsonLd}</script>
   <div class="max-w-5xl mx-auto px-6 py-16 space-y-12">
     <header class="space-y-4 max-w-3xl">
