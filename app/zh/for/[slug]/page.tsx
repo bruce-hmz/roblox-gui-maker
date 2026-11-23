@@ -18,7 +18,7 @@ export async function generateMetadata({
   if (!u) return { title: "未找到用例 — Roblox GUI Maker" };
   return {
     title: `${u.title} | Roblox GUI Maker`,
-    description: u.blurb,
+    description: u.metaDescription ?? u.blurb,
     openGraph: {
       title: `${u.title} | Roblox GUI Maker`,
       description: u.blurb,

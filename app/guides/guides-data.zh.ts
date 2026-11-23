@@ -16,6 +16,7 @@ type GuideZhSection = {
 type GuideZhProse = {
   title: string;
   metaTitle?: string;
+  metaDescription?: string;
   description: string;
   category: string;
   customCta?: { href: string; label: string };
@@ -505,7 +506,7 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
 
   "how-to-use-uilistlayout-in-roblox": {
     title: "如何在 Roblox 里使用 UIListLayout",
-    metaTitle: "Roblox UIListLayout 用法:LayoutOrder、AbsoluteContentSize、Position",
+    metaTitle: "Roblox UIListLayout 用法:LayoutOrder 排序与 AbsoluteContentSize",
     description:
       "一份完整的 Roblox UIListLayout 指南:Padding 与对齐、LayoutOrder 排序、AbsoluteContentSize 自动撑高、Position 覆盖 —— 全部附可直接复制的 Luau。",
     category: "布局",
@@ -1087,6 +1088,7 @@ const GUIDES_ZH_PROSE: Record<string, GuideZhProse> = {
     ],
   },
   "roblox-gui-code-structure": {
+    metaTitle: "看懂 Roblox GUI 代码:Instance.new、UDim2 与 Parenting",
     title: "看懂 Roblox GUI 代码:Instance.new、UDim2 与 Parenting",
     description:
       "干净的 Roblox GUI Luau 是怎么组织的:每个元素都是一个 Instance.new,用 UDim2 的 Scale 定位,通过 Parenting 组成一棵树,再加上让它跑起来的属性和按钮处理。附可直接复制的 Luau。",
@@ -1799,7 +1801,10 @@ export function getGuideZh(slug: string): Guide | undefined {
   return {
     ...en,
     title: zh.title,
-    metaTitle: zh.metaTitle ?? en.metaTitle,
+    // Search metadata is per locale: never fall back to the English override,
+    // or a zh page would get an English <title>/description.
+    metaTitle: zh.metaTitle,
+    metaDescription: zh.metaDescription,
     description: zh.description,
     category: zh.category,
     customCta: zh.customCta ?? en.customCta,

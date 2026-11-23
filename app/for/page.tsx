@@ -5,9 +5,9 @@ import { SiteFooter } from "../components/SiteFooter";
 import { USE_CASES } from "./usecases";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Maker for Every Screen — Menus, Shops, HUDs & More",
+  title: "Roblox GUI Maker for Every Screen — Menus, Shops and HUDs",
   description:
-    "Roblox GUI Maker for main menus, shop menus, inventory screens, simulator HUDs, settings, loading screens, leaderboards and admin panels. Open a use case and export clean Luau.",
+    "Roblox GUI Maker for main menus, shops, inventories, simulator HUDs, settings, loading screens, leaderboards and admin panels. Pick a use case, export Luau.",
   openGraph: {
     title: "Roblox GUI Maker for Every Screen — Menus, Shops, HUDs & More",
     description:

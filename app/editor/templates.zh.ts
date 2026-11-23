@@ -11,6 +11,7 @@ export type TemplateZh = {
   title: string;
   category: TemplateCategoryZh;
   tagline: string;
+  metaDescription?: string;
   description: string;
 };
 
@@ -43,6 +44,8 @@ export const TEMPLATES_ZH: TemplateZh[] = [
   },
   {
     slug: "inventory",
+    metaDescription:
+      "免费 Roblox 背包 GUI 模板:一个固定 UIGridLayout 格子的背包——适合物品、皮肤或快捷栏。增删格子,网格自动重排。",
     title: "Roblox 背包 GUI",
     category: "菜单",
     tagline: "物品 / 皮肤的格子网格",

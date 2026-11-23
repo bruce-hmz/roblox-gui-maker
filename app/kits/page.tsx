@@ -6,9 +6,9 @@ import { KitCard } from "../components/KitCard";
 import { KITS } from "../editor/kits";
 
 export const metadata: Metadata = {
-  title: "Roblox Game UI Kits — Cohesive 5-Screen Interface Sets & .rbxmx Bundles",
+  title: "Roblox Game UI Kits — Cohesive 5-Screen Interface Sets",
   description:
-    "Explore 6 genre-matched Roblox game UI kits: cohesive 5-screen menus, shops, inventories, HUDs, and rewards with matched 512x512 Gamepass icons. Free Luau preview or one-click Studio .rbxmx.",
+    "6 genre-matched Roblox game UI kits: 5-screen menus, shops, inventories, HUDs and rewards with matching Gamepass icons. Free Luau preview or Studio .rbxmx.",
   openGraph: {
     title: "Roblox Game UI Kits — Cohesive 5-Screen Interface Sets",
     description:

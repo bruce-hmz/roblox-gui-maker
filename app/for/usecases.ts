@@ -6,6 +6,7 @@ export type UseCase = {
   title: string; // H1, e.g. "Roblox GUI Maker for Shop Menus"
   noun: string; // "shop menu"
   blurb: string; // specific 2-3 sentence intro
+  metaDescription?: string; // <meta description> override (blurb is page copy)
   needs: string[]; // 3 things this GUI type usually needs
   template?: string; // related template slug
   howTo: string[]; // 3-4 step guide for building this GUI type
@@ -17,6 +18,8 @@ export type UseCase = {
 export const USE_CASES: UseCase[] = [
   {
     slug: "main-menus",
+    metaDescription:
+      "The main menu is the first thing players see when they join. It needs a title, a clear Play button, and neatly stacked secondary buttons that look the part.",
     title: "Roblox GUI Maker for Main Menus",
     noun: "main menu",
     blurb:
@@ -85,6 +88,8 @@ export const USE_CASES: UseCase[] = [
   },
   {
     slug: "inventory-screens",
+    metaDescription:
+      "An inventory shows everything a player owns, usually as a grid of slots to tap to equip or use. Add or remove items and the grid reflows without manual layout.",
     title: "Roblox GUI Maker for Inventory Screens",
     noun: "inventory screen",
     blurb:
@@ -119,6 +124,8 @@ export const USE_CASES: UseCase[] = [
   },
   {
     slug: "simulator-huds",
+    metaDescription:
+      "Simulator HUDs pack currency, stats and action buttons into screen corners and update every frame. They stay up all game, so they must be tight and readable.",
     title: "Roblox GUI Maker for Simulator HUDs",
     noun: "simulator HUD",
     blurb:
@@ -186,6 +193,8 @@ export const USE_CASES: UseCase[] = [
   },
   {
     slug: "loading-screens",
+    metaDescription:
+      "A loading screen covers the viewport while assets stream in — a title, a progress bar that fills, and a rotating tip. Once the game is ready, it disappears.",
     title: "Roblox GUI Maker for Loading Screens",
     noun: "loading screen",
     blurb:
@@ -220,6 +229,8 @@ export const USE_CASES: UseCase[] = [
   },
   {
     slug: "leaderboards",
+    metaDescription:
+      "A leaderboard ranks players by a stat and drives competition. Each row shows rank, name and score, with the top entry highlighted, growing as players join.",
     title: "Roblox GUI Maker for Leaderboards",
     noun: "leaderboard",
     blurb:
@@ -254,6 +265,8 @@ export const USE_CASES: UseCase[] = [
   },
   {
     slug: "admin-panels",
+    metaDescription:
+      "Admin panels give moderators a hidden interface to kick, ban or teleport players. Opened by a command or key, they list players and run server-checked actions.",
     title: "Roblox GUI Maker for Admin Panels",
     noun: "admin panel",
     blurb:
