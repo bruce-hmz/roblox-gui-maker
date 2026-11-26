@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Download, AlertCircle, ArrowRight } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  AlertCircle,
+  ArrowRight,
+  RefreshCw,
+} from "lucide-react";
 import { KITS } from "../../editor/kits";
 import type { ProPlanId } from "../../lib/pro-access";
 import {
@@ -13,53 +19,76 @@ import {
 import { trackEvent } from "../../lib/track";
 
 type VerificationState =
-  | { stage: "verifying" }
+  | { stage: "verifying"; attempt: number }
   | { stage: "verified"; plan: ProPlanId; kitSlug?: string }
-  | { stage: "failed"; message: string };
+  | { stage: "failed"; message: string; retryable?: boolean };
+
+const MAX_AUTO_VERIFY_ATTEMPTS = 6;
+const VERIFY_POLL_DELAY_MS = 2_000;
 
 export function ProSuccessVerifier() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id") ?? "";
+  const orderRef = (searchParams.get("order_ref") ?? "").trim();
+  const sessionId = (searchParams.get("session_id") ?? "").trim();
   const rawNext = searchParams.get("next") ?? "/editor";
   const safeNext =
     rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/editor";
 
+  const [retryCounter, setRetryCounter] = useState(0);
   const [verification, setVerification] = useState<VerificationState>({
     stage: "verifying",
+    attempt: 1,
   });
   const [downloadingTarget, setDownloadingTarget] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sessionId) {
+    const verifyEndpoint = orderRef
+      ? `/api/checkout/verify?order_ref=${encodeURIComponent(orderRef)}`
+      : sessionId
+        ? `/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`
+        : null;
+
+    if (!verifyEndpoint) {
       setVerification({
         stage: "failed",
-        message: "Missing Stripe session_id in URL.",
+        message: "Missing order_ref in URL.",
       });
       return;
     }
 
     let cancelled = false;
-    async function verifyPaidSession() {
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function verifyPaidOrder(attempt: number) {
+      if (cancelled) return;
+      setVerification({ stage: "verifying", attempt });
+
       try {
-        const response = await fetch(
-          `/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`
-        );
+        const response = await fetch(verifyEndpoint!);
         const payload = (await response.json().catch(() => null)) as {
           unlocked?: boolean;
           plan?: ProPlanId;
           kitSlug?: string;
           token?: string;
+          retryable?: boolean;
           message?: string;
         } | null;
 
         if (cancelled) return;
         if (!response.ok || !payload?.unlocked || !payload.plan || !payload.token) {
+          if (payload?.retryable && attempt < MAX_AUTO_VERIFY_ATTEMPTS) {
+            pollTimer = setTimeout(() => {
+              void verifyPaidOrder(attempt + 1);
+            }, VERIFY_POLL_DELAY_MS);
+            return;
+          }
           setVerification({
             stage: "failed",
+            retryable: Boolean(payload?.retryable),
             message:
               payload?.message ??
-              `Could not verify payment session (HTTP ${response.status}).`,
+              `Could not verify payment order (HTTP ${response.status}).`,
           });
           return;
         }
@@ -82,19 +111,21 @@ export function ProSuccessVerifier() {
         if (cancelled) return;
         setVerification({
           stage: "failed",
+          retryable: true,
           message:
             error instanceof Error && error.message
               ? error.message
-              : "Network error while verifying checkout session.",
+              : "Network error while verifying checkout order.",
         });
       }
     }
 
-    void verifyPaidSession();
+    void verifyPaidOrder(1);
     return () => {
       cancelled = true;
+      if (pollTimer !== null) clearTimeout(pollTimer);
     };
-  }, [sessionId]);
+  }, [orderRef, sessionId, retryCounter]);
 
   async function downloadUnlockedTarget(target: string) {
     if (downloadingTarget) return;
@@ -120,7 +151,9 @@ export function ProSuccessVerifier() {
     return (
       <div className="rounded-2xl border border-line bg-panel p-8 text-center">
         <p className="text-base font-semibold text-ink">
-          Verifying your Stripe payment…
+          {verification.attempt > 1
+            ? `Confirming your payment (attempt ${verification.attempt}/${MAX_AUTO_VERIFY_ATTEMPTS})…`
+            : "Verifying your payment…"}
         </p>
         <p className="mt-1 text-sm text-ink-mute">
           Activating your Studio .rbxmx export pass and preparing your ZIP downloads.
@@ -134,13 +167,23 @@ export function ProSuccessVerifier() {
       <div className="rounded-2xl border border-danger/40 bg-panel p-8">
         <div className="flex items-center gap-2.5 text-danger">
           <AlertCircle className="h-5 w-5 shrink-0" />
-          <h2 className="text-lg font-bold">Could not verify checkout session</h2>
+          <h2 className="text-lg font-bold">Could not verify checkout order</h2>
         </div>
         <p className="mt-2 text-sm text-ink-dim">{verification.message}</p>
         <div className="mt-6 flex flex-wrap gap-3">
+          {(orderRef || sessionId) && (
+            <button
+              type="button"
+              onClick={() => setRetryCounter((count) => count + 1)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:brightness-110"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry verification
+            </button>
+          )}
           <Link
             href="/pricing"
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-dim hover:text-ink"
           >
             Back to Pricing
           </Link>

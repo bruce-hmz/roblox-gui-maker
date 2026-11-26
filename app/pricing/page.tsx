@@ -35,11 +35,11 @@ const PRICING_FAQS = [
   },
   {
     q: "Is this a recurring subscription or a one-time payment?",
-    a: "Both Studio Passes are one-time Stripe buyouts (USD 9.90 for Studio .rbxmx + 1 UI Kit Pass, or USD 19.90 for All-Access including all 6 kits and all 48 icons). There are zero monthly fees or auto-renewals.",
+    a: "Both Studio Passes are one-time buyouts processed securely by Waffo (USD 9.90 for Studio .rbxmx + 1 UI Kit Pass, or USD 19.90 for All-Access including all 6 kits and all 48 icons). There are zero monthly fees or auto-renewals.",
   },
   {
     q: "How do I restore my Pro Pass if I clear browser cookies or switch computers?",
-    a: "We don't force accounts or passwords. After checkout, bookmark your /pro/success?session_id=... confirmation URL and download your kit ZIPs immediately. Reopening that confirmation link on another browser or device re-verifies your paid Stripe session and restores the Pro Pass cookie cleanly.",
+    a: "We don't force accounts or passwords. After paying on Waffo, click Done to return to your /pro/success?order_ref=... confirmation URL, bookmark it, and download your kit ZIPs immediately. Reopening that confirmation link on another browser or device re-verifies your completed Waffo order and restores the Pro Pass cookie cleanly.",
   },
   {
     q: "Can I use Pro UI Kits, .rbxmx models, and Gamepass icons in commercial Roblox games?",

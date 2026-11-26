@@ -6,7 +6,7 @@ import { Check, Sparkles } from "lucide-react";
 import { KITS } from "../editor/kits";
 import type { Locale } from "../i18n";
 import { PRICING_PLANS, type ProPlanId } from "../lib/pro-access";
-import { startStripeCheckout } from "../lib/pro-client";
+import { startProCheckout } from "../lib/pro-client";
 import { trackEvent } from "../lib/track";
 
 export function PricingCards({ locale = "en" }: { locale?: Locale }) {
@@ -26,10 +26,11 @@ export function PricingCards({ locale = "en" }: { locale?: Locale }) {
     trackEvent("begin_checkout", { plan, kitSlug, returnPath });
 
     try {
-      const outcome = await startStripeCheckout({
+      const outcome = await startProCheckout({
         plan,
         ...(kitSlug ? { kitSlug } : {}),
         returnPath,
+        locale,
       });
       if (!outcome.ok) {
         setCheckoutError(outcome.message);
@@ -188,7 +189,7 @@ export function PricingCards({ locale = "en" }: { locale?: Locale }) {
           >
             {loadingPlan === "starter_rbxmx"
               ? zh
-                ? "正在跳转 Stripe…"
+                ? "正在跳转 Waffo…"
                 : "Redirecting…"
               : zh
                 ? `购买单套版 (${PRICING_PLANS.starter_rbxmx.priceDisplay})`
@@ -258,7 +259,7 @@ export function PricingCards({ locale = "en" }: { locale?: Locale }) {
           >
             {loadingPlan === "pro_all_access"
               ? zh
-                ? "正在跳转 Stripe…"
+                ? "正在跳转 Waffo…"
                 : "Redirecting…"
               : zh
                 ? `解锁全通包 (${PRICING_PLANS.pro_all_access.priceDisplay})`

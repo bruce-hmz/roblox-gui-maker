@@ -32,7 +32,7 @@ export default function TermsPage() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
           Terms of Service
         </h1>
-        <p className="text-sm text-ink-mute mb-10">Last updated: July 4, 2026</p>
+        <p className="text-sm text-ink-mute mb-10">Last updated: November 26, 2026</p>
 
         <section className="mb-10">
           <h2 className="text-xl font-semibold text-ink mb-3">
@@ -44,7 +44,7 @@ export default function TermsPage() {
             Pass downloads. By using the tool you accept these terms. If you do
             not accept them, do not use the tool. There is no account system
             &mdash; free features work directly in your browser, and optional Pro
-            Passes are processed via one-time Stripe Checkout.
+            Passes are processed via one-time Waffo Checkout.
           </p>
         </section>
 
@@ -94,6 +94,40 @@ export default function TermsPage() {
         </section>
 
         <section className="mb-10">
+          <h2 className="text-xl font-semibold text-ink mb-3">
+            Billing &amp; refund policy
+          </h2>
+          <p className="text-ink-dim leading-relaxed mb-3">
+            Core editing, Luau code generation, template previews, and single
+            512&times;512 Gamepass PNG exports are free with no payment
+            required. Optional Studio Pro Passes (USD 9.90 Starter Pass and
+            USD 19.90 All-Access Pass) are one-time digital purchases processed
+            by Waffo as Merchant of Record, with no recurring subscription or
+            auto-renewal.
+          </p>
+          <p className="text-ink-dim leading-relaxed">
+            Because Studio Pro Passes unlock instant digital downloads
+            (<code className="text-ink">.rbxmx</code> models, UI Kit ZIP
+            bundles, and icon packs), you may request a full refund within{" "}
+            <span className="font-medium text-ink">14 calendar days</span> of
+            purchase if you experience a verified technical defect we cannot
+            resolve, were charged in error, or have not yet downloaded the
+            unlocked digital bundles. To request a refund, email{" "}
+            <a
+              href="mailto:support@robloxguimaker.app"
+              className="text-focus hover:underline"
+            >
+              support@robloxguimaker.app
+            </a>{" "}
+            with your order reference (<code className="text-ink">order_ref</code>{" "}
+            or Waffo order ID) and reason. We review requests within 2 business
+            days, and approved refunds are returned to your original payment
+            method within 5&ndash;10 business days via Waffo; refunded orders
+            automatically lose Pro Pass access.
+          </p>
+        </section>
+
+        <section className="mb-10">
           <h2 className="text-xl font-semibold text-ink mb-3">Acceptable use</h2>
           <p className="text-ink-dim leading-relaxed mb-3">You agree not to:</p>
           <ul className="space-y-2 text-ink-dim">
@@ -101,6 +135,7 @@ export default function TermsPage() {
               "Use the tool to build UI intended to deceive players, phish credentials, or bypass Roblox's Terms of Service.",
               "Attempt to access, scan, or overload the service or its underlying infrastructure.",
               "Embed or rehost the tool elsewhere in a way that implies it is your own product.",
+              "Repackage, redistribute, or resell raw Pro UI Kit bundles or icon packs as standalone competing asset packs.",
             ].map((t) => (
               <li key={t} className="flex gap-2.5">
                 <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
@@ -108,6 +143,23 @@ export default function TermsPage() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold text-ink mb-3">
+            Violations, suspension &amp; termination
+          </h2>
+          <p className="text-ink-dim leading-relaxed">
+            If you violate these terms, abuse rate limits, attempt unauthorized
+            access, or engage in payment fraud or chargeback abuse, we may take
+            proportionate enforcement action without prior notice, including
+            issuing a warning, rate-limiting or blocking access to our APIs and
+            tools, removing abusive inputs, and suspending or permanently
+            revoking any unlocked Studio Pro Pass access without refund where
+            permitted by law. You may stop using the service at any time by
+            clearing your browser storage for{" "}
+            <code className="text-ink">robloxguimaker.app</code>.
+          </p>
         </section>
 
         <section className="mb-10">

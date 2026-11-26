@@ -1,10 +1,15 @@
-// POST /api/checkout — creates a one-time Stripe Checkout Session via Web fetch.
+// POST /api/checkout — creates a one-time Waffo Pancake Checkout Session via Web fetch.
 // Zero Node-only SDK dependencies so it runs natively on Cloudflare Workers.
 
 import { getKit } from "../../editor/kits";
-import { PRICING_PLANS, type ProPlanId } from "../../lib/pro-access";
-
-const STRIPE_SESSIONS_ENDPOINT = "https://api.stripe.com/v1/checkout/sessions";
+import { type ProPlanId } from "../../lib/pro-access";
+import {
+  createWaffoCheckoutSession,
+  createWaffoOrderRef,
+  resolveWaffoConfig,
+  WaffoConfigError,
+  WaffoUpstreamError,
+} from "../../lib/waffo";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -28,6 +33,7 @@ export async function POST(request: Request): Promise<Response> {
     plan?: unknown;
     kitSlug?: unknown;
     returnPath?: unknown;
+    locale?: unknown;
   };
   try {
     requestBody = (await request.json()) as typeof requestBody;
@@ -50,7 +56,11 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   let validatedKitSlug: string | undefined;
-  if (requestBody.kitSlug !== undefined && requestBody.kitSlug !== null && requestBody.kitSlug !== "") {
+  if (
+    requestBody.kitSlug !== undefined &&
+    requestBody.kitSlug !== null &&
+    requestBody.kitSlug !== ""
+  ) {
     if (typeof requestBody.kitSlug !== "string" || !getKit(requestBody.kitSlug)) {
       return jsonResponse(
         {
@@ -63,77 +73,65 @@ export async function POST(request: Request): Promise<Response> {
     validatedKitSlug = requestBody.kitSlug;
   }
 
-  const stripeSecretKey = (process.env.STRIPE_SECRET_KEY ?? "").trim();
-  if (!stripeSecretKey) {
+  let waffoConfig;
+  try {
+    waffoConfig = resolveWaffoConfig(process.env);
+  } catch (error) {
     return jsonResponse(
       {
         error: "checkout_not_configured",
         message:
-          "Stripe checkout is not configured on this server yet (missing STRIPE_SECRET_KEY).",
+          error instanceof Error
+            ? error.message
+            : "Waffo checkout is not configured on this server yet.",
       },
       503
     );
   }
 
-  const planSpec = PRICING_PLANS[planId as ProPlanId];
   const safeReturnPath = sanitizeReturnPath(requestBody.returnPath);
   const requestOrigin = new URL(request.url).origin;
-
-  const formParams = new URLSearchParams();
-  formParams.set("mode", "payment");
-  formParams.set("payment_method_types[0]", "card");
-  formParams.set("line_items[0][quantity]", "1");
-  formParams.set("line_items[0][price_data][currency]", "usd");
-  formParams.set(
-    "line_items[0][price_data][unit_amount]",
-    String(planSpec.priceCents)
+  const locale = requestBody.locale === "zh" ? "zh" : "en";
+  const orderRef = createWaffoOrderRef(
+    planId as ProPlanId,
+    planId === "starter_rbxmx" ? validatedKitSlug : undefined
   );
-  formParams.set(
-    "line_items[0][price_data][product_data][name]",
-    validatedKitSlug && planId === "starter_rbxmx"
-      ? `${planSpec.productName} (${validatedKitSlug})`
-      : planSpec.productName
-  );
-  formParams.set(
-    "line_items[0][price_data][product_data][description]",
-    planSpec.productDescription
-  );
-  formParams.set("metadata[plan]", planId);
-  if (validatedKitSlug) {
-    formParams.set("metadata[kitSlug]", validatedKitSlug);
-  }
-  formParams.set(
-    "success_url",
-    `${requestOrigin}/pro/success?session_id={CHECKOUT_SESSION_ID}&next=${encodeURIComponent(safeReturnPath)}`
-  );
-  formParams.set("cancel_url", `${requestOrigin}${safeReturnPath}`);
 
-  const stripeResponse = await fetch(STRIPE_SESSIONS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${stripeSecretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: formParams.toString(),
-    signal: AbortSignal.timeout(10_000),
-  });
-
-  const stripeSession = (await stripeResponse.json().catch(() => null)) as {
-    url?: string;
-    error?: { message?: string };
-  } | null;
-
-  if (!stripeResponse.ok || !stripeSession?.url) {
+  try {
+    const session = await createWaffoCheckoutSession(waffoConfig, {
+      plan: planId as ProPlanId,
+      ...(validatedKitSlug ? { kitSlug: validatedKitSlug } : {}),
+      orderRef,
+      requestOrigin,
+      returnPath: safeReturnPath,
+      locale,
+    });
+    return jsonResponse({
+      checkoutUrl: session.checkoutUrl,
+      orderRef,
+    });
+  } catch (error) {
+    if (error instanceof WaffoConfigError) {
+      return jsonResponse(
+        { error: "checkout_not_configured", message: error.message },
+        503
+      );
+    }
+    if (error instanceof WaffoUpstreamError) {
+      return jsonResponse(
+        { error: "waffo_upstream_error", message: error.message },
+        502
+      );
+    }
     return jsonResponse(
       {
-        error: "stripe_upstream_error",
+        error: "waffo_upstream_error",
         message:
-          stripeSession?.error?.message ??
-          `Stripe session creation failed with status ${stripeResponse.status}.`,
+          error instanceof Error && error.message
+            ? error.message
+            : "Could not reach Waffo checkout API.",
       },
       502
     );
   }
-
-  return jsonResponse({ checkoutUrl: stripeSession.url });
 }

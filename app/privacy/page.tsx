@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
         <p className="text-sm text-ink-mute mb-10">
-          Last updated: November 23, 2026
+          Last updated: November 26, 2026
         </p>
 
         <section className="mb-10">
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
               "No accounts. There is no login, sign-up, or profile. We never ask for your name, email, or Roblox username.",
               "No project uploads. Everything you design stays in your browser's local storage. Your GUI projects are never transmitted to or stored on our servers.",
               "No Roblox credentials. This tool never asks for your Roblox password or your .ROBLOSECURITY cookie, and has no way to access your Roblox account.",
-              "Minimal checkout handling. Core editing, Luau export, and single Gamepass icon downloads are free with zero payment data. If you choose to buy a one-time Studio Pro Pass, card entry happens on Stripe's hosted Checkout page — we never see or store card details, and only verify the Stripe session ID to set a signed unlock cookie in your browser.",
+              "Minimal checkout handling. Core editing, Luau export, and single Gamepass icon downloads are free with zero payment data. If you choose to buy a one-time Studio Pro Pass, payment entry happens on Waffo's hosted Checkout page — we never see or store card details, and only verify your completed order reference to set a signed unlock cookie in your browser.",
             ].map((t) => (
               <li key={t} className="flex gap-2.5">
                 <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
@@ -161,10 +161,10 @@ export default function PrivacyPage() {
             <li className="flex gap-2.5">
               <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
               <span className="leading-relaxed">
-                <span className="font-medium text-ink">Stripe</span>: processes
-                hosted Checkout payments if you choose to buy a one-time Studio
-                Pro Pass; we only verify the Stripe session ID to issue a signed
-                unlock cookie.
+                <span className="font-medium text-ink">Waffo</span>: acts as
+                merchant of record and processes hosted Checkout payments if you
+                choose to buy a one-time Studio Pro Pass; we only verify the
+                completed order reference to issue a signed unlock cookie.
               </span>
             </li>
             <li className="flex gap-2.5">

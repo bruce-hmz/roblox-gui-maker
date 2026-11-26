@@ -183,9 +183,17 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
               : "An independent, unofficial tool. Not affiliated with or endorsed by Roblox Corporation. “Roblox” is a trademark of Roblox Corporation."}
           </p>
           <p className="text-ink-dim font-medium mb-2">
-            {zh ? "反馈" : "Feedback"}
+            {zh ? "联系与反馈" : "Support & feedback"}
           </p>
           <ul className="space-y-1.5 text-ink-mute">
+            <li>
+              <a
+                className="hover:text-ink"
+                href="mailto:support@robloxguimaker.app"
+              >
+                {zh ? "客服邮箱：support@robloxguimaker.app" : "Email: support@robloxguimaker.app"}
+              </a>
+            </li>
             <li>
               <a
                 className="hover:text-ink"

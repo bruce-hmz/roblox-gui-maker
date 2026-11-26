@@ -1,4 +1,4 @@
-// Browser-side helpers for triggering Stripe Checkout and verified Pro downloads.
+// Browser-side helpers for triggering Waffo Checkout and verified Pro downloads.
 // All actual file fulfillment is verified server-side via HMAC signature.
 
 import type { SceneNode } from "../editor/catalog";
@@ -54,10 +54,11 @@ export function clearClientProStatus(): void {
   }
 }
 
-export async function startStripeCheckout(options: {
+export async function startProCheckout(options: {
   plan: ProPlanId;
   kitSlug?: string;
   returnPath: string;
+  locale?: "en" | "zh";
 }): Promise<{ ok: true; checkoutUrl: string } | { ok: false; message: string }> {
   const response = await fetch("/api/checkout", {
     method: "POST",

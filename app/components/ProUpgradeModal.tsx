@@ -5,7 +5,7 @@ import { Check, ShieldCheck, Sparkles, X } from "lucide-react";
 import { KITS } from "../editor/kits";
 import type { Locale } from "../i18n";
 import { PRICING_PLANS, type ProPlanId } from "../lib/pro-access";
-import { startStripeCheckout } from "../lib/pro-client";
+import { startProCheckout } from "../lib/pro-client";
 import { trackEvent } from "../lib/track";
 
 export type ProUpgradeModalProps = {
@@ -45,7 +45,7 @@ export function ProUpgradeModal({
     KITS.find((kit) => kit.slug === activeStarterKitSlug)?.name ??
     activeStarterKitSlug;
 
-  async function launchStripeCheckout() {
+  async function launchProCheckout() {
     if (submitting) return;
     setSubmitting(true);
     setCheckoutError(null);
@@ -60,10 +60,11 @@ export function ProUpgradeModal({
     });
 
     try {
-      const outcome = await startStripeCheckout({
+      const outcome = await startProCheckout({
         plan: selectedPlan,
         ...(targetKit ? { kitSlug: targetKit } : {}),
         returnPath,
+        locale,
       });
       if (!outcome.ok) {
         setCheckoutError(outcome.message);
@@ -295,20 +296,20 @@ export function ProUpgradeModal({
             <ShieldCheck className="h-4 w-4 shrink-0 text-success" />
             <span>
               {zh
-                ? "Stripe 安全结账 · 付款后立即下载 ZIP 与 .rbxmx"
-                : "Secured by Stripe · Instant .rbxmx & ZIP download right after payment"}
+                ? "Waffo 安全结账 · 付款后点击 Done 立即解锁 ZIP 与 .rbxmx"
+                : "Secured by Waffo · Instant .rbxmx & ZIP unlock right after payment"}
             </span>
           </div>
           <button
             type="button"
-            onClick={() => void launchStripeCheckout()}
+            onClick={() => void launchProCheckout()}
             disabled={submitting}
             className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-50"
           >
             {submitting
               ? zh
-                ? "正在跳转 Stripe…"
-                : "Redirecting to Stripe…"
+                ? "正在跳转 Waffo…"
+                : "Redirecting to Waffo…"
               : selectedPlan === "pro_all_access"
                 ? zh
                   ? `以 ${PRICING_PLANS.pro_all_access.priceDisplay} 解锁全部`
