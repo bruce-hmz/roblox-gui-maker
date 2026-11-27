@@ -20,6 +20,16 @@ import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// 2026-11-27: the engine content of robloxguimaker.app now lives in the private repo
+// github.com/bruce-hmz/my-sites-src (sites/robloxguimaker.app/), pushed with scripts/gfs.py.
+// Running this script would overwrite the engine with this older copy, so it is disabled.
+// Set ALLOW_LEGACY_GFS_SYNC=1 only if the site owner explicitly asks for it.
+if (process.env.ALLOW_LEGACY_GFS_SYNC !== '1') {
+  console.error('Stopped: robloxguimaker.app is now maintained in github.com/bruce-hmz/my-sites-src (sites/robloxguimaker.app/). ' +
+    'Edit it there and push with `python3 scripts/gfs.py push robloxguimaker.app`. See that repo\'s README.');
+  process.exit(1);
+}
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const GFS_DIR = join(ROOT, "gfs");
 
