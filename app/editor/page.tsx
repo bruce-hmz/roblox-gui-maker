@@ -6,9 +6,9 @@ import { getTemplate } from "./templates";
 import { applyTheme, getTheme } from "./themes";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Editor — Drag, Drop & Export Luau | Roblox GUI Maker",
+  title: "Roblox GUI Editor — Drag, Drop and Export Clean Luau",
   description:
-    "Free online Roblox GUI editor. Drag and drop ScreenGui, Frame, TextButton, preview interactions, and export clean Luau for Roblox Studio. No login required.",
+    "Free online Roblox GUI editor. Drag and drop ScreenGui, Frame, TextButton, preview interactions, and export clean Luau for Roblox Studio.",
   alternates: { canonical: "/editor" },
 };
 

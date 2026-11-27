@@ -7,9 +7,9 @@ import { SPOKES } from "./spokes";
 import { looksForSpoke, lookTotalRs } from "./data";
 
 export const metadata: Metadata = {
-  title: "Roblox Avatar Ideas — Free & Budget Outfits with Real Item IDs",
+  title: "Roblox Avatar Ideas — Free and Budget Outfits with IDs",
   description:
-    "Curated Roblox avatar outfit ideas with real catalog item IDs: free starter looks, streetwear, soft pastel, hime cut and formal styles. Copy an ID, open the Roblox catalog, equip.",
+    "Curated Roblox avatar outfit ideas with real catalog item IDs: free starter looks, streetwear, soft pastel, hime cut, and formal styles to equip.",
   robots: { index: false, follow: true },
   alternates: {
     canonical: "/avatar",
@@ -19,16 +19,16 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Roblox Avatar Ideas — Free & Budget Outfits with Real Item IDs",
+    title: "Roblox Avatar Ideas — Free and Budget Outfits with IDs",
     description:
-      "Curated Roblox avatar looks with real catalog item IDs — free starter fits, streetwear, soft pastel, hime cut and formal. Copy an ID, equip it in minutes.",
+      "Curated Roblox avatar looks with real catalog item IDs — free starter fits, streetwear, soft pastel, hime cut, and formal.",
     url: "https://robloxguimaker.app/avatar",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Roblox Avatar Ideas — Free & Budget Outfits with Real Item IDs",
+    title: "Roblox Avatar Ideas — Free and Budget Outfits with IDs",
     description:
-      "Curated Roblox avatar looks with real catalog item IDs — free starter fits, streetwear, soft pastel, hime cut and formal.",
+      "Curated Roblox avatar looks with real catalog item IDs — free starter fits, streetwear, soft pastel, hime cut, and formal.",
   },
 };
 

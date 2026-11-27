@@ -102,11 +102,11 @@ export function CodePanel({
               type="button"
               onClick={onExportRbxmx}
               disabled={exportingRbxmx}
-              className="flex items-center gap-1.5 rounded-md border border-focus/60 bg-raised px-2.5 py-1 text-xs font-semibold text-ink transition hover:border-focus hover:bg-raised-hi disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
-              <Boxes className="w-3.5 h-3.5 text-focus" />
+              <Boxes className="w-3.5 h-3.5" />
               {exportingRbxmx ? "Exporting…" : "Export .rbxmx"}
-              <span className="rounded bg-primary/20 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-focus">
+              <span className="rounded bg-black/20 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider">
                 Pro
               </span>
             </button>
@@ -129,9 +129,9 @@ export function CodePanel({
           <button
             type="button"
             onClick={onDownloadPackage}
-            className="flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="flex items-center gap-1.5 rounded-md border border-line bg-raised px-2.5 py-1 text-xs font-medium text-ink transition hover:border-focus hover:bg-raised-hi focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-ink-dim" />
             Download ZIP
           </button>
           <button
@@ -192,6 +192,15 @@ export function CodePanel({
           >
             Offline Studio Plugin →
           </Link>
+          {onExportRbxmx && (
+            <button
+              type="button"
+              onClick={onExportRbxmx}
+              className="font-semibold text-ink hover:text-focus hover:underline"
+            >
+              Prefer drag-and-drop Explorer objects? Export .rbxmx →
+            </button>
+          )}
           <Link
             href="/"
             className="ml-auto font-medium text-ink-dim hover:text-ink hover:underline"

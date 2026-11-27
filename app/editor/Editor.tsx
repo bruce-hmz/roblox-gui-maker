@@ -7,6 +7,7 @@ import { Palette } from "./Palette";
 import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel, type CodeOutput } from "./CodePanel";
+import { ScenePreview } from "./ScenePreview";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
 import {
   parseSceneDocument,
@@ -122,6 +123,9 @@ export function Editor({
   const [proModalOpen, setProModalOpen] = useState(false);
   const [exportingRbxmx, setExportingRbxmx] = useState(false);
   const [rbxmxExportError, setRbxmxExportError] = useState<string | null>(null);
+  const [aiPromptOpen, setAiPromptOpen] = useState(false);
+  const [aiPromptInput, setAiPromptInput] = useState("");
+  const [mobileCodeOpen, setMobileCodeOpen] = useState(false);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   // AI funnel: the bar shown when the scene arrived from /api/generate-gui.
@@ -445,9 +449,13 @@ export function Editor({
     });
   }
 
-  async function regenerateAiScene() {
-    const info = aiInfoRef.current;
-    if (!info || aiRegenerating) return;
+  async function generateAiScene(
+    promptText: string,
+    locale: "en" | "zh" = "en",
+    isRegenerate = false
+  ) {
+    const trimmed = promptText.trim();
+    if (!trimmed || aiRegenerating) return;
     setAiRegenerating(true);
     setAiRegenerateError(null);
     setAiUpgradeSuggested(false);
@@ -459,7 +467,7 @@ export function Editor({
           "Content-Type": "application/json",
           ...(proToken ? { "x-pro-token": proToken } : {}),
         },
-        body: JSON.stringify({ prompt: info.prompt, locale: "en" }),
+        body: JSON.stringify({ prompt: trimmed, locale }),
       });
       const data = (await response.json().catch(() => null)) as {
         scene?: unknown;
@@ -473,34 +481,41 @@ export function Editor({
         setAiRegenerateError("Free AI quota reached (3/hr, 5/day).");
         return;
       }
-      const scene = data?.scene ? sanitizeScene(data.scene) : null;
-      if (!response.ok || !scene || !data?.meta) throw new Error("regenerate failed");
+      const generated = data?.scene ? sanitizeScene(data.scene) : null;
+      if (!response.ok || !generated || !data?.meta) throw new Error("generate failed");
       trackEvent("ai_generate_success", {
         screenType: data.meta.screenType,
         fallbackUsed: data.meta.fallbackUsed === "template",
         latencyMs: data.meta.latencyMs,
-        regenerate: true,
+        regenerate: isRegenerate,
       });
-      sceneRef.current = scene;
-      setScene(scene);
-      setSelectedId(pickOnboardingNode(scene)?.id ?? null);
+      sceneRef.current = generated;
+      setScene(generated);
+      setSelectedId(pickOnboardingNode(generated)?.id ?? null);
       setPreviewVisibility(null);
       setPreviewNotice(null);
-      history.current = { stack: [cloneScene(scene)], index: 0 };
+      history.current = { stack: [cloneScene(generated)], index: 0 };
       const next: AiInfo = {
-        prompt: info.prompt,
+        prompt: trimmed,
         screenType: data.meta.screenType,
-        locale: info.locale,
+        locale,
       };
       aiInfoRef.current = next;
       setAiInfo(next);
+      setAiPromptOpen(false);
       force();
     } catch {
-      trackEvent("ai_generate_failure", { reason: "regenerate" });
-      setAiRegenerateError("Regeneration failed — your current GUI is unchanged.");
+      trackEvent("ai_generate_failure", { reason: isRegenerate ? "regenerate" : "inline_prompt" });
+      setAiRegenerateError("AI generation failed — your current GUI is unchanged.");
     } finally {
       setAiRegenerating(false);
     }
+  }
+
+  function regenerateAiScene() {
+    const info = aiInfoRef.current;
+    if (!info) return;
+    return generateAiScene(info.prompt, info.locale, true);
   }
 
   async function copyPluginJson() {
@@ -724,30 +739,144 @@ export function Editor({
 
   return (
     <>
-      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-5 px-6 py-12 text-center md:hidden">
-        <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-xl font-bold text-on-primary">
-          R
+      <div className="flex min-h-[75vh] flex-col gap-4 px-4 py-5 md:hidden">
+        <div className="flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-lg bg-white">
+              <img
+                src="/logo.png"
+                alt="Roblox GUI Maker"
+                width={32}
+                height={32}
+                decoding="async"
+                className="h-full w-full object-contain"
+              />
+            </span>
+            <span className="text-sm font-semibold text-ink">Roblox GUI Editor</span>
+          </Link>
+          <div className="flex items-center gap-1 rounded-md bg-input p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setDevice("desktop")}
+              className={`rounded px-2 py-1 font-medium ${device === "desktop" ? "bg-raised text-ink" : "text-ink-dim"}`}
+            >
+              16:9
+            </button>
+            <button
+              type="button"
+              onClick={() => setDevice("mobile")}
+              className={`rounded px-2 py-1 font-medium ${device === "mobile" ? "bg-raised text-ink" : "text-ink-dim"}`}
+            >
+              Mobile
+            </button>
+          </div>
         </div>
-        <div className="space-y-2">
-          <p className="text-2xl font-bold">Open the editor on a larger screen</p>
-          <p className="mx-auto max-w-sm text-sm leading-6 text-ink-dim">
-            The editor needs room for the component palette, canvas, and properties. Use a tablet or desktop to build and export your GUI.
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void generateAiScene(aiPromptInput, aiInfo?.locale ?? "en");
+          }}
+          className="flex gap-2"
+        >
+          <input
+            type="text"
+            value={aiPromptInput}
+            onChange={(e) => setAiPromptInput(e.target.value)}
+            placeholder="Describe a GUI (e.g. simulator shop, RPG inventory)..."
+            className="min-w-0 flex-1 rounded-lg border border-line bg-input px-3 py-2 text-xs text-ink placeholder:text-ink-mute focus:border-focus focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={aiRegenerating || !aiPromptInput.trim()}
+            className="shrink-0 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-on-primary disabled:opacity-50"
+          >
+            {aiRegenerating ? "Generating…" : "AI Build"}
+          </button>
+        </form>
+
+        {aiInfo && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs">
+            <span className="font-semibold text-focus">AI · {aiInfo.screenType}</span>
+            <span className="min-w-0 flex-1 truncate text-ink-mute">&ldquo;{aiInfo.prompt}&rdquo;</span>
+            <button
+              type="button"
+              onClick={() => void regenerateAiScene()}
+              disabled={aiRegenerating}
+              className="rounded border border-line px-2 py-0.5 text-[11px] font-medium text-ink"
+            >
+              Regenerate
+            </button>
+          </div>
+        )}
+
+        {aiRegenerateError && (
+          <p role="alert" className="text-xs text-danger">
+            {aiRegenerateError}
           </p>
+        )}
+
+        <div className="mx-auto w-full max-w-md">
+          <ScenePreview scene={scene} device={device} />
         </div>
-        <div className="flex gap-3">
+
+        {rbxmxExportError && (
+          <p role="alert" className="text-xs text-danger">
+            {rbxmxExportError}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => void exportRbxmxModel()}
+            disabled={exportingRbxmx}
+            className="rounded-lg bg-primary px-3 py-2.5 text-xs font-semibold text-on-primary"
+          >
+            {exportingRbxmx ? "Exporting…" : "Export .rbxmx (Pro)"}
+          </button>
+          <button
+            type="button"
+            onClick={() => copyCode("client")}
+            className="rounded-lg border border-line bg-panel px-3 py-2.5 text-xs font-semibold text-ink"
+          >
+            {copied === "client" ? "Copied Client Luau" : "Copy Client Luau"}
+          </button>
+          <button
+            type="button"
+            onClick={exportProject}
+            className="rounded-lg border border-line bg-panel px-3 py-2 text-xs font-medium text-ink-dim"
+          >
+            Save JSON
+          </button>
           <Link
             href="/templates"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary"
+            className="rounded-lg border border-line bg-panel px-3 py-2 text-center text-xs font-medium text-ink-dim"
           >
-            Browse templates
-          </Link>
-          <Link
-            href="/"
-            className="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink-dim"
-          >
-            Roblox GUI Maker home
+            Browse Templates
           </Link>
         </div>
+
+        <div className="rounded-xl border border-line bg-panel">
+          <button
+            type="button"
+            onClick={() => setMobileCodeOpen((o) => !o)}
+            className="flex w-full items-center justify-between px-4 py-2.5 text-xs font-semibold text-ink"
+          >
+            <span>Generated Luau Code ({scene.length} nodes)</span>
+            <span className="text-focus">{mobileCodeOpen ? "Hide" : "View"}</span>
+          </button>
+          {mobileCodeOpen && (
+            <pre className="max-h-64 overflow-auto border-t border-line p-3 font-mono text-[11px] text-ink-dim">
+              {clientCode}
+            </pre>
+          )}
+        </div>
+
+        <p className="text-center text-[11px] text-ink-mute">
+          Drag-and-drop canvas &amp; properties inspector automatically unlock on tablet or desktop
+          screens (≥768px).
+        </p>
       </div>
       <div className="hidden h-screen w-full flex-col overflow-hidden md:flex">
       <Toolbar
@@ -765,7 +894,43 @@ export function Editor({
         onImportProject={importProject}
         onExportProject={exportProject}
         importError={importError}
+        onToggleAiPrompt={() => setAiPromptOpen((open) => !open)}
+        aiPromptOpen={aiPromptOpen}
+        onExportRbxmx={() => void exportRbxmxModel()}
+        exportingRbxmx={exportingRbxmx}
       />
+      {aiPromptOpen && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void generateAiScene(aiPromptInput, aiInfo?.locale ?? "en");
+          }}
+          className="flex h-11 shrink-0 items-center gap-2 border-b border-line bg-panel-raised px-4 text-xs"
+        >
+          <span className="shrink-0 font-semibold text-focus">AI Prompt</span>
+          <input
+            type="text"
+            value={aiPromptInput}
+            onChange={(e) => setAiPromptInput(e.target.value)}
+            placeholder="Describe a Roblox GUI to generate (e.g. simulator shop with 6 game passes, RPG inventory, horror menu)..."
+            className="min-w-0 flex-1 rounded-md border border-line bg-input px-3 py-1.5 text-xs text-ink placeholder:text-ink-mute focus:border-focus focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={aiRegenerating || !aiPromptInput.trim()}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-50"
+          >
+            {aiRegenerating ? "Generating…" : "Generate GUI"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAiPromptOpen(false)}
+            className="rounded-md border border-line px-2.5 py-1.5 text-ink-dim hover:text-ink"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
       {aiInfo && (
         <div className="flex h-9 shrink-0 items-center gap-3 border-b border-line bg-panel px-4 text-xs select-none">
           <span className="rounded-full bg-primary/15 px-2.5 py-0.5 font-semibold text-focus">
@@ -882,6 +1047,7 @@ export function Editor({
         onCopyPluginJson={() => void copyPluginJson()}
         pluginJsonCopied={pluginJsonCopied}
       />
+      </div>
       <ProUpgradeModal
         open={proModalOpen}
         onClose={() => setProModalOpen(false)}
@@ -893,7 +1059,6 @@ export function Editor({
         defaultPlan="starter_rbxmx"
         returnPath="/editor"
       />
-      </div>
     </>
   );
 }

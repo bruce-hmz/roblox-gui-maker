@@ -6,20 +6,20 @@ import { KitCard } from "../components/KitCard";
 import { KITS } from "../editor/kits";
 
 export const metadata: Metadata = {
-  title: "Roblox Game UI Kits — Cohesive 5-Screen Interface Sets",
+  title: "Roblox Game UI Kits — Free 5-Screen GUI Packs",
   description:
-    "6 genre-matched Roblox game UI kits: 5-screen menus, shops, inventories, HUDs and rewards with matching Gamepass icons. Free Luau preview or Studio .rbxmx.",
+    "6 genre-matched Roblox game UI kits and GUI packs: 5-screen menus, shops, inventories, HUDs, and Gamepass icons. Free Luau or .rbxmx.",
   openGraph: {
-    title: "Roblox Game UI Kits — Cohesive 5-Screen Interface Sets",
+    title: "Roblox Game UI Kits — Free 5-Screen GUI Packs",
     description:
-      "6 themed Roblox UI sets — main menus, shops, HUDs, inventories, and reward screens in one look. Free Luau export + native Studio .rbxmx bundles.",
+      "6 themed Roblox GUI packs — main menus, shops, HUDs, inventories, and reward screens in one look. Free Luau export + native Studio .rbxmx bundles.",
     url: "https://robloxguimaker.app/kits",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Roblox Game UI Kits — Cohesive 5-Screen Interface Sets",
+    title: "Roblox Game UI Kits — Free 5-Screen GUI Packs",
     description:
-      "Cohesive, themed 5-screen Roblox UI sets in one look. Free Luau + optional .rbxmx Studio packages.",
+      "Cohesive, themed 5-screen Roblox GUI packs in one look. Free Luau + optional .rbxmx Studio packages.",
   },
   alternates: {
     canonical: "/kits",
@@ -71,13 +71,14 @@ export default function KitsPage() {
       />
       <main className="max-w-6xl mx-auto px-6 py-12">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-          Roblox Game UI Kits
+          Roblox Game UI Kits &amp; GUI Packs
         </h1>
         <p className="text-ink-dim max-w-2xl mb-10">
-          A kit is several screens — main menu, shop, HUD, rewards, settings —
-          sharing one theme, so they read as a single game&rsquo;s interface
-          instead of loose pieces. Open a kit, swap the theme, and export each
-          screen as clean Luau.
+          Every <strong>Roblox GUI pack</strong> bundles five coordinated
+          screens — main menu, shop, HUD, rewards, and settings — under one
+          shared theme so your game reads as a single polished interface. Open
+          any screen free in the editor to export Luau, or unlock the native{" "}
+          <code className="text-ink">.rbxmx</code> Studio package.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-5">

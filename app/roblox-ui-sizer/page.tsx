@@ -8,9 +8,9 @@ const PAGE_URL = "https://robloxguimaker.app/roblox-ui-sizer";
 const ZH_URL = "https://robloxguimaker.app/zh/roblox-ui-sizer";
 
 export const metadata: Metadata = {
-  title: "Roblox UDim2 Offset to Scale Converter & Asset ID Previewer",
+  title: "Roblox UDim2 UI Sizer — Offset to Scale Converter",
   description:
-    "Convert pixel UI offsets into responsive Roblox UDim2.fromScale coordinates across 1080p, mobile, and tablet viewports, generate UIAspectRatioConstraint Luau code, and preview rbxassetid:// decals instantly.",
+    "Convert pixel UI offsets to responsive Roblox UDim2.fromScale values, copy UIAspectRatioConstraint Luau, and preview Asset IDs in your browser.",
   keywords: [
     "roblox udim2 converter",
     "roblox offset to scale calculator",
@@ -27,9 +27,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Roblox UDim2 UI Sizer & Asset ID Previewer",
+    title: "Roblox UDim2 UI Sizer — Offset to Scale Converter",
     description:
-      "Stop hardcoding broken pixel offsets. Convert Figma/Photoshop pixels to clean UDim2 Scale, add UIAspectRatioConstraint Luau, and inspect Roblox Asset IDs.",
+      "Convert Figma or Photoshop pixel offsets to clean UDim2 Scale, copy UIAspectRatioConstraint Luau, and preview Roblox Asset IDs.",
     url: PAGE_URL,
     type: "website",
   },

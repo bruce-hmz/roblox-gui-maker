@@ -15,6 +15,8 @@ import {
   Play,
   Square,
   Upload,
+  Sparkles,
+  Boxes,
 } from "lucide-react";
 import type { DeviceKind } from "./catalog";
 
@@ -39,6 +41,10 @@ type Props = {
   onImportProject: (file: File) => void;
   onExportProject: () => void;
   importError: string | null;
+  onToggleAiPrompt?: () => void;
+  aiPromptOpen?: boolean;
+  onExportRbxmx?: () => void;
+  exportingRbxmx?: boolean;
 };
 
 export function Toolbar({
@@ -56,22 +62,29 @@ export function Toolbar({
   onImportProject,
   onExportProject,
   importError,
+  onToggleAiPrompt,
+  aiPromptOpen,
+  onExportRbxmx,
+  exportingRbxmx,
 }: Props) {
   return (
     <header className="relative h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
       <div className="flex shrink-0 items-center gap-2 xl:gap-3">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
           <span className="grid place-items-center w-9 h-9 rounded-lg bg-white shrink-0 overflow-hidden">
             <img
               src="/logo.png"
               alt="Roblox GUI Maker"
+              width={36}
+              height={36}
+              decoding="async"
               className="w-full h-full object-contain"
             />
           </span>
           <span className="hidden font-semibold tracking-tight xl:inline">
             Roblox<span className="text-ink-dim"> GUI Maker</span>
           </span>
-        </div>
+        </Link>
         <div className="flex items-center gap-0.5 ml-1">
           <button
             onClick={onUndo}
@@ -149,6 +162,23 @@ export function Toolbar({
           <LayoutTemplate className="w-4 h-4" />
           <span className="hidden xl:inline">Templates</span>
         </Link>
+        {onToggleAiPrompt && (
+          <button
+            type="button"
+            onClick={onToggleAiPrompt}
+            aria-label="AI Generate"
+            aria-pressed={aiPromptOpen}
+            title="Generate or modify GUI with AI"
+            className={`flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-colors xl:w-auto xl:px-3 ${
+              aiPromptOpen
+                ? "bg-primary/20 text-focus border border-focus/50"
+                : "text-ink-dim hover:text-ink hover:bg-raised"
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-focus" />
+            <span className="hidden xl:inline">AI Generate</span>
+          </button>
+        )}
         <label
           title="Import JSON"
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary xl:w-auto xl:px-3"
@@ -180,13 +210,28 @@ export function Toolbar({
           onClick={onExport}
           aria-label={copied ? "Copied" : "Export Luau"}
           title={copied ? "Copied" : "Export Luau"}
-          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary text-sm font-semibold text-on-primary transition hover:brightness-110 xl:w-auto xl:px-4"
+          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-line bg-panel-raised text-sm font-semibold text-ink transition hover:bg-raised xl:w-auto xl:px-3"
         >
-          {copied ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+          {copied ? <Check className="w-4 h-4 text-success" /> : <Download className="w-4 h-4" />}
           <span className="hidden xl:inline">
             {copied ? "Copied" : "Export Luau"}
           </span>
         </button>
+        {onExportRbxmx && (
+          <button
+            type="button"
+            onClick={onExportRbxmx}
+            disabled={exportingRbxmx}
+            aria-label="Export .rbxmx Pro"
+            title="Export native Roblox Studio .rbxmx model"
+            className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary text-sm font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-50 xl:w-auto xl:px-3.5"
+          >
+            <Boxes className="w-4 h-4" />
+            <span className="hidden xl:inline">
+              {exportingRbxmx ? "Exporting…" : "Export .rbxmx"}
+            </span>
+          </button>
+        )}
       </div>
       {importError && (
         <div

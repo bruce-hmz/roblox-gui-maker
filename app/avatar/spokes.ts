@@ -17,11 +17,11 @@ export const SPOKES: SpokeCopy[] = [
   {
     slug: "preppy",
     title: {
-      en: "Preppy Roblox Avatars — 5 Collared & Pastel Outfits with IDs",
+      en: "Preppy Roblox Avatars — 5 Pastel Outfits with IDs",
       zh: "Preppy 风格 Roblox 形象搭配 —— 5 套学院风穿搭(真实 ID)",
     },
     description: {
-      en: "Preppy Roblox avatar ideas with real catalog item IDs: collared shirts and ties, plaid skirts, pastel knits and polo outfits — most under R$200, one piece away from free.",
+      en: "Preppy Roblox avatar ideas with real catalog item IDs: collared shirts, ties, plaid skirts, pastel knits and polo fits under R$200.",
       zh: "Preppy 风格 Roblox 形象搭配灵感,每件都是真实商店 ID:带领衬衫领带、格纹短裙、粉彩针织 —— 大多不到 200 Robux。",
     },
     h1: {
@@ -56,11 +56,11 @@ export const SPOKES: SpokeCopy[] = [
   {
     slug: "matching",
     title: {
-      en: "Matching Roblox Outfits — Couple & BFF Pairs with Item IDs",
+      en: "Matching Roblox Outfits — Couple and BFF Item IDs",
       zh: "Roblox 情侣装/闺蜜装 —— 成对搭配与真实物品 ID",
     },
     description: {
-      en: "Matching Roblox outfits for couples and best friends: heart sweaters, pink-and-blue couple jackets and BFF bracelet kits — every item is a real catalog ID you can copy and equip.",
+      en: "Matching Roblox outfits for couples and best friends: heart sweaters, couple jackets, and BFF bracelet kits with real catalog IDs to copy.",
       zh: "Roblox 情侣装和闺蜜装搭配:爱心毛衣、粉蓝情侣外套、闺蜜手链套装 —— 每件都是可复制 Equip 的真实商店 ID。",
     },
     h1: {
@@ -99,7 +99,7 @@ export const SPOKES: SpokeCopy[] = [
       zh: "便宜好看的 Roblox 形象搭配 —— 免费与百元内穿搭(真实 ID)",
     },
     description: {
-      en: "Cheap Roblox avatar outfits that still look intentional: two entirely free looks and three under R$100 — every item a real catalog ID, no scams, no free-Robux nonsense.",
+      en: "Cheap Roblox avatar outfits that look intentional: two completely free looks and three under R$100 using real catalog IDs with zero scams.",
       zh: "便宜但好看的 Roblox 形象搭配:两套完全免费、三套不到 100 Robux —— 每件都是真实商店 ID。",
     },
     h1: {
@@ -134,7 +134,7 @@ export const SPOKES: SpokeCopy[] = [
   {
     slug: "y2k",
     title: {
-      en: "Y2K Roblox Avatar Outfits — Grunge, Sport & Cloud Fits with IDs",
+      en: "Y2K Roblox Avatar Outfits — Grunge and Sport IDs",
       zh: "Y2K 风 Roblox 形象搭配 —— 格纹、运动与云朵穿搭(真实 ID)",
     },
     description: {

@@ -4,9 +4,9 @@ import { ZhShell } from "../_components/ZhShell";
 import { PricingCards } from "../../pricing/PricingCards";
 
 export const metadata: Metadata = {
-  title: "价格与买断方案 —— 原生 Roblox Studio .rbxmx 与完整 UI Kit | Roblox GUI Maker",
+  title: "价格方案 — 原生 .rbxmx 导出与游戏 UI 套件 | Roblox GUI Maker",
   description:
-    "客户端与服务端 Luau 代码导出、单张 512x512 Gamepass 徽章永久免费。一次性买断（无订阅）即可解锁原生 Roblox Studio .rbxmx 模型树、全部 6 套多界面 UI Kit 与 48 枚变现图标。",
+    "Luau 代码导出与单张 Gamepass 图标永久免费。一次性买断解锁原生 Roblox Studio .rbxmx 模型、全部 6 套多界面 UI 套件与 48 枚变现图标，无月费订阅。",
   alternates: {
     canonical: "/zh/pricing",
     languages: {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "价格与买断方案 —— 原生 Roblox Studio .rbxmx 与完整 UI Kit",
+    title: "价格方案 — 原生 .rbxmx 导出与游戏 UI 套件 | Roblox GUI Maker",
     description:
       "一次性买断原生 .rbxmx Studio 实例树、6 大品类多界面 UI Kit 与 48 枚 512x512 Gamepass 图标。Luau 代码永久免费。",
     url: "https://robloxguimaker.app/zh/pricing",
@@ -95,6 +95,84 @@ export default function ZhPricingPage() {
         </div>
 
         <PricingCards locale="zh" />
+
+        <section className="mx-auto mt-14 max-w-4xl grid gap-5 md:grid-cols-2">
+          <div className="rounded-xl border border-line bg-panel p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-ink">免费 .lua 运行时生成脚本</h2>
+              <span className="rounded bg-raised px-2 py-0.5 text-[11px] font-mono text-ink-dim">
+                StarterGui
+              </span>
+            </div>
+            <pre className="rounded-lg border border-line bg-page p-3 font-mono text-xs text-ink-dim leading-relaxed">
+{`StarterGui
+└─ LocalScript (RuntimeBuilder.client.lua)
+   -- 仅在按 Play 运行时动态生成界面
+   -- Studio 编辑态下 Explorer 看不到子层级`}
+            </pre>
+            <p className="text-xs text-ink-dim leading-relaxed">
+              适合代码原型或习惯手写脚本调整的开发者，永久免费且支持客户端与服务端分离导出。
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-focus/50 bg-panel p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-ink">Pro 原生 .rbxmx Studio 实例树</h2>
+              <span className="rounded bg-primary/20 px-2 py-0.5 text-[11px] font-semibold text-focus">
+                Explorer 即拖即改
+              </span>
+            </div>
+            <pre className="rounded-lg border border-line bg-page p-3 font-mono text-xs text-ink leading-relaxed">
+{`StarterGui
+└─ ShopGui (ScreenGui)
+   ├─ MainFrame (Frame)
+   │  ├─ UICorner / UIStroke / UIGradient
+   │  └─ CloseButton (TextButton)
+   └─ KitScreenSwitcher (LocalScript)`}
+            </pre>
+            <p className="text-xs text-ink-dim leading-relaxed">
+              拖进 Studio 即在画布与属性面板所见即所得修改字号、圆角、渐变和按钮，全程免装第三方插件。
+            </p>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-10 max-w-4xl space-y-3">
+          <h2 className="text-xl font-semibold text-ink">
+            一次性买断 vs. 月费 AI 工具与外包报价对比
+          </h2>
+          <div className="overflow-x-auto rounded-xl border border-line bg-panel">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-line bg-panel-raised uppercase tracking-wider text-ink-mute">
+                <tr>
+                  <th className="px-4 py-3">方案</th>
+                  <th className="px-4 py-3">费用</th>
+                  <th className="px-4 py-3">Studio 原生层级导出</th>
+                  <th className="px-4 py-3">商业授权</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line text-ink-dim">
+                <tr className="bg-primary/5">
+                  <td className="px-4 py-2.5 font-semibold text-ink">Roblox GUI Maker 买断版</td>
+                  <td className="px-4 py-2.5 font-semibold text-focus">USD 4.90 – 19.90 买断</td>
+                  <td className="px-4 py-2.5 text-ink">即时导出 .rbxmx + 全部 6 套 UI Kit</td>
+                  <td className="px-4 py-2.5">无限个商业 Roblox 项目可用</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-medium text-ink">海外同类 AI UI 订阅制平台</td>
+                  <td className="px-4 py-2.5">$12 – $39 / 月</td>
+                  <td className="px-4 py-2.5">多数仅限网页导出或需长期续费</td>
+                  <td className="px-4 py-2.5">停费即失效</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-medium text-ink">Fiverr / DevForum 外包 UI 套件</td>
+                  <td className="px-4 py-2.5">$50 – $300+ / 套</td>
+                  <td className="px-4 py-2.5">交付周期通常 1–2 周</td>
+                  <td className="px-4 py-2.5">按单修改，无法无限次 AI 生成</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <section className="mx-auto mt-14 max-w-3xl rounded-xl border border-line bg-panel p-5 text-sm text-ink-dim leading-relaxed">
           <h2 className="text-base font-semibold text-ink mb-2">

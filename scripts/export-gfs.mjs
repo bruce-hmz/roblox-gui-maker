@@ -622,9 +622,9 @@ const editorFaqJsonLd = JSON.stringify({
 pages.push({
   path: "/editor",
   kind: "page",
-  title: "Roblox GUI Editor — Drag, Drop & Export Luau | Roblox GUI Maker",
+  title: "Roblox GUI Editor — Drag, Drop and Export Clean Luau",
   description:
-    "Free online Roblox GUI editor. Drag and drop ScreenGui, Frame, TextButton, preview interactions, and export clean Luau for Roblox Studio. No login required.",
+    "Free online Roblox GUI editor. Drag and drop ScreenGui, Frame, TextButton, preview interactions, and export clean Luau for Roblox Studio.",
   template: "page.html",
   content: {
     lang: "en",

@@ -5,9 +5,9 @@ import { SiteFooter } from "../components/SiteFooter";
 import { PricingCards } from "./PricingCards";
 
 export const metadata: Metadata = {
-  title: "Pricing — Native Roblox Studio .rbxmx & Pro UI Kits | Roblox GUI Maker",
+  title: "Pricing — Studio .rbxmx Export and UI Kits | Roblox GUI",
   description:
-    "Luau code exports and single 512x512 Gamepass icons are free forever. Upgrade once (no subscription) to export native Roblox Studio .rbxmx models, all 6 multi-screen UI kits, and 48 Gamepass icons.",
+    "Luau exports and single 512x512 Gamepass icons stay free forever. Pay once to unlock native .rbxmx Studio files, 6 UI kits, and 48 Gamepass badges.",
   alternates: {
     canonical: "/pricing",
     languages: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Pricing — Native Roblox Studio .rbxmx & Pro UI Kits",
+    title: "Pricing — Studio .rbxmx Export and UI Kits | Roblox GUI",
     description:
       "One-time buyout for native .rbxmx Studio hierarchies, 6 genre UI kits, and 48 512x512 Gamepass badge icons. Luau code stays free forever.",
     url: "https://robloxguimaker.app/pricing",
@@ -99,6 +99,85 @@ export default function PricingPage() {
         </div>
 
         <PricingCards locale="en" />
+
+        <section className="mx-auto mt-14 max-w-4xl grid gap-5 md:grid-cols-2">
+          <div className="rounded-xl border border-line bg-panel p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-ink">Free .lua Runtime Script</h2>
+              <span className="rounded bg-raised px-2 py-0.5 text-[11px] font-mono text-ink-dim">
+                StarterGui
+              </span>
+            </div>
+            <pre className="rounded-lg border border-line bg-page p-3 font-mono text-xs text-ink-dim leading-relaxed">
+{`StarterGui
+└─ LocalScript (RuntimeBuilder.client.lua)
+   -- Built only after pressing Play
+   -- Not visible in Explorer edit mode`}
+            </pre>
+            <p className="text-xs text-ink-dim leading-relaxed">
+              Great for prototyping or scripting everything by hand, stays 100% free forever.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-focus/50 bg-panel p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-ink">Pro .rbxmx Native Studio Tree</h2>
+              <span className="rounded bg-primary/20 px-2 py-0.5 text-[11px] font-semibold text-focus">
+                Explorer Ready
+              </span>
+            </div>
+            <pre className="rounded-lg border border-line bg-page p-3 font-mono text-xs text-ink leading-relaxed">
+{`StarterGui
+└─ ShopGui (ScreenGui)
+   ├─ MainFrame (Frame)
+   │  ├─ UICorner / UIStroke / UIGradient
+   │  └─ CloseButton (TextButton)
+   └─ KitScreenSwitcher (LocalScript)`}
+            </pre>
+            <p className="text-xs text-ink-dim leading-relaxed">
+              Visual, tweakable Studio objects the second you drop{" "}
+              <code className="text-ink">.rbxmx</code> into Explorer — zero plugins required.
+            </p>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-10 max-w-4xl space-y-3">
+          <h2 className="text-xl font-semibold text-ink">
+            One-Time Studio Buyout vs. Recurring Subscriptions &amp; Commissions
+          </h2>
+          <div className="overflow-x-auto rounded-xl border border-line bg-panel">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-line bg-panel-raised uppercase tracking-wider text-ink-mute">
+                <tr>
+                  <th className="px-4 py-3">Option</th>
+                  <th className="px-4 py-3">Cost</th>
+                  <th className="px-4 py-3">Studio .rbxmx Hierarchy</th>
+                  <th className="px-4 py-3">Commercial Game Rights</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line text-ink-dim">
+                <tr className="bg-primary/5">
+                  <td className="px-4 py-2.5 font-semibold text-ink">Roblox GUI Maker Starter / All-Access</td>
+                  <td className="px-4 py-2.5 font-semibold text-focus">USD 4.90 – 19.90 once</td>
+                  <td className="px-4 py-2.5 text-ink">Included (instant XML export + 6 UI Kits)</td>
+                  <td className="px-4 py-2.5">Unlimited commercial games</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-medium text-ink">Typical AI UI SaaS Subscriptions</td>
+                  <td className="px-4 py-2.5">$12 – $39 / month</td>
+                  <td className="px-4 py-2.5">Often web-only HTML/React</td>
+                  <td className="px-4 py-2.5">Stops when subscription ends</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-medium text-ink">Custom Freelance UI Pack</td>
+                  <td className="px-4 py-2.5">$50 – $300+ per kit</td>
+                  <td className="px-4 py-2.5">1–2 week turnaround</td>
+                  <td className="px-4 py-2.5">Single commission revision cycle</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <section className="mx-auto mt-14 max-w-3xl rounded-xl border border-line bg-panel p-5 text-sm text-ink-dim leading-relaxed">
           <h2 className="text-base font-semibold text-ink mb-2">

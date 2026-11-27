@@ -40,6 +40,9 @@ export function SiteNav({ locale = "en" }: { locale?: Locale }) {
           <img
             src="/logo.png"
             alt="Roblox GUI Maker"
+            width={36}
+            height={36}
+            decoding="async"
             className="w-full h-full object-contain"
           />
         </span>

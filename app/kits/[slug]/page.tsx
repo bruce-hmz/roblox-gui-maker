@@ -25,9 +25,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const kit = getKit(slug);
   if (!kit) return { title: "UI Kit not found" };
+  const title = kit.metaTitle ?? `${kit.name} — Free Roblox GUI Pack`;
+  const description = kit.metaDescription ?? kit.description;
   return {
-    title: `${kit.name} — Free Roblox Game UI Kit | Roblox GUI Maker`,
-    description: kit.description,
+    title,
+    description,
     alternates: {
       canonical: `/kits/${slug}`,
       languages: {
@@ -36,8 +38,8 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title: `${kit.name} — Free Roblox Game UI Kit`,
-      description: kit.description,
+      title,
+      description,
       url: `https://robloxguimaker.app/kits/${slug}`,
     },
   };

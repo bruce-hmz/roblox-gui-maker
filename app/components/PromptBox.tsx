@@ -67,11 +67,11 @@ const EN_CHIPS = [
 ];
 
 const ZH_CHIPS = [
-  "Simulator shop with 6 game passes",
-  "Anime battleground HUD",
-  "Horror main menu",
-  "RPG inventory with 20 slots",
-  "7-day daily rewards",
+  "包含 6 个通行证的模拟器商店",
+  "动漫格斗游戏 HUD 界面",
+  "恐怖逃生主菜单",
+  "20 格 RPG 背包界面",
+  "七日连续签到奖励弹窗",
 ];
 
 export function PromptBox({ locale = "en" }: { locale?: "en" | "zh" }) {

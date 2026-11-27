@@ -5,9 +5,9 @@ import { SiteFooter } from "../components/SiteFooter";
 import { GamepassIconMaker } from "./GamepassIconMaker";
 
 export const metadata: Metadata = {
-  title: "Roblox Gamepass Icon Maker — Free 512x512 Pass & Badge Builder",
+  title: "Roblox Gamepass Icon Maker — Free 512x512 Badge Tool",
   description:
-    "Create crisp 512x512 Roblox Gamepass icons and Developer Product shop badges in your browser. Customize VIP, 2x Cash, Auto Hatch, and Luck emblems, preview Roblox circular crop, and download transparent PNGs free.",
+    "Create transparent 512x512 Roblox Gamepass icons and shop badges free. Pick VIP, 2x Cash, or Luck presets, check circular crop, and export PNG.",
   alternates: {
     canonical: "/gamepass-icon-maker",
     languages: {
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Roblox Gamepass Icon Maker — Free 512x512 Pass & Badge Builder",
+    title: "Roblox Gamepass Icon Maker — Free 512x512 Badge Tool",
     description:
-      "Design and export 512x512 transparent PNG Roblox Gamepass & shop icons instantly. Zero watermark, no login.",
+      "Design and export 512x512 transparent PNG Roblox Gamepass and shop icons instantly. Zero watermark, no login.",
     url: "https://robloxguimaker.app/gamepass-icon-maker",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Roblox Gamepass Icon Maker — Free 512x512 Pass & Badge Builder",
+    title: "Roblox Gamepass Icon Maker — Free 512x512 Badge Tool",
     description:
       "Build 512x512 transparent Roblox Gamepass icons (VIP, 2x Cash, Auto Hatch, 3x Luck) free in your browser.",
   },
@@ -187,19 +187,178 @@ export default function GamepassIconMakerPage() {
           </p>
         </section>
 
-        <section className="mx-auto mt-14 max-w-3xl space-y-6 text-sm text-ink-dim leading-relaxed">
+        <section className="mx-auto mt-14 max-w-4xl space-y-6 text-sm text-ink-dim leading-relaxed">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold text-ink">
+              Monetization Badge Archetypes That Convert in Top Experiences
+            </h2>
+            <p>
+              High-earning Roblox games rarely reinvent UI iconography for every pass. Players scan
+              the Store tab and in-game shop grid looking for familiar visual shorthand. Choosing a
+              proven color-and-symbol pair inside your{" "}
+              <strong>Roblox Gamepass icon</strong> helps players understand the perk before even
+              reading the Robux price:
+            </p>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-line bg-panel">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-line bg-panel-raised uppercase tracking-wider text-ink-mute">
+                <tr>
+                  <th className="px-4 py-3">Pass Type</th>
+                  <th className="px-4 py-3">Recommended Color &amp; Emblem</th>
+                  <th className="px-4 py-3">Short Label</th>
+                  <th className="px-4 py-3">Best Genre Fit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line text-ink-dim">
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-ink">VIP Status Pass</td>
+                  <td className="px-4 py-2.5">Gold metallic rim + Crown</td>
+                  <td className="px-4 py-2.5 font-mono text-ink">VIP</td>
+                  <td className="px-4 py-2.5">Simulators, Tycoons, Roleplay hubs</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-ink">2X Currency / Coins</td>
+                  <td className="px-4 py-2.5">Emerald green or bright yellow + Coin Stack / X2</td>
+                  <td className="px-4 py-2.5 font-mono text-ink">2X CASH</td>
+                  <td className="px-4 py-2.5">Clickers, Tycoons, Grind RPGs</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-ink">Auto Hatch / Fast Open</td>
+                  <td className="px-4 py-2.5">Electric cyan + Bolt / Pet Egg</td>
+                  <td className="px-4 py-2.5 font-mono text-ink">AUTO</td>
+                  <td className="px-4 py-2.5">Pet Simulators, RNG Rollers</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-ink">Super / Mega Luck</td>
+                  <td className="px-4 py-2.5">Royal violet or vibrant lime + Clover / Star</td>
+                  <td className="px-4 py-2.5 font-mono text-ink">3X LUCK</td>
+                  <td className="px-4 py-2.5">RNG Aura games, Tower Defense</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-ink">Skip Stage / Speed Coil</td>
+                  <td className="px-4 py-2.5">Crimson orange + Wing / Fast-Forward</td>
+                  <td className="px-4 py-2.5 font-mono text-ink">SKIP</td>
+                  <td className="px-4 py-2.5">Obby, Parkour, Difficulty Towers</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-ink">Starter Pack Bundle</td>
+                  <td className="px-4 py-2.5">Sunset sky blue + Gift Chest / Shield</td>
+                  <td className="px-4 py-2.5 font-mono text-ink">STARTER</td>
+                  <td className="px-4 py-2.5">All monetization genres</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-14 max-w-4xl space-y-4 text-sm text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            Circular Safe-Zone Specs &amp; Luau Shop Wiring
+          </h2>
+          <p>
+            Even though Roblox Creator Dashboard asks for a{" "}
+            <code className="text-ink">512×512</code> square PNG, the public Store page clips every{" "}
+            <strong>Roblox Gamepass icon</strong> inside a circle and shrinks it down to roughly
+            44×44 CSS pixels inside mobile cards. Keep main artwork inside the center 480px circle,
+            use thick dark outlines around captions, and preview at 44px scale before exporting.
+          </p>
+          <p>
+            Once Roblox moderation approves your upload, copy both the Image Asset ID (for your
+            shop card&rsquo;s <code className="text-ink">ImageLabel</code>) and the Game Pass ID
+            (for prompting checkout in Luau):
+          </p>
+          <pre className="overflow-x-auto rounded-xl border border-line bg-panel p-4 font-mono text-xs text-ink">
+{`local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
+
+local VIP_PASS_ID = 123456789 -- Replace with your Creator Dashboard Pass ID
+local vipButton = script.Parent:WaitForChild("VipBuyButton")
+
+vipButton.Activated:Connect(function()
+\tMarketplaceService:PromptGamePassPurchase(Players.LocalPlayer, VIP_PASS_ID)
+end)`}
+          </pre>
+          <p>
+            Prefer not to build the surrounding storefront from scratch? Pair your 512×512 badges
+            with our free{" "}
+            <Link href="/editor" className="text-focus hover:underline">
+              Roblox GUI Editor
+            </Link>
+            , preview every screen inside our{" "}
+            <Link href="/kits" className="text-focus hover:underline">
+              6 genre-matched UI Kits
+            </Link>
+            , or unlock all 48 pre-rendered monetization badges plus native Studio{" "}
+            <code className="text-ink">.rbxmx</code> models on{" "}
+            <Link href="/pricing" className="text-focus hover:underline">
+              Pricing
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section className="mx-auto mt-14 max-w-4xl grid gap-6 md:grid-cols-2 text-sm text-ink-dim leading-relaxed">
+          <div className="rounded-xl border border-line bg-panel p-5 space-y-2.5">
+            <h2 className="text-lg font-semibold text-ink">
+              Pass Ordering &amp; Anchoring Strategy for Higher Robux Conversion
+            </h2>
+            <p>
+              Ordering your <strong>Roblox Gamepass icon</strong> cards inside an in-game store
+              directly affects conversion rate. Successful Simulator and Tycoon games avoid listing
+              only cheap 25 Robux boosts at the top. Instead, anchor player expectations by placing
+              your flagship high-value <strong>VIP</strong> or <strong>2X Luck</strong> badge beside
+              an accessible <strong>2X Cash</strong> or <strong>Starter Pack</strong> card.
+            </p>
+            <p>
+              Give your highest-margin pass the warmest metallic frame (Gold or Royal Violet) while
+              keeping utility toggles like Auto Hatch in cool Cyan so players immediately distinguish
+              status perks, multipliers, and convenience tools at a glance.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-line bg-panel p-5 space-y-2.5">
+            <h2 className="text-lg font-semibold text-ink">
+              Creator Dashboard Approval &amp; Moderation Checklist
+            </h2>
+            <p>
+              Every uploaded <strong>Roblox Gamepass icon</strong> passes through automated and
+              human image moderation before displaying in live servers. Keep approvals fast and
+              zero-rejection with three habits:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5">
+              <li>
+                Never bake raw Robux currency logos, fake discount percentages over third-party IP,
+                or unreadable micro-text smaller than 16px inside the 512×512 frame.
+              </li>
+              <li>
+                Keep descriptive benefit text clean and concise (e.g., <code className="text-ink">VIP</code>,{" "}
+                <code className="text-ink">2X CASH</code>, <code className="text-ink">AUTO</code>).
+              </li>
+              <li>
+                Test both the public circular store preview and rounded{" "}
+                <code className="text-ink">Shop Tile</code> card variant before uploading bulk
+                passes to Creator Dashboard.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-14 max-w-4xl space-y-6 text-sm text-ink-dim leading-relaxed">
           <h2 className="text-2xl font-semibold text-ink">
             Roblox Gamepass Icon Frequently Asked Questions
           </h2>
-          {FAQS.map((item) => (
-            <div
-              key={item.q}
-              className="rounded-xl border border-line bg-panel p-5"
-            >
-              <h3 className="font-semibold text-ink">{item.q}</h3>
-              <p className="mt-1.5">{item.a}</p>
-            </div>
-          ))}
+          <div className="grid md:grid-cols-2 gap-4">
+            {FAQS.map((item) => (
+              <div
+                key={item.q}
+                className="rounded-xl border border-line bg-panel p-5"
+              >
+                <h3 className="font-semibold text-ink">{item.q}</h3>
+                <p className="mt-1.5">{item.a}</p>
+              </div>
+            ))}
+          </div>
         </section>
       </main>
       <SiteFooter />

@@ -126,6 +126,12 @@ export function ProUpgradeModal({
           </p>
         </div>
 
+        <div className="mb-4 rounded-xl border border-focus/30 bg-primary/10 px-3.5 py-2 text-xs text-ink">
+          {zh
+            ? "一次买断无月费订阅 —— 对比 $12–$39/月 的 AI 订阅工具或 $50+ 的外包界面套件更划算。"
+            : "One-time buyout with zero monthly fees — compare against $12–$39/mo AI UI subscriptions or $50+ freelance kits."}
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Starter Pass */}
           <div

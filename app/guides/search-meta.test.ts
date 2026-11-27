@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { KITS } from "../editor/kits";
 import { TEMPLATES } from "../editor/templates";
 import { TEMPLATES_ZH } from "../editor/templates.zh";
 import { getUseCaseZh } from "../for/usecases.zh";
@@ -21,6 +22,10 @@ const add = (kind: Override["kind"], label: string, text?: string) => {
 for (const g of GUIDES) {
   add("title", `guide ${g.slug}`, g.metaTitle);
   add("description", `guide ${g.slug}`, g.metaDescription);
+}
+for (const k of KITS) {
+  add("title", `kit ${k.slug}`, k.metaTitle);
+  add("description", `kit ${k.slug}`, k.metaDescription);
 }
 for (const u of USE_CASES) add("description", `use case ${u.slug}`, u.metaDescription);
 for (const t of TEMPLATES) add("description", `template ${t.slug}`, t.metaDescription);
